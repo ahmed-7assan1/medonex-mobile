@@ -1,9 +1,10 @@
 import React from 'react';
-import { Tabs } from 'expo-router';
+import { Tabs, Redirect } from 'expo-router';
 import { useWindowDimensions } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Home, BookOpen, Users, HelpCircle, Grid } from 'lucide-react-native';
 import { useTheme } from '@/theme/ThemeContext';
+import { useAuth } from '@/lib/auth';
 import { TABLET_BREAKPOINT } from '@/theme/tokens';
 import { CapsuleTabBar } from '@/components/CapsuleTabBar';
 import { SideRail } from '@/components/SideRail';
@@ -15,7 +16,12 @@ export default function TabsLayout() {
   const { width } = useWindowDimensions();
   const { colors } = useTheme();
   const { t } = useTranslation();
+  const { token, bootstrapped } = useAuth();
   const isTablet = width >= TABLET_BREAKPOINT;
+
+  if (bootstrapped && !token) {
+    return <Redirect href="/(auth)/login" />;
+  }
 
   return (
     <Tabs

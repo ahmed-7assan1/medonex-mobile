@@ -10,7 +10,11 @@
   "auth": {
     "signIn": "Sign in",
     "signInGoogle": "Continue with Google",
-    "tagline": "Your medical learning companion"
+    "tagline": "Your medical learning companion",
+    "configMissing": "Sign-in is being set up. Please try again soon.",
+    "endpointMissing": "Sign-in will be available shortly.",
+    "failed": "Couldn't sign in with Google. Please try again.",
+    "signOut": "Sign out"
   },
   "tabs": {
     "home": "Home",

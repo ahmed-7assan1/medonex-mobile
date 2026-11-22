@@ -3,8 +3,9 @@ import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Sparkles, Video, Mic2, Clock, User, Settings, Bookmark, Layers } from 'lucide-react-native';
+import { Sparkles, Video, Mic2, Clock, User, Settings, Bookmark, Layers, LogOut } from 'lucide-react-native';
 import { useTheme } from '@/theme/ThemeContext';
+import { useAuth } from '@/lib/auth';
 
 /** "More" grid — the capsule's middle button on the site opens the same
  *  kind of sheet; here it is a tab page listing every other destination. */
@@ -24,6 +25,7 @@ export default function MoreScreen() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { signOut } = useAuth();
 
   return (
     <ScrollView
@@ -49,6 +51,17 @@ export default function MoreScreen() {
             </Pressable>
           );
         })}
+        <Pressable
+          onPress={async () => { await signOut(); router.replace('/(auth)/login'); }}
+          style={({ pressed }) => [
+            styles.tile,
+            { backgroundColor: st.surface, borderColor: st.border },
+            pressed && { backgroundColor: st.surfacePressed, transform: [{ scale: 0.98 }] },
+          ]}
+        >
+          <LogOut size={22} color="#DC2626" />
+          <Text style={[styles.tileLabel, { color: '#DC2626' }]}>{t('auth.signOut')}</Text>
+        </Pressable>
       </View>
     </ScrollView>
   );

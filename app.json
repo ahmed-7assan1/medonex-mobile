@@ -23,7 +23,9 @@
       "package": "com.medonex.app",
       "edgeToEdgeEnabled": true,
       "userInterfaceStyle": "automatic",
-      "permissions": ["NOTIFICATIONS"]
+      "permissions": [
+        "NOTIFICATIONS"
+      ]
     },
     "updates": {
       "url": "https://updates.medonex.me/manifest",
@@ -42,7 +44,10 @@
       "expo-localization"
     ],
     "extra": {
-      "apiBase": "https://www.medonex.me"
+      "apiBase": "https://www.medonex.me",
+      "googleWebClientId": "",
+      "googleAndroidClientId": "",
+      "googleIosClientId": ""
     },
     "owner": "medonex"
   }

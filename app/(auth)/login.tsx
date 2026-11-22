@@ -1,17 +1,44 @@
-import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, Pressable, ActivityIndicator, StyleSheet } from 'react-native';
+import { Redirect, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme/ThemeContext';
+import { useAuth } from '@/lib/auth';
+import { useGoogleSignIn, ExchangeError } from '@/lib/googleAuth';
 
-/** Sign-in — styled after the site's /login: display logo, tagline and the
- *  rounded-20 bordered "Continue with Google" button (bg-card/80, shadow-sm).
- *  The Google flow itself (expo-auth-session -> site auth exchange) is wired
- *  in the auth phase; the button reports until then. */
+/** Sign-in — styled after the site's /login. Google-only per the platform
+ *  decision: id_token from Google gets exchanged for a mobile JWT at
+ *  /api/mobile/auth/google (endpoint pending Ahmed's OK). */
 export default function LoginScreen() {
   const { t } = useTranslation();
   const { colors, fonts } = useTheme();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const { token, bootstrapped, signIn } = useAuth();
+  const google = useGoogleSignIn();
+  const [error, setError] = useState<string | null>(null);
+
+  if (bootstrapped && token) {
+    return <Redirect href="/(tabs)" />;
+  }
+
+  const onGoogle = async () => {
+    setError(null);
+    try {
+      const { token: tkn, user } = await google.signIn();
+      await signIn(tkn, user);
+      router.replace('/(tabs)');
+    } catch (e) {
+      if (e instanceof ExchangeError && e.code === 'config-missing') {
+        setError(t('auth.configMissing'));
+      } else if (e instanceof ExchangeError && e.code === 'endpoint-missing') {
+        setError(t('auth.endpointMissing'));
+      } else if (!(e instanceof ExchangeError && e.message === 'cancelled')) {
+        setError(t('auth.failed'));
+      }
+    }
+  };
 
   return (
     <View
@@ -28,22 +55,30 @@ export default function LoginScreen() {
 
         <Pressable
           accessibilityRole="button"
-          onPress={() => {
-            /* Auth phase: start the Google flow (expo-auth-session). */
-          }}
+          disabled={google.busy}
+          onPress={onGoogle}
           style={({ pressed }) => [
             styles.googleBtn,
             { backgroundColor: colors.card, borderColor: colors.border },
             pressed && { opacity: 0.85 },
+            google.busy && { opacity: 0.6 },
           ]}
         >
-          <View style={styles.gMark}>
-            <Text style={{ fontSize: 16, fontWeight: '700', color: '#4285F4' }}>G</Text>
-          </View>
+          {google.busy ? (
+            <ActivityIndicator color={colors.mutedForeground} size="small" />
+          ) : (
+            <View style={styles.gMark}>
+              <Text style={{ fontSize: 16, fontWeight: '700', color: '#4285F4' }}>G</Text>
+            </View>
+          )}
           <Text style={[styles.googleLabel, { color: colors.foreground, fontFamily: fonts.sansMedium }]}>
             {t('auth.signInGoogle')}
           </Text>
         </Pressable>
+
+        {error && (
+          <Text style={[styles.error, { color: colors.destructive, fontFamily: fonts.sans }]}>{error}</Text>
+        )}
       </View>
 
       <Text style={[styles.footer, { color: colors.mutedForeground }]}>medonex.me</Text>
@@ -75,5 +110,6 @@ const styles = StyleSheet.create({
   },
   gMark: { width: 22, alignItems: 'center' },
   googleLabel: { fontSize: 14, fontWeight: '500' },
+  error: { marginTop: 16, fontSize: 13, textAlign: 'center', maxWidth: 320 },
   footer: { textAlign: 'center', fontSize: 12 },
 });

@@ -9,6 +9,7 @@ import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_7
 import { PlusJakartaSans_700Bold } from '@expo-google-fonts/plus-jakarta-sans';
 import { Cairo_400Regular, Cairo_700Bold } from '@expo-google-fonts/cairo';
 import { ThemeProvider } from '@/theme/ThemeContext';
+import { AuthProvider } from '@/lib/auth';
 import '@/i18n';
 
 const queryClient = new QueryClient({
@@ -50,11 +51,14 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
-          <StatusBar style="auto" />
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(auth)/login" />
-            <Stack.Screen name="(tabs)" />
-          </Stack>
+          <AuthProvider>
+            <StatusBar style="auto" />
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" />
+              <Stack.Screen name="(auth)/login" />
+              <Stack.Screen name="(tabs)" />
+            </Stack>
+          </AuthProvider>
         </ThemeProvider>
       </QueryClientProvider>
     </SafeAreaProvider>
