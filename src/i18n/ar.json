@@ -137,5 +137,29 @@
       "mismatch": "كلمتا المرور الجديدتان غير متطابقتين.",
       "google": "تغيير كلمة المرور غير متاح لحسابات جوجل."
     }
+  },
+  "lecture": {
+    "lecture": "محاضرة",
+    "practicalLecture": "محاضرة عملية",
+    "overview": "نظرة عامة",
+    "sections": "أقسام",
+    "items": "عنصر",
+    "startHere": "ابدأ من هنا",
+    "share": "مشاركة",
+    "empty": "فارغ",
+    "notes": "الملاحظات",
+    "notesCards": "كروت",
+    "notesAnnotator": "المحرر",
+    "cardsCount": "كارت",
+    "questionsCount": "سؤال",
+    "criticalStep": "خطوة حرجة",
+    "noVideos": "لا توجد فيديوهات بعد",
+    "noVideosDesc": "فيديوهات هذه المحاضرة لم تُرفع بعد.",
+    "noMaterials": "لا توجد مواد بعد",
+    "noMaterialsDesc": "الملفات القابلة للتنزيل لهذه المحاضرة لم تُرفع بعد.",
+    "noRecordings": "لا توجد تسجيلات بعد",
+    "noRecordingsDesc": "التسجيلات الصوتية والمرئية لهذه المحاضرة لم تُرفع بعد. ارجع قريبًا.",
+    "emptySection": "لا يوجد محتوى بعد",
+    "emptySectionDesc": "ارجع قريبًا لمحتوى جديد."
   }
 }

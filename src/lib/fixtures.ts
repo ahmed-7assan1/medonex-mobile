@@ -68,3 +68,48 @@ export const FIXTURE_MODULE_BUNDLE: ModuleBundle = {
   isAdmin: false,
   canonicalPath: null,
 };
+
+/** Lecture detail fixture — mirrors getCachedLectureDetail (MedQs0). */
+export const FIXTURE_LECTURE = {
+  id: 'l1',
+  title: 'Introduction to the Upper Limb',
+  type: 'LECTURE' as const,
+  subject: { id: 's-anat', name: 'Anatomy', module: { id: 'demo', name: 'Anatomy & Embryology' } },
+  videos: [
+    { id: 'v1', title: 'Upper Limb — Part 1: Bones & Landmarks', url: 'https://youtu.be/demo1', likesCount: 214, commentsCount: 31 },
+    { id: 'v2', title: 'Upper Limb — Part 2: Muscles & Movements', url: 'https://youtu.be/demo2', likesCount: 168, commentsCount: 22 },
+  ],
+  records: [
+    { id: 'r1', title: 'Rapid Revision — Upper Limb in 20 Minutes', url: 'https://youtu.be/demo3', sourceType: 'YOUTUBE' },
+    { id: 'r2', title: 'Audio Recall: Brachial Plexus', url: 'https://open.spotify.com/demo', sourceType: 'SPOTIFY' },
+  ],
+  files: [
+    { id: 'f1', name: 'Upper Limb — Lecture Slides.pdf', url: '#', mimeType: 'application/pdf' },
+    { id: 'f2', name: 'Bones Summary Sheet.pdf', url: '#', mimeType: 'application/pdf' },
+    { id: 'f3', name: 'Muscle Tables.docx', url: '#', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' },
+  ],
+  notesMarkdown: '# Upper Limb Overview\n\nThe upper limb is divided into **shoulder**, **arm**, **forearm** and **hand**.\n\n- The brachial plexus supplies the whole limb.\n- Key landmark: the surgical neck of the humerus.\n\n> Clinical note: axillary nerve injury affects abduction.',
+  noteCardsMarkdown: '',
+  flashcards: Array.from({ length: 18 }, (_, i) => ({ id: `fc${i}`, front: `Card ${i + 1} front`, back: `Card ${i + 1} back` })),
+  questions: Array.from({ length: 24 }, (_, i) => ({ id: `q${i}`, body: `Question ${i + 1}`, questionType: 'MCQ', difficulty: 'MEDIUM' })),
+  checklist: null as null | { items: { id: string; content: string; isCritical: boolean; points: number }[] },
+};
+
+export const FIXTURE_LECTURE_PRACTICAL = {
+  ...FIXTURE_LECTURE,
+  id: 'l5',
+  title: 'Cadaveric Dissection: Axilla',
+  type: 'PRACTICAL' as const,
+  checklist: {
+    items: [
+      { id: 'c1', content: 'Identify the boundaries of the axilla', isCritical: false, points: 5 },
+      { id: 'c2', content: 'Trace the axillary artery and its branches', isCritical: true, points: 10 },
+      { id: 'c3', content: 'Demonstrate the cords of the brachial plexus', isCritical: true, points: 10 },
+      { id: 'c4', content: 'Clean and reflect the pectoralis minor', isCritical: false, points: 5 },
+    ],
+  },
+};
+
+export function fixtureLecture(id: string) {
+  return id === 'l5' || id === 'l6' ? FIXTURE_LECTURE_PRACTICAL : FIXTURE_LECTURE;
+}

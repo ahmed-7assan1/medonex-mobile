@@ -137,5 +137,29 @@
       "mismatch": "New passwords do not match.",
       "google": "Password change is not available for Google accounts."
     }
+  },
+  "lecture": {
+    "lecture": "Lecture",
+    "practicalLecture": "Practical lecture",
+    "overview": "Overview",
+    "sections": "sections",
+    "items": "items",
+    "startHere": "Start here",
+    "share": "Share",
+    "empty": "Empty",
+    "notes": "Notes",
+    "notesCards": "Cards",
+    "notesAnnotator": "Annotator",
+    "cardsCount": "cards",
+    "questionsCount": "questions",
+    "criticalStep": "Critical Step",
+    "noVideos": "No Videos Yet",
+    "noVideosDesc": "This lecture's videos haven't been uploaded yet.",
+    "noMaterials": "No Materials Yet",
+    "noMaterialsDesc": "Downloadable files and PDFs for this lecture haven't been uploaded yet.",
+    "noRecordings": "No Recordings Yet",
+    "noRecordingsDesc": "Audio and video recordings for this lecture haven't been uploaded yet. Check back soon.",
+    "emptySection": "Nothing here yet",
+    "emptySectionDesc": "Check back soon for new content."
   }
 }
