@@ -119,5 +119,23 @@
     "preparing": "Curriculum is being prepared.",
     "signInTitle": "Sign in to view lectures",
     "signInDesc": "Lectures and materials need an account."
+  },
+  "settings": {
+    "title": "Settings",
+    "guestName": "Guest Student",
+    "manageSubscription": "Manage subscription",
+    "passwordSecurity": "Password & Security",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm New Password",
+    "updatePassword": "Update Password",
+    "aiKeys": "AI Provider Keys",
+    "clearCache": "Clear App Cache",
+    "pwMsg": {
+      "empty": "Please fill in all password fields.",
+      "short": "New password must be at least 6 characters.",
+      "mismatch": "New passwords do not match.",
+      "google": "Password change is not available for Google accounts."
+    }
   }
 }
