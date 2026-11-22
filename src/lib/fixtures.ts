@@ -433,3 +433,84 @@ export const FIXTURE_DRQ_SUGGESTIONS = [
   'Quiz me on antibiotics',
   'Summarize the nephron in 5 points',
 ];
+
+/* ── Atlas (site: atlas/page.tsx) ──────────────────────────────────── */
+
+export type FixtureAtlasSystem = {
+  systemId: string; label: string; desc: string; iconName: string; iconColor: string;
+};
+
+export type FixtureAtlasStructure = {
+  id: string; slug: string; name: string; latin?: string; type: string; desc: string;
+  region?: string; systemId: string; fn?: string; blood?: string; nerve?: string;
+  relations?: string[]; clinical?: string;
+};
+
+export const FIXTURE_ATLAS_SYSTEMS: FixtureAtlasSystem[] = [
+  { systemId: 'skeletal', label: 'Skeletal', desc: 'Bones, joints and the axial/appendicular framework', iconName: 'bone', iconColor: '#2DD4BF' },
+  { systemId: 'muscular', label: 'Muscular', desc: 'Skeletal muscles, compartments and actions', iconName: 'dumbbell', iconColor: '#F87171' },
+  { systemId: 'nervous', label: 'Nervous', desc: 'Brain, spinal cord, plexuses and peripheral nerves', iconName: 'brain', iconColor: '#C084FC' },
+  { systemId: 'cardio', label: 'Cardiovascular', desc: 'Heart, great vessels and arterial trees', iconName: 'heart', iconColor: '#FB7185' },
+  { systemId: 'respiratory', label: 'Respiratory', desc: 'Airways, lungs and the pleural cavities', iconName: 'wind', iconColor: '#38BDF8' },
+  { systemId: 'digestive', label: 'Digestive', desc: 'GI tract, liver, pancreas and peritoneum', iconName: 'utensils', iconColor: '#34D399' },
+];
+
+export const FIXTURE_ATLAS_STRUCTURES: FixtureAtlasStructure[] = [
+  {
+    id: 'st1', slug: 'humerus', name: 'Humerus', latin: 'Humerus', type: 'bone', systemId: 'skeletal',
+    region: 'Upper limb', desc: 'The longest bone of the upper limb, articulating with the scapula at the shoulder and the radius/ulna at the elbow.',
+    fn: 'Lever for arm movement; attachment for deltoid, pectoralis major, rotator cuff muscles.',
+    blood: 'Anterior & posterior humeral circumflex arteries; profunda brachii.',
+    nerve: 'Axillary nerve (surgical neck), radial nerve (spiral groove) at risk in fractures.',
+    relations: ['Scapula', 'Radius', 'Ulna'],
+    clinical: 'Mid-shaft fracture endangers the radial nerve in the spiral groove → wrist drop.',
+  },
+  {
+    id: 'st2', slug: 'scapula', name: 'Scapula', latin: 'Scapula', type: 'bone', systemId: 'skeletal',
+    region: 'Shoulder girdle', desc: 'Flat triangular bone on the posterolateral thorax carrying the glenoid cavity.',
+    fn: 'Socket for the humeral head; origin/insertion for 17 muscles.',
+    relations: ['Humerus', 'Clavicle'],
+  },
+  {
+    id: 'st3', slug: 'biceps-brachii', name: 'Biceps Brachii', latin: 'Musculus biceps brachii', type: 'muscle', systemId: 'muscular',
+    region: 'Anterior arm', desc: 'Two-headed muscle of the anterior compartment of the arm.',
+    fn: 'Powerful supinator of the forearm; flexes the elbow; weak shoulder flexor.',
+    blood: 'Brachial artery.', nerve: 'Musculocutaneous nerve (C5–C7).',
+    clinical: 'Rupture of the long head tendon produces the "Popeye" deformity.',
+  },
+  {
+    id: 'st4', slug: 'brachial-plexus', name: 'Brachial Plexus', type: 'nerve', systemId: 'nervous',
+    region: 'Neck / axilla', desc: 'Network formed by ventral rami C5–T1 supplying the entire upper limb.',
+    fn: 'Motor and sensory innervation of the upper limb (roots → trunks → divisions → cords → branches).',
+    clinical: 'Erb palsy (C5–C6): "waiter\'s tip" hand; Klumpke palsy (C8–T1): claw hand.',
+  },
+  {
+    id: 'st5', slug: 'heart', name: 'Heart', latin: 'Cor', type: 'organ', systemId: 'cardio',
+    region: 'Middle mediastinum', desc: 'Four-chambered muscular pump inside the pericardium, two-thirds left of the midline.',
+    fn: 'Pumps systemic and pulmonary circuits; intrinsic conduction via SA → AV node → His–Purkinje.',
+    blood: 'Right & left coronary arteries from the ascending aorta.',
+    nerve: 'Cardiac plexus (sympathetic T1–T5, parasympathetic vagus).',
+    clinical: 'LAD occlusion → anterior wall MI, the classic "widow maker".',
+  },
+  {
+    id: 'st6', slug: 'lung', name: 'Lung', latin: 'Pulmo', type: 'organ', systemId: 'respiratory',
+    region: 'Thoracic cavity', desc: 'Paired spongy organs of respiration; the right has 3 lobes, the left 2 with the cardiac notch.',
+    fn: 'Gas exchange across ~70 m² of alveolar surface.',
+    blood: 'Pulmonary arteries (deoxygenated) + bronchial arteries (systemic supply).',
+    clinical: 'Pleural effusion collects first in the costodiaphragmatic recess when upright.',
+  },
+  {
+    id: 'st7', slug: 'liver', name: 'Liver', latin: 'Hepar', type: 'organ', systemId: 'digestive',
+    region: 'Right upper quadrant', desc: 'Largest internal organ, under the diaphragm, with dual blood supply.',
+    fn: 'Bile production, metabolism, detoxification, storage of glycogen and vitamins.',
+    blood: 'Hepatic portal vein (75%) + proper hepatic artery (25%).',
+    nerve: 'Hepatic plexus (sympathetic + vagal).',
+    clinical: 'Portal hypertension → caput medusae, splenomegaly, esophageal varices.',
+  },
+  {
+    id: 'st8', slug: 'radius', name: 'Radius', latin: 'Radius', type: 'bone', systemId: 'skeletal',
+    region: 'Forearm', desc: 'Lateral forearm bone, wide distally at the wrist.',
+    relations: ['Humerus', 'Ulna'],
+    clinical: 'Colles fracture: distal radius fracture with dorsal displacement ("dinner fork").',
+  },
+];
