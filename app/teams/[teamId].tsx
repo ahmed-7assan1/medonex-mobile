@@ -89,7 +89,7 @@ export default function TeamProfileScreen() {
           )}
 
           {/* Profile header */}
-          <View style={[styles.profileHead, isTablet && { flexDirection: 'row', alignItems: 'flex-end', gap: 24 }]}>
+          <View style={[styles.profileHead, isTablet ? styles.profileHeadTablet : styles.profileHeadMobile]}>
             <View style={[styles.avatar, { backgroundColor: colors.primary + '1A', borderColor: st.bg }]}>
               <Text style={{ color: colors.primary, fontSize: 44, fontFamily: fonts.display }}>{initials(team.name)}</Text>
             </View>
@@ -260,7 +260,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around',
     paddingVertical: 16, borderBottomWidth: 1, marginBottom: 24,
   },
-  profileHead: { marginTop: -64, marginBottom: 32, gap: 16 },
+  profileHead: { marginBottom: 32, gap: 16 },
+  // Mobile: the stats row owns the strip under the cover, so the avatar starts
+  // below it (no negative margin) — nothing overlaps. Tablet has no stats row,
+  // so the avatar overlaps the cover like the site's -mt-24.
+  profileHeadMobile: { marginTop: 16 },
+  profileHeadTablet: { marginTop: -96, flexDirection: 'row', alignItems: 'flex-end', gap: 24 },
   avatar: {
     width: 128, height: 128, borderRadius: 32, borderWidth: 4,
     alignItems: 'center', justifyContent: 'center',
