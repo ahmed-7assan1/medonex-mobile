@@ -514,3 +514,33 @@ export const FIXTURE_ATLAS_STRUCTURES: FixtureAtlasStructure[] = [
     clinical: 'Colles fracture: distal radius fracture with dorsal displacement ("dinner fork").',
   },
 ];
+
+/* ── Secondary pages (about / founders / podcasts / downloads / drawmed) ── */
+
+export const FIXTURE_PLATFORM_TEAM = [
+  {
+    id: 'tm1', name: 'Ahmed Hassan', role: 'Founder & Lead Developer',
+    description: 'Medical student with a passion for software engineering. Built MedOneX to revolutionize medical education.',
+    icon: 'code', color: '#A78BFA', bg: '#A78BFA1A',
+  },
+  {
+    id: 'tm2', name: 'Dr. Q AI', role: 'Chief Medical Intelligence',
+    description: 'An advanced AI system fine-tuned to answer medical queries, generate quizzes, and assist students 24/7.',
+    icon: 'sparkles', color: '#FBBF24', bg: '#FBBF241A',
+  },
+];
+
+export const FIXTURE_EPISODES = [
+  { id: 'ep1', title: 'Cardiac Cycle in 20 Minutes', show: 'Physiology Bites', duration: '21:14', date: '2 days ago', plays: '4.2k' },
+  { id: 'ep2', title: 'Antibiotics You Must Know', show: 'Pharma Fridays', duration: '34:02', date: '5 days ago', plays: '3.1k' },
+  { id: 'ep3', title: 'Brachial Plexus Made Easy', show: 'Anatomy Lounge', duration: '27:48', date: '1 week ago', plays: '2.8k' },
+  { id: 'ep4', title: 'Acid-Base Without Tears', show: 'Physiology Bites', duration: '18:37', date: '2 weeks ago', plays: '5.6k' },
+];
+
+export const FIXTURE_DOWNLOADS = [
+  { id: 'dl1', name: 'Cardiology — Full Summary.pdf', group: 'PDF', size: '4.8 MB', date: 'Today' },
+  { id: 'dl2', name: 'Brachial Plexus Diagram.png', group: 'IMAGE', size: '1.2 MB', date: 'Yesterday' },
+  { id: 'dl3', name: 'Cardiac Cycle — Lecture 4.mp4', group: 'LECTURE', size: '182 MB', date: '2 days ago' },
+  { id: 'dl4', name: 'Pharmacology Tables.pdf', group: 'PDF', size: '2.1 MB', date: 'Last week' },
+  { id: 'dl5', name: 'Renal Physiology — Lecture 2.mp4', group: 'LECTURE', size: '156 MB', date: 'Last week' },
+];

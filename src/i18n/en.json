@@ -304,5 +304,39 @@
     "nerve": "Innervation",
     "relations": "Relations",
     "clinical": "Clinical Note"
+  },
+  "about": {
+    "badge": "The Visionaries",
+    "titlePre": "Meet the",
+    "titlePost": "Team",
+    "subtitle": "We are bridging the gap between cutting-edge technology and medical education to build the ultimate study ecosystem.",
+    "footer": "Built with passion for medical students worldwide"
+  },
+  "founders": {
+    "badge": "The Visionaries Behind MedOneX",
+    "titlePre": "Founders of",
+    "subtitle": "Meet the dedicated team of medical professionals and innovators working to redefine medical education for the next generation.",
+    "commitTitle": "Our Commitment",
+    "commitBody": "We believe that every medical student deserves access to the best resources and mentorship. MedOneX is not just a platform; it's a community built by medics, for medics, driven by a passion for excellence in healthcare education."
+  },
+  "podcasts": {
+    "badge": "Medical Audio Hub",
+    "title": "MedOneX Podcasts",
+    "chipEpisodes": "{{count}} episodes",
+    "chipHours": "{{count}}+ hours",
+    "chipWeekly": "Updated weekly",
+    "latest": "Latest episode",
+    "search": "Search episodes or shows..."
+  },
+  "downloads": {
+    "title": "My Downloads",
+    "subtitle": "Files you have downloaded from the platform",
+    "pdf": "PDF Files",
+    "image": "Image Files",
+    "lecture": "Lecture Files"
+  },
+  "drawmed": {
+    "save": "Save",
+    "hint": "Draw here — pen strokes land in the wiring phase"
   }
 }
