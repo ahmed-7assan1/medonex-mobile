@@ -9,7 +9,7 @@ import { useTheme } from '@/theme/ThemeContext';
  *  floating capsule, and a matching top gradient under the status area.
  *  Purely visual, never intercepts touches. z-order: always BELOW the
  *  floating buttons/capsules (bars use zIndex 10) so it never covers or
- *  dims them — Ahmed, 22 Nov. */
+ *  dims them. */
 export function FadeEdges({ top = true, bottom = true }: { top?: boolean; bottom?: boolean }) {
   const { st } = useTheme();
   const insets = useSafeAreaInsets();

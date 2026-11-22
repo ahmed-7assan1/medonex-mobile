@@ -1,3 +1,4 @@
+import { MobilePageHeader } from '@/components/MobilePageHeader';
 import React, { useMemo, useState } from 'react';
 import { View, Text, TextInput, Pressable, ScrollView, RefreshControl, StyleSheet, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,7 +17,7 @@ import { QuizCard } from '@/components/quiz/QuizCard';
  *  state (the site redirects guests to /login). */
 export default function QBankScreen() {
   const { st, colors, fonts } = useTheme();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const isTablet = width >= TABLET_BREAKPOINT;
@@ -54,7 +55,7 @@ export default function QBankScreen() {
   const lectureItems = filtered.filter((p) => p.kind === 'lecture');
 
   const onStart = (p: QuizPaperCard) => {
-    const href = p.kind === 'lecture' ? `/quiz/lecture/${p.id}` : `/quiz/${p.id}`;
+    const href = `/quiz/${p.id}`;
     router.push(href as never);
   };
 
@@ -132,7 +133,8 @@ export default function QBankScreen() {
   );
 
   return (
-    <View style={[styles.root, { backgroundColor: st.bg, paddingTop: insets.top + 4 }]}>
+    <View style={[styles.root, { backgroundColor: st.bg, paddingTop: insets.top }]}>
+      <MobilePageHeader title={t('tabs.qbank')} />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[

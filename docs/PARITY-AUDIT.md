@@ -45,3 +45,13 @@ This is an active code audit, not a claim of pixel parity. Current website sourc
 - Guest API guard, fixture-safe manual refresh and immediate module-detail fixtures.
 - Suggested lecture sample data, responsive 72% card widths, rank bar, daily target, carousel stride correction.
 - TypeScript passed. Browser phone preview at 390x844: Home, Social, Modules and Module detail, zero observed backend API calls and zero runtime exceptions. Browser proof does not replace an Android device check.
+
+## Batch 2
+- Current-source recheck: Home uses one combined AI/notification capsule, not two separate round controls. Updated shape.
+- Notifications placeholder replaced by a local-only sheet with All/Unread/Broadcasts/Forum filters, read-all, empty state and settings navigation.
+- More expands a three-column panel in the nav capsule. It lists implemented destinations only; missing student destinations remain in this register.
+- Added the current mobile site's 56px menu/title/profile toolbar to Library, QBank and Community, with a local-search navigation drawer.
+- Quiz cards now open the implemented local quiz route, rather than the missing lecture-quiz route.
+- Rechecked quiz completion semantics: retained attemptCount to match the website. No unverified change to filter meaning.
+- Tests at 390x844: read-all then Unread produces the empty state; More expands; Home/Social/Modules/Module detail produce zero backend requests and zero runtime exceptions. Phone preview screenshots visually inspected for sheet height, clipping and layer order. Native Android verification still pending.
+- Newly confirmed Modules gaps: Bookmarks and Downloads target absent routes; Completed has no handler. Website QuickActions uses local saved view, not a separate saved page. Website global search uses SearchResultsPanel; app search needs that behavior, not a guessed generic screen.

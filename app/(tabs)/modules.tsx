@@ -1,3 +1,4 @@
+import { MobilePageHeader } from '@/components/MobilePageHeader';
 import React from 'react';
 import { View, Text, Pressable, ScrollView, RefreshControl, StyleSheet, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,7 +18,7 @@ import { TabletModules } from '@/components/modules/TabletModules';
  *  Tablet renders the desktop arrangement. */
 export default function ModulesScreen() {
   const { colors, fonts } = useTheme();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const isTablet = width >= TABLET_BREAKPOINT;
@@ -30,7 +31,8 @@ export default function ModulesScreen() {
   }
 
   return (
-    <View style={[styles.root, { backgroundColor: colors.background, paddingTop: insets.top + 12 }]}>
+    <View style={[styles.root, { backgroundColor: colors.background, paddingTop: insets.top }]}>
+      <MobilePageHeader title={i18n.language === 'ar' ? 'المكتبة' : 'Library'} />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + SCROLL_BOTTOM_PAD }}

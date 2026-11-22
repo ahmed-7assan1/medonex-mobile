@@ -1,3 +1,4 @@
+import { MobilePageHeader } from '@/components/MobilePageHeader';
 import React, { useMemo, useState } from 'react';
 import { View, Text, Pressable, FlatList, RefreshControl, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,7 +18,7 @@ import { SCROLL_BOTTOM_PAD } from '@/theme/tokens';
  *  state (the site redirects guests to /login). */
 export default function SocialScreen() {
   const { st, colors, fonts, isDark } = useTheme();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
   const forums = useForums();
   const [activeForum, setActiveForum] = useState<string | null>(null);
@@ -28,6 +29,7 @@ export default function SocialScreen() {
 
   return (
     <View style={[styles.root, { backgroundColor: st.bg, paddingTop: insets.top }]}>
+      <MobilePageHeader title={i18n.language === 'ar' ? 'المجتمع' : 'Community'} />
       {forums.data && forums.data.length > 0 && (
         <ForumTabs forums={forums.data} activeId={activeForum ?? forums.data[0].id} onChange={setActiveForum} />
       )}

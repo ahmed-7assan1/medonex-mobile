@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, ScrollView, RefreshControl, StyleSheet, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -11,6 +11,7 @@ import { AchievementsStrip } from '@/components/home/AchievementsStrip';
 import { ContinueLearningCarousel, type LastLecture } from '@/components/home/ContinueLearningCarousel';
 import { SuggestedLecturesCarousel, type SuggestedLecture } from '@/components/home/SuggestedLecturesCarousel';
 import { MyMedSpaceSection } from '@/components/home/MyMedSpaceSection';
+import { NotificationsSheet } from '@/components/NotificationsSheet';
 import { TabletHome } from '@/components/home/TabletHome';
 
 /** Home — pixel match of the site's phone dashboard (DashboardMobileView):
@@ -24,6 +25,7 @@ export default function HomeScreen() {
   const isTablet = width >= TABLET_BREAKPOINT;
   const router = useRouter();
   const home = useHome();
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   const data = home.data;
   const lastLecture: LastLecture | null = useMemo(() => {
@@ -66,7 +68,7 @@ export default function HomeScreen() {
           userImage={data?.user?.image ?? null}
           unread={data?.unreadNotifs ?? 0}
           onOpenAI={() => router.push('/ai-chat' as never)}
-          onOpenNotifications={() => router.push('/notifications' as never)}
+          onOpenNotifications={() => setNotificationsOpen(true)}
         />
         <View style={styles.sections}>
           <AchievementsStrip
@@ -82,6 +84,7 @@ export default function HomeScreen() {
           <MyMedSpaceSection />
         </View>
       </ScrollView>
+      <NotificationsSheet open={notificationsOpen} onClose={() => setNotificationsOpen(false)} />
     </View>
   );
 }
