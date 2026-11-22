@@ -41,5 +41,24 @@
     "medSpaceDesc": "كل اللي هتجمعه وتعمله في MedOneX هيعيش هنا.",
     "platformServices": "خدمات المنصة",
     "topLearners": "أعلى المتعلمين"
+  },
+  "modules": {
+    "searchPlaceholder": "دوّر على مواد أو محاضرات...",
+    "semesterOverview": "نظرة على الترم",
+    "modules": "المواد",
+    "lectures": "المحاضرات",
+    "questions": "الأسئلة",
+    "mastery": "الإتقان",
+    "continue": "كمّل",
+    "continueSub": "ارجع لآخر حاجة وقفت عندها",
+    "bookmarks": "المحفوظات",
+    "bookmarksSub": "محاضراتك المحفوظة",
+    "completed": "المكتملة",
+    "completedSub": "المحاضرات اللي خلصتها",
+    "downloads": "التحميلات",
+    "downloadsSub": "محاضرات للأوفلاين",
+    "yourModules": "موادك",
+    "libraryEmpty": "المكتبة فاضية",
+    "emptyDesc": "المناهج بتتحدث حاليًا. ارجع تاني قريب."
   }
 }

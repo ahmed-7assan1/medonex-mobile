@@ -41,5 +41,24 @@
     "medSpaceDesc": "Everything you collect and create in MedOneX will live here.",
     "platformServices": "Platform Services",
     "topLearners": "Top Learners"
+  },
+  "modules": {
+    "searchPlaceholder": "Search modules, topics, lectures...",
+    "semesterOverview": "Semester overview",
+    "modules": "Modules",
+    "lectures": "Lectures",
+    "questions": "Questions",
+    "mastery": "Mastery",
+    "continue": "Continue",
+    "continueSub": "Pick up where you left off",
+    "bookmarks": "Bookmarks",
+    "bookmarksSub": "Your saved lectures",
+    "completed": "Completed",
+    "completedSub": "Lectures you finished",
+    "downloads": "Downloads",
+    "downloadsSub": "Lectures for offline",
+    "yourModules": "Your modules",
+    "libraryEmpty": "Library Empty",
+    "emptyDesc": "Your academic curriculum is currently being updated. Check back soon for new modules."
   }
 }
