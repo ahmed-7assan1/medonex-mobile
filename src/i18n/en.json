@@ -282,5 +282,27 @@
     "send": "Send",
     "motive": "What are we studying today?",
     "disclaimer": "MedOneX can make mistakes. Verify important information."
+  },
+  "atlas": {
+    "badge": "Interactive Anatomy",
+    "subtitle": "Explore the human body through detailed 3D structures and clinical correlations.",
+    "search": "Search structures, nerves, clinical notes...",
+    "results": "Search Results",
+    "found": "{{count}} structures found",
+    "structures": "{{count}} Structures",
+    "none": "No structures found",
+    "backToList": "Back to List",
+    "bookmark": "Bookmark",
+    "bookmarked": "Bookmarked",
+    "visualization": "Anatomy visualization",
+    "askAI": "Ask AI Tutor",
+    "quickQuiz": "Start Quick Quiz",
+    "notes": "Personal Study Notes",
+    "notesPlaceholder": "Write your clinical mnemonics, study tips, or review points here. Note saves automatically.",
+    "fn": "Function / Action",
+    "blood": "Blood Supply",
+    "nerve": "Innervation",
+    "relations": "Relations",
+    "clinical": "Clinical Note"
   }
 }
