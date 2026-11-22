@@ -60,5 +60,12 @@
     "yourModules": "Your modules",
     "libraryEmpty": "Library Empty",
     "emptyDesc": "Your academic curriculum is currently being updated. Check back soon for new modules."
+  },
+  "qbank": {
+    "searchPlaceholder": "Search quizzes...",
+    "signInTitle": "Sign in to view quizzes",
+    "signInDesc": "Quizzes, attempts and scores are personal — sign in to see yours.",
+    "noMatch": "No quizzes match your search.",
+    "emptyView": "No quizzes in this view yet."
   }
 }
