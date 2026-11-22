@@ -101,5 +101,23 @@
     "mastery": "الإتقان",
     "done": "منجز",
     "interactive": "تفاعلي"
+  },
+  "subject": {
+    "discipline": "تخصص",
+    "lectures": "المحاضرات",
+    "theory": "نظري",
+    "practical": "عملي",
+    "clinicalSessions": "الجلسات الإكلينيكية",
+    "lectureSeries": "سلسلة المحاضرات",
+    "clinicalSub": "تدريب على المهارات",
+    "seriesSub": "تعلّم خطوة بخطوة",
+    "items": "عنصر",
+    "step": "خطوة",
+    "skill": "مهارة",
+    "beingPrepared": "جاري التحضير",
+    "beingPreparedDesc": "ارجع قريبًا لمحاضرات جديدة.",
+    "preparing": "المنهج قيد التحضير.",
+    "signInTitle": "سجّل الدخول لعرض المحاضرات",
+    "signInDesc": "المحاضرات والمواد تحتاج حسابًا."
   }
 }

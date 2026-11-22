@@ -101,5 +101,23 @@
     "mastery": "Mastery",
     "done": "Done",
     "interactive": "Interactive"
+  },
+  "subject": {
+    "discipline": "Discipline",
+    "lectures": "Lectures",
+    "theory": "Theory",
+    "practical": "Practical",
+    "clinicalSessions": "Clinical sessions",
+    "lectureSeries": "Lecture Series",
+    "clinicalSub": "Procedure & Skill Training",
+    "seriesSub": "Step-by-step Learning",
+    "items": "Items",
+    "step": "Step",
+    "skill": "Skill",
+    "beingPrepared": "Being prepared",
+    "beingPreparedDesc": "Check back soon for new academic lectures.",
+    "preparing": "Curriculum is being prepared.",
+    "signInTitle": "Sign in to view lectures",
+    "signInDesc": "Lectures and materials need an account."
   }
 }
