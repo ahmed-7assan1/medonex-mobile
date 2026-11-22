@@ -338,5 +338,35 @@
   "drawmed": {
     "save": "Save",
     "hint": "Draw here — pen strokes land in the wiring phase"
+  },
+  "settingsOverlay": {
+    "save": "Save settings",
+    "name": "Full display name",
+    "handle": "Username",
+    "bio": "Bio / About me",
+    "avatarPreview": "Avatar preview",
+    "brandColor": "Brand color",
+    "university": "University",
+    "faculty": "Faculty",
+    "semester": "Semester",
+    "telegramDesc": "Link your account to get AI tutoring answers and module alerts right inside Telegram.",
+    "notLinked": "Not linked yet",
+    "connectTelegram": "Connect Telegram",
+    "ghost": "Stealth mode",
+    "ghostDesc": "Hide your identity from global leaderboards",
+    "contact": "Public contact info",
+    "contactDesc": "Display phone number on your public profile",
+    "private": "Restricted profile",
+    "privateDesc": "Only followers can see your full activity",
+    "forum": "Forum activity",
+    "forumDesc": "Replies and mentions in your module forums",
+    "broadcast": "Broadcast alerts",
+    "broadcastDesc": "New lectures, quizzes and announcements",
+    "system": "System pings",
+    "systemDesc": "Security and account notifications",
+    "light": "Light theme",
+    "dark": "Dark mode",
+    "systemTheme": "System sync",
+    "keysNote": "Keys are stored on this device only and used for your own Dr Q requests."
   }
 }

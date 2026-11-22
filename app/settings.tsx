@@ -12,6 +12,8 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme/ThemeContext';
 import { FadeEdges } from '@/components/FadeEdges';
+import { SettingsOverlay } from '@/components/settings/SettingsOverlay';
+import { SettingsOverlayBody } from '@/components/settings/SettingsOverlayBody';
 import { useAuth } from '@/lib/auth';
 
 type RowItem = { id: string; title: string; icon: any };
@@ -30,6 +32,30 @@ const GROUPS: RowItem[][] = [
     { id: 'notifications', title: 'Notifications', icon: Bell },
     { id: 'appearance', title: 'Appearance', icon: Palette },
   ],
+];
+
+const OVERLAY_TITLES: Record<string, string> = {
+  identity: 'Profile & Identity',
+  branding: 'Avatar & Brand',
+  academic: 'University Context',
+  telegram: 'Telegram Hub',
+  privacy: 'Privacy & Visibility',
+  notifications: 'Notifications',
+  appearance: 'Appearance',
+  'ai-keys': 'AI Provider Keys',
+};
+
+/** Tablet/desktop settings = the site's DesktopSettingsLayout: one long form
+ *  page, stacked sections with title+desc left and fields right. */
+const DESKTOP_SECTIONS: { id: string; title: string; desc: string }[] = [
+  { id: 'identity', title: 'Personal information', desc: 'Update your profile details and public handle. Changes are reflected across the platform.' },
+  { id: 'academic', title: 'University Context', desc: 'Align your semester, faculty, and academic year to personalize modules and forums.' },
+  { id: 'privacy', title: 'Privacy & Visibility', desc: 'Control ghost mode, contact visibility, and profile privacy across the community.' },
+  { id: 'telegram', title: 'Telegram Hub', desc: 'Link your account to @MedOneX_bot for AI tutoring and notifications.' },
+  { id: 'appearance', title: 'Appearance', desc: 'Choose how MedOneX looks. Saved locally and applies across the whole app.' },
+  { id: 'notifications', title: 'Notification settings', desc: 'Change how often you want to receive updates from our newsletter and forums.' },
+  { id: 'branding', title: 'Avatar & Brand', desc: 'Customize your visual presence on the platform.' },
+  { id: 'ai-keys', title: 'AI Provider Keys', desc: 'Add your own API keys for Gemini, OpenAI, Groq, and more.' },
 ];
 
 function tileRadius(i: number, n: number) {
@@ -52,6 +78,10 @@ export default function SettingsScreen() {
   const { width } = useWindowDimensions();
   const isTablet = width >= 768;
 
+  const [overlay, setOverlay] = useState<string | null>(() => {
+    try { if (typeof localStorage !== 'undefined') return localStorage.getItem('previewSettingsOverlay'); } catch { /* noop */ }
+    return null;
+  });
   const [pwOpen, setPwOpen] = useState(false);
   const [pwCurrent, setPwCurrent] = useState('');
   const [pwNew, setPwNew] = useState('');
@@ -91,6 +121,40 @@ export default function SettingsScreen() {
       </Pressable>
     </View>
   );
+
+  if (isTablet) {
+    return (
+      <View style={[styles.root, { backgroundColor: st.bg, paddingTop: insets.top + 8 }]}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.desktopScroll}>
+          <View style={styles.titleRow}>
+            <Pressable
+              onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)/more' as never))}
+              hitSlop={12}
+              style={[styles.backBtn, { backgroundColor: st.surface, borderColor: st.border }]}
+              accessibilityLabel={t('moduleDetail.back')}
+            >
+              <ChevronLeft size={20} color={st.text} />
+            </Pressable>
+            <Text style={[styles.title, { color: st.text, fontFamily: fonts.sansBold }]}>{t('settings.title')}</Text>
+          </View>
+          {DESKTOP_SECTIONS.map((sec, si) => (
+            <View key={sec.id}>
+              {si > 0 && <View style={[styles.sep, { backgroundColor: st.border }]} />}
+              <View style={styles.desktopSection}>
+                <View style={styles.desktopSectionHead}>
+                  <Text style={{ color: st.text, fontSize: 17, fontFamily: fonts.sansBold }}>{sec.title}</Text>
+                  <Text style={{ color: st.muted, fontSize: 14, lineHeight: 21, marginTop: 6, fontFamily: fonts.sans }}>{sec.desc}</Text>
+                </View>
+                <View style={styles.desktopSectionBody}>
+                  <SettingsOverlayBody id={sec.id} />
+                </View>
+              </View>
+            </View>
+          ))}
+        </ScrollView>
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.root, { backgroundColor: st.bg, paddingTop: insets.top + 8 }]}>
@@ -145,6 +209,7 @@ export default function SettingsScreen() {
                 return (
                   <Pressable
                     key={item.id}
+                    onPress={() => setOverlay(item.id)}
                     style={({ pressed }) => [
                       styles.tile,
                       tileRadius(i, items.length),
@@ -198,6 +263,7 @@ export default function SettingsScreen() {
           {/* AI keys + Clear cache */}
           <View style={{ gap: 2 }}>
             <Pressable
+              onPress={() => setOverlay('ai-keys')}
               style={({ pressed }) => [
                 styles.tile,
                 { borderTopLeftRadius: 16, borderTopRightRadius: 16, borderBottomLeftRadius: 4, borderBottomRightRadius: 4, backgroundColor: st.surface },
@@ -220,6 +286,9 @@ export default function SettingsScreen() {
           </View>
         </View>
       </ScrollView>
+      <SettingsOverlay open={!!overlay} onClose={() => setOverlay(null)} title={overlay ? OVERLAY_TITLES[overlay] ?? '' : ''}>
+        {overlay ? <SettingsOverlayBody id={overlay} /> : null}
+      </SettingsOverlay>
       {!isTablet && <FadeEdges />}
     </View>
   );
@@ -252,4 +321,9 @@ const styles = StyleSheet.create({
   pwInput: { flex: 1, fontSize: 15, paddingVertical: 0 },
   msgBox: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 8, borderWidth: StyleSheet.hairlineWidth, paddingHorizontal: 12, paddingVertical: 8 },
   updateBtn: { height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+  desktopScroll: { paddingHorizontal: 40, paddingBottom: 80, maxWidth: 1152, width: '100%', alignSelf: 'center' },
+  desktopSection: { flexDirection: 'row', gap: 40, alignItems: 'flex-start' },
+  desktopSectionHead: { flex: 1 },
+  desktopSectionBody: { flex: 2, maxWidth: 720 },
+  sep: { height: StyleSheet.hairlineWidth, marginVertical: 32 },
 });
