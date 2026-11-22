@@ -278,9 +278,9 @@
     }
   },
   "drq": {
-    "title": "Dr. Q — AI Tutor",
-    "online": "Online · answers instantly",
-    "placeholder": "Ask Dr. Q anything…",
-    "send": "Send"
+    "placeholder": "Ask MedOneX anything...",
+    "send": "Send",
+    "motive": "What are we studying today?",
+    "disclaimer": "MedOneX can make mistakes. Verify important information."
   }
 }

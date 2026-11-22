@@ -1,105 +1,200 @@
 import React, { useState } from 'react';
 import {
-  View, Text, Pressable, TextInput, FlatList, StyleSheet, KeyboardAvoidingView, Platform,
+  View, Text, Pressable, TextInput, FlatList, StyleSheet, KeyboardAvoidingView,
+  Platform, useWindowDimensions,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ArrowLeft, Sparkles, Send, Plus, Mic } from 'lucide-react-native';
+import {
+  Menu, Plus, Globe, Mic, ArrowUp, Sparkles, BookOpen, MessageSquareQuote, StickyNote, Brain, Zap,
+} from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme/ThemeContext';
-import { FIXTURE_DRQ_MESSAGES, FIXTURE_DRQ_SUGGESTIONS } from '@/lib/fixtures';
+import { TABLET_BREAKPOINT } from '@/theme/tokens';
+import { FIXTURE_DRQ_MESSAGES } from '@/lib/fixtures';
 
-/** /ai-chat — Dr Q tutor chat, pixel match of the site's dark futuristic
- *  DrQChat: #0d0d12 surface, cyan accents, light user bubbles rounded-28
- *  with a tight bottom-right corner, dark glass composer with sparkle. */
+/** /ai-chat — literal copy of the site's real AI chat page (MedOneXChat):
+ *  light #FCFCFC surface, soft top/bottom fade gradients, floating round
+ *  sidebar button, centered MedOneX mark on an empty chat, "What are we
+ *  studying today?" motive with a blue sparkle, capsule composer
+ *  (rounded-28, attach / web-search globe with emerald dot / mic / model
+ *  pill / black send circle), suggested-prompt pills, user bubbles
+ *  #EAF0FC rounded-3xl, AI replies flat. */
+
+const BG = '#FCFCFC';
+const CARD = '#FFFFFF';
+const LINE = 'rgba(0,0,0,0.06)';
+const BLUE = '#2563EB';
+
+function renderRich(text: string, base: object, fonts: any) {
+  // minimal bold renderer for fixture markdown (**…**)
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return (
+    <Text style={base}>
+      {parts.map((p, i) =>
+        p.startsWith('**') && p.endsWith('**') ? (
+          <Text key={i} style={{ fontFamily: fonts.sansBold }}>{p.slice(2, -2)}</Text>
+        ) : (
+          <Text key={i}>{p}</Text>
+        ),
+      )}
+    </Text>
+  );
+}
+
 export default function AIChatScreen() {
   const { t } = useTranslation();
   const { fonts } = useTheme();
+  const { width } = useWindowDimensions();
+  const isTablet = width >= TABLET_BREAKPOINT;
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [draft, setDraft] = useState('');
+  const [webSearch, setWebSearch] = useState(true);
 
-  const bg = '#0A0A0F';
-  const surface = '#0D0D12';
-  const line = 'rgba(255,255,255,0.10)';
-  const cyan = '#22D3EE';
+  // Fixture: seed with the sample conversation; web preview can force the
+  // empty state via localStorage.previewEmptyChat=1 (screenshot pipeline).
+  const [forceEmpty] = useState(() => {
+    try {
+      return Platform.OS === 'web' && typeof localStorage !== 'undefined' && localStorage.getItem('previewEmptyChat') === '1';
+    } catch { return false; }
+  });
+  const messages = forceEmpty ? [] : FIXTURE_DRQ_MESSAGES;
+  const isEmpty = messages.length === 0;
+
+  const MOBILE_PROMPTS = [
+    { icon: BookOpen, text: 'Summarize my last lecture in 3 bullet points' },
+    { icon: MessageSquareQuote, text: 'Generate 3 MCQs on cardiology' },
+    { icon: StickyNote, text: 'Explain diabetes pathophysiology simply' },
+  ];
+  const DESKTOP_PROMPTS = [
+    { icon: BookOpen, label: 'Summarize my last lecture' },
+    { icon: Brain, label: 'Quiz me' },
+    { icon: MessageSquareQuote, label: 'Explain a concept' },
+    { icon: Zap, label: 'Build a study plan' },
+  ];
+
+  const capsule = (
+    <View style={[styles.capsule, { backgroundColor: CARD, borderColor: LINE }, isTablet && { maxWidth: 704, alignSelf: 'center', width: '100%' }]}>
+      <Pressable accessibilityRole="button" accessibilityLabel="Attach" style={styles.roundIcon}>
+        <Plus size={18} color="#111" />
+      </Pressable>
+      <Pressable
+        accessibilityRole="button" accessibilityLabel="Web search" accessibilityState={{ selected: webSearch }}
+        onPress={() => setWebSearch((v) => !v)}
+        style={styles.roundIcon}
+      >
+        <Globe size={16} color="#111" />
+        {webSearch && <View style={styles.emeraldDot} />}
+      </Pressable>
+      <TextInput
+        value={draft}
+        onChangeText={setDraft}
+        placeholder={t('drq.placeholder')}
+        placeholderTextColor="rgba(0,0,0,0.35)"
+        multiline
+        style={{ flex: 1, color: '#111', fontSize: 15, fontFamily: fonts.sans, paddingHorizontal: 8, maxHeight: 110 }}
+      />
+      <Pressable accessibilityRole="button" accessibilityLabel="Voice" style={styles.roundIcon}>
+        <Mic size={16} color="#111" />
+      </Pressable>
+      <Pressable
+        accessibilityRole="button" accessibilityLabel={t('drq.send')}
+        style={[styles.sendBtn, { backgroundColor: draft.trim() ? '#111' : 'rgba(0,0,0,0.08)' }]}
+      >
+        <ArrowUp size={17} color={draft.trim() ? '#fff' : 'rgba(0,0,0,0.4)'} />
+      </Pressable>
+    </View>
+  );
 
   return (
-    <View style={{ flex: 1, backgroundColor: bg }}>
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top + 10, borderBottomColor: line }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => router.back()} style={[styles.iconBtn, { borderColor: line }]}>
-          <ArrowLeft size={18} color="rgba(255,255,255,0.75)" />
-        </Pressable>
-        <View style={styles.dqAvatar}>
-          <Sparkles size={16} color="#0A0A0F" />
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={{ color: '#fff', fontSize: 16, fontFamily: fonts.sansBold }}>{t('drq.title')}</Text>
-          <Text style={{ color: cyan, fontSize: 11.5, fontFamily: fonts.sans }}>{t('drq.online')}</Text>
-        </View>
-      </View>
+    <View style={{ flex: 1, backgroundColor: BG }}>
+      {/* Top fade (site: chat-top-fade-light) */}
+      <LinearGradient
+        pointerEvents="none"
+        colors={['rgba(252,252,252,0.92)', 'rgba(252,252,252,0.72)', 'rgba(252,252,252,0.32)', 'rgba(252,252,252,0)']}
+        style={[styles.topFade, { height: 136 + insets.top }]}
+      />
+      {/* Floating sidebar button */}
+      <Pressable
+        accessibilityRole="button" accessibilityLabel="Open sidebar" onPress={() => router.back()}
+        style={[styles.sidebarBtn, { top: insets.top + 16, backgroundColor: CARD, borderColor: LINE }]}
+      >
+        <Menu size={20} color="#111" />
+      </Pressable>
 
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <FlatList
-          data={FIXTURE_DRQ_MESSAGES}
-          keyExtractor={(m) => m.id}
-          contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 12, gap: 14 }}
-          renderItem={({ item: m }) =>
-            m.role === 'user' ? (
-              <View style={{ alignItems: 'flex-end' }}>
-                <View style={styles.userBubble}>
-                  <Text style={{ color: '#111', fontSize: 15, lineHeight: 22, fontFamily: fonts.sans }}>{m.text}</Text>
-                </View>
-                <Text style={styles.time}>{m.time}</Text>
+        {isEmpty ? (
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingBottom: 120 }}>
+            <View style={styles.logoMark}>
+              <Sparkles size={30} color={BLUE} />
+            </View>
+            {isTablet && (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 24 }}>
+                <Sparkles size={26} color={BLUE} />
+                <Text style={{ color: '#111', fontSize: 28, fontFamily: fonts.sans, letterSpacing: -0.5 }}>{t('drq.motive')}</Text>
               </View>
-            ) : (
-              <View style={{ alignItems: 'flex-start', maxWidth: '92%' }}>
-                <View style={{ flexDirection: 'row', gap: 10 }}>
-                  <View style={[styles.dqAvatar, { width: 28, height: 28, borderRadius: 14, marginTop: 2 }]}>
-                    <Sparkles size={13} color="#0A0A0F" />
-                  </View>
-                  <View style={[styles.aiBubble, { backgroundColor: surface, borderColor: line }]}>
-                    <Text style={{ color: 'rgba(255,255,255,0.92)', fontSize: 15, lineHeight: 23, fontFamily: fonts.sans }}>{m.text}</Text>
+            )}
+          </View>
+        ) : (
+          <FlatList
+            data={messages}
+            keyExtractor={(m) => m.id}
+            contentContainerStyle={{
+              paddingHorizontal: isTablet ? 24 : 14,
+              paddingTop: insets.top + 76,
+              paddingBottom: 190,
+              gap: 18,
+              maxWidth: 768, width: '100%', alignSelf: 'center',
+            }}
+            renderItem={({ item: m }) =>
+              m.role === 'user' ? (
+                <View style={{ alignItems: 'flex-end' }}>
+                  <View style={styles.userBubble}>
+                    <Text style={{ color: '#111827', fontSize: 15, lineHeight: 23, fontFamily: fonts.sans }}>{m.text}</Text>
                   </View>
                 </View>
-                <Text style={[styles.time, { marginLeft: 38 }]}>{m.time}</Text>
-              </View>
-            )
-          }
+              ) : (
+                <View style={{ alignItems: 'flex-start', paddingRight: 12 }}>
+                  {renderRich(m.text, { color: '#1F2937', fontSize: 15, lineHeight: 25, fontFamily: fonts.sans }, fonts)}
+                </View>
+              )
+            }
+          />
+        )}
+
+        {/* Bottom fade (site: chat-bottom-fade-light, solid from bottom) */}
+        <LinearGradient
+          pointerEvents="none"
+          colors={['rgba(252,252,252,0)', 'rgba(252,252,252,0.54)', 'rgba(252,252,252,0.92)', 'rgba(252,252,252,1)']}
+          style={styles.bottomFade}
         />
 
-        {/* Suggested prompts (only above the composer, like the site) */}
-        <View style={{ paddingHorizontal: 16, paddingBottom: 8, flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-          {FIXTURE_DRQ_SUGGESTIONS.map((s) => (
-            <Pressable key={s} accessibilityRole="button" style={[styles.chip, { borderColor: line, backgroundColor: 'rgba(255,255,255,0.05)' }]}>
-              <Text style={{ color: 'rgba(255,255,255,0.65)', fontSize: 12, fontFamily: fonts.sans }}>{s}</Text>
-            </Pressable>
-          ))}
-        </View>
-
-        {/* Composer */}
-        <View style={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 12 }}>
-          <View style={[styles.composer, { backgroundColor: surface + 'CC', borderColor: line }]}>
-            <Pressable accessibilityRole="button" accessibilityLabel="Attach" style={styles.compIcon}>
-              <Plus size={20} color="rgba(255,255,255,0.5)" />
-            </Pressable>
-            <Sparkles size={17} color={cyan} style={{ marginLeft: 2 }} />
-            <TextInput
-              value={draft}
-              onChangeText={setDraft}
-              placeholder={t('drq.placeholder')}
-              placeholderTextColor="rgba(255,255,255,0.35)"
-              multiline
-              style={{ flex: 1, color: '#fff', fontSize: 15, fontFamily: fonts.sans, paddingHorizontal: 10, maxHeight: 110 }}
-            />
-            <Pressable accessibilityRole="button" accessibilityLabel="Voice" style={styles.compIcon}>
-              <Mic size={18} color="rgba(255,255,255,0.5)" />
-            </Pressable>
-            <Pressable accessibilityRole="button" accessibilityLabel={t('drq.send')} style={[styles.sendBtn, { backgroundColor: draft.trim() ? cyan : 'rgba(255,255,255,0.08)' }]}>
-              <Send size={16} color={draft.trim() ? '#0A0A0F' : 'rgba(255,255,255,0.4)'} />
-            </Pressable>
-          </View>
+        {/* Composer block */}
+        <View style={{ paddingHorizontal: isTablet ? 24 : 10, paddingBottom: insets.bottom + 14, gap: 10 }}>
+          {isEmpty && !isTablet && (
+            <View style={{ gap: 6, alignSelf: 'center', width: '100%', maxWidth: 320 }}>
+              {MOBILE_PROMPTS.map((p) => (
+                <Pressable key={p.text} accessibilityRole="button" style={styles.promptPill}>
+                  <p.icon size={14} color="#111" />
+                  <Text numberOfLines={1} style={{ flex: 1, color: '#374151', fontSize: 12, fontFamily: fonts.sans }}>{p.text}</Text>
+                </Pressable>
+              ))}
+            </View>
+          )}
+          {capsule}
+          {isEmpty && isTablet && (
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8 }}>
+              {DESKTOP_PROMPTS.map((p) => (
+                <Pressable key={p.label} accessibilityRole="button" style={styles.desktopPill}>
+                  <p.icon size={14} color="#6B7280" />
+                  <Text style={{ color: '#4B5563', fontSize: 13, fontFamily: fonts.sans }}>{p.label}</Text>
+                </Pressable>
+              ))}
+            </View>
+          )}
+          <Text style={{ textAlign: 'center', color: 'rgba(0,0,0,0.35)', fontSize: 10, fontFamily: fonts.sans }}>{t('drq.disclaimer')}</Text>
         </View>
       </KeyboardAvoidingView>
     </View>
@@ -107,27 +202,43 @@ export default function AIChatScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: 1,
+  topFade: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 5 },
+  bottomFade: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 190 },
+  sidebarBtn: {
+    position: 'absolute', left: 16, zIndex: 10,
+    width: 40, height: 40, borderRadius: 20, borderWidth: 1,
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 2,
   },
-  iconBtn: { width: 36, height: 36, borderRadius: 18, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  dqAvatar: {
-    width: 36, height: 36, borderRadius: 18, backgroundColor: '#22D3EE',
+  logoMark: {
+    width: 76, height: 76, borderRadius: 22, backgroundColor: '#EAF0FC',
     alignItems: 'center', justifyContent: 'center',
   },
   userBubble: {
-    maxWidth: '82%', backgroundColor: '#F7F7F7',
-    borderRadius: 28, borderBottomRightRadius: 6,
-    paddingHorizontal: 18, paddingVertical: 12,
+    maxWidth: '82%', backgroundColor: '#EAF0FC', borderRadius: 24,
+    paddingHorizontal: 16, paddingVertical: 10,
   },
-  aiBubble: { flexShrink: 1, borderRadius: 24, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 12 },
-  time: { color: 'rgba(255,255,255,0.3)', fontSize: 10.5, marginTop: 4 },
-  chip: { borderRadius: 16, borderWidth: 1, paddingHorizontal: 12, paddingVertical: 7 },
-  composer: {
+  capsule: {
     flexDirection: 'row', alignItems: 'flex-end', gap: 6,
-    borderRadius: 28, borderWidth: 1, paddingHorizontal: 10, paddingVertical: 8, minHeight: 56,
+    borderRadius: 28, borderWidth: 1, paddingHorizontal: 8, paddingVertical: 7, minHeight: 56,
+    shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 12, shadowOffset: { width: 0, height: 2 }, elevation: 2,
   },
-  compIcon: { width: 34, height: 34, alignItems: 'center', justifyContent: 'center' },
+  roundIcon: {
+    width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(0,0,0,0.05)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  emeraldDot: {
+    position: 'absolute', top: 2, right: 2, width: 8, height: 8, borderRadius: 4,
+    backgroundColor: '#10B981', borderWidth: 1.5, borderColor: CARD,
+  },
   sendBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  promptPill: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    backgroundColor: '#F3F4F6', borderRadius: 20, minHeight: 40, paddingHorizontal: 14, paddingVertical: 10,
+  },
+  desktopPill: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    borderRadius: 18, borderWidth: 1, borderColor: 'rgba(0,0,0,0.07)', backgroundColor: 'rgba(0,0,0,0.03)',
+    paddingHorizontal: 14, paddingVertical: 8,
+  },
 });
