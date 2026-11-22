@@ -278,7 +278,7 @@
     }
   },
   "drq": {
-    "placeholder": "Ask MedOneX anything...",
+    "placeholder": "Ask MedOneX",
     "send": "Send",
     "motive": "What are we studying today?",
     "disclaimer": "MedOneX can make mistakes. Verify important information."

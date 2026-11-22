@@ -77,34 +77,34 @@ export default function AIChatScreen() {
 
   const capsule = (
     <View style={[styles.capsule, { backgroundColor: CARD, borderColor: LINE }, isTablet && { maxWidth: 704, alignSelf: 'center', width: '100%' }]}>
-      <Pressable accessibilityRole="button" accessibilityLabel="Attach" style={styles.roundIcon}>
-        <Plus size={18} color="#111" />
-      </Pressable>
-      <Pressable
-        accessibilityRole="button" accessibilityLabel="Web search" accessibilityState={{ selected: webSearch }}
-        onPress={() => setWebSearch((v) => !v)}
-        style={styles.roundIcon}
-      >
-        <Globe size={16} color="#111" />
-        {webSearch && <View style={styles.emeraldDot} />}
-      </Pressable>
+      {/* Row 1: the text area on top (site: px-4 pt-[17px] pb-1.5, minHeight 54) */}
       <TextInput
         value={draft}
         onChangeText={setDraft}
         placeholder={t('drq.placeholder')}
         placeholderTextColor="rgba(0,0,0,0.35)"
         multiline
-        style={{ flex: 1, color: '#111', fontSize: 15, fontFamily: fonts.sans, paddingHorizontal: 8, maxHeight: 110 }}
+        style={{
+          color: '#111', fontSize: 16, lineHeight: 22, fontFamily: fonts.sans,
+          paddingHorizontal: 16, paddingTop: 17, paddingBottom: 6, minHeight: 54, maxHeight: 132,
+        }}
       />
-      <Pressable accessibilityRole="button" accessibilityLabel="Voice" style={styles.roundIcon}>
-        <Mic size={16} color="#111" />
-      </Pressable>
-      <Pressable
-        accessibilityRole="button" accessibilityLabel={t('drq.send')}
-        style={[styles.sendBtn, { backgroundColor: draft.trim() ? '#111' : 'rgba(0,0,0,0.08)' }]}
-      >
-        <ArrowUp size={17} color={draft.trim() ? '#fff' : 'rgba(0,0,0,0.4)'} />
-      </Pressable>
+      {/* Row 2: [+] [model pill] … [mic/send] (site: flex gap-2 px-2 pb-2) */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 8, paddingBottom: 8 }}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Add to chat" style={styles.roundIcon}>
+          <Plus size={16} color="#111" />
+        </Pressable>
+        <Pressable accessibilityRole="button" style={styles.modelPill}>
+          <Text numberOfLines={1} style={{ color: '#111', fontSize: 14, fontFamily: fonts.sans }}>Gemini 2.5 Flash</Text>
+        </Pressable>
+        <View style={{ flex: 1 }} />
+        <Pressable
+          accessibilityRole="button" accessibilityLabel={draft.trim() ? t('drq.send') : 'Voice input'}
+          style={styles.sendBtn}
+        >
+          {draft.trim() ? <ArrowUp size={16} color="#fff" /> : <Mic size={16} color="#fff" />}
+        </Pressable>
+      </View>
     </View>
   );
 
@@ -219,9 +219,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 10,
   },
   capsule: {
-    flexDirection: 'row', alignItems: 'flex-end', gap: 6,
-    borderRadius: 28, borderWidth: 1, paddingHorizontal: 8, paddingVertical: 7, minHeight: 56,
+    borderRadius: 28, borderWidth: 1,
     shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 12, shadowOffset: { width: 0, height: 2 }, elevation: 2,
+  },
+  modelPill: {
+    height: 36, borderRadius: 18, backgroundColor: 'rgba(0,0,0,0.05)',
+    paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center', maxWidth: 190,
   },
   roundIcon: {
     width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(0,0,0,0.05)',
@@ -231,7 +234,7 @@ const styles = StyleSheet.create({
     position: 'absolute', top: 2, right: 2, width: 8, height: 8, borderRadius: 4,
     backgroundColor: '#10B981', borderWidth: 1.5, borderColor: CARD,
   },
-  sendBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  sendBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#111', alignItems: 'center', justifyContent: 'center' },
   promptPill: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
     backgroundColor: '#F3F4F6', borderRadius: 20, minHeight: 40, paddingHorizontal: 14, paddingVertical: 10,
