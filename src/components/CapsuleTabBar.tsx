@@ -5,17 +5,27 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useTheme } from '@/theme/ThemeContext';
 
-/** Floating capsule tab bar, replicating the site's MobileBottomNav:
- *  max-width 420, full-round, bg/85 + blur + ring, items 52px tall,
- *  icon 22 + label 10px, active = primary/15 background. */
+/** Floating capsule tab bar, replicating the site's restyled MobileBottomNav
+ *  (feat/mobile-nav-fab-style): 48px glass capsule (bg-white/70 | white/10,
+ *  ring black/10 | white/25, blur 20), items 40px with a 20px icon
+ *  (scale-110 when active) + 10px label, active = foreground semibold,
+ *  no background pill. */
 export function CapsuleTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
 
   return (
     <View pointerEvents="box-none" style={[styles.wrap, { paddingBottom: insets.bottom + 12 }]}>
-      <BlurView intensity={60} tint={isDark ? 'dark' : 'light'} style={styles.blur}>
-        <View style={[styles.capsule, { backgroundColor: isDark ? 'rgba(11,11,11,0.85)' : 'rgba(245,245,245,0.85)', borderColor: colors.border }]}>
+      <BlurView intensity={50} tint={isDark ? 'dark' : 'light'} style={styles.blur}>
+        <View
+          style={[
+            styles.capsule,
+            {
+              backgroundColor: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.70)',
+              borderColor: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.10)',
+            },
+          ]}
+        >
           {state.routes.map((route, index) => {
             const focused = state.index === index;
             const { options } = descriptors[route.key];
@@ -30,14 +40,21 @@ export function CapsuleTabBar({ state, descriptors, navigation }: BottomTabBarPr
                 accessibilityRole="button"
                 accessibilityState={{ selected: focused }}
                 onPress={onPress}
-                style={({ pressed }) => [
-                  styles.item,
-                  focused && { backgroundColor: isDark ? 'rgba(245,245,245,0.15)' : 'rgba(18,18,18,0.15)' },
-                  pressed && { transform: [{ scale: 0.95 }] },
-                ]}
+                style={({ pressed }) => [styles.item, pressed && { transform: [{ scale: 0.95 }] }]}
               >
-                {options.tabBarIcon?.({ focused, color: focused ? colors.foreground : colors.mutedForeground, size: 22 })}
-                <Text style={[styles.label, { color: focused ? colors.foreground : colors.mutedForeground }]}>{label}</Text>
+                <View style={focused ? { transform: [{ scale: 1.1 }] } : undefined}>
+                  {options.tabBarIcon?.({ focused, color: focused ? colors.foreground : colors.mutedForeground, size: 20 })}
+                </View>
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.label,
+                    { color: focused ? colors.foreground : colors.mutedForeground },
+                    focused ? { fontWeight: '600' } : { fontWeight: '500' },
+                  ]}
+                >
+                  {label}
+                </Text>
               </Pressable>
             );
           })}
@@ -56,30 +73,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
   },
-  blur: { borderRadius: 999, overflow: 'hidden' },
+  blur: {
+    borderRadius: 999,
+    overflow: 'hidden',
+    width: '100%',
+    maxWidth: 420,
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 6,
+  },
   capsule: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    width: '100%',
-    maxWidth: 420,
+    height: 48,
     borderRadius: 999,
-    borderWidth: StyleSheet.hairlineWidth,
-    padding: 6,
-    shadowColor: '#000',
-    shadowOpacity: 0.18,
-    shadowRadius: 30,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 8,
+    borderWidth: 1,
+    padding: 4,
   },
   item: {
-    height: 52,
     flex: 1,
     minWidth: 0,
+    height: '100%',
     borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 2,
   },
-  label: { fontSize: 10, fontWeight: '500', lineHeight: 12 },
+  label: { fontSize: 10, lineHeight: 12 },
 });
