@@ -3,7 +3,19 @@
   "compilerOptions": {
     "strict": true,
     "baseUrl": ".",
-    "paths": { "@/*": ["src/*"] }
+    "paths": {
+      "@/*": [
+        "src/*"
+      ]
+    }
   },
-  "include": ["app", "src", "workers"]
+  "include": [
+    "app",
+    "src",
+    "workers"
+  ],
+  "exclude": [
+    "workers",
+    "node_modules"
+  ]
 }

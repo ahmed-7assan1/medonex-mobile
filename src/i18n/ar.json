@@ -15,12 +15,31 @@
   "tabs": {
     "home": "الرئيسية",
     "modules": "المواد",
-    "qbank": "بنك الأسئلة",
     "social": "السوشيال",
-    "profile": "حسابي"
+    "qbank": "بنك الأسئلة",
+    "more": "المزيد"
   },
   "home": {
-    "greeting": "أهلًا بعودتك",
-    "continueStudying": "كمّل مذاكرتك"
+    "yourProgress": "تقدّمك",
+    "goal": "الهدف",
+    "streak": "السلسلة",
+    "rank": "الرتبة",
+    "continueLearning": "كمّل التعلم",
+    "resumeLecture": "كمّل المحاضرة",
+    "yourLearningSpace": "مساحة تعلّمك",
+    "whatToLearn": "عايز تتعلم إيه النهاردة؟",
+    "exploreModules": "استكشف المواد",
+    "questionBank": "بنك الأسئلة",
+    "testYourself": "اختبر نفسك بكويزات تدريبية",
+    "startQuiz": "ابدأ كويز",
+    "aiAssistant": "المساعد الذكي",
+    "askDrQ": "اسأل Dr. Q أي حاجة عن مذاكرتك",
+    "openAIChat": "افتح شات الـ AI",
+    "suggestedLectures": "محاضرات مقترحة",
+    "myMedSpace": "مساحتي MedSpace",
+    "medSpaceTitle": "مساحة شغلك الشخصية",
+    "medSpaceDesc": "كل اللي هتجمعه وتعمله في MedOneX هيعيش هنا.",
+    "platformServices": "خدمات المنصة",
+    "topLearners": "أعلى المتعلمين"
   }
 }

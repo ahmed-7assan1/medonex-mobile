@@ -5,7 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { useFonts, Inter_400Regular, Inter_700Bold } from '@expo-google-fonts/inter';
+import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { PlusJakartaSans_700Bold } from '@expo-google-fonts/plus-jakarta-sans';
 import { Cairo_400Regular, Cairo_700Bold } from '@expo-google-fonts/cairo';
 import { ThemeProvider } from '@/theme/ThemeContext';
@@ -22,6 +22,8 @@ void SplashScreen.preventAutoHideAsync().catch(() => {});
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
     Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
     Inter_700Bold,
     PlusJakartaSans_700Bold,
     Cairo_400Regular,

@@ -2,12 +2,15 @@ import React from 'react';
 import { Tabs } from 'expo-router';
 import { useWindowDimensions } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { Home, BookOpen, Users, HelpCircle, Grid } from 'lucide-react-native';
 import { useTheme } from '@/theme/ThemeContext';
 import { TABLET_BREAKPOINT } from '@/theme/tokens';
+import { CapsuleTabBar } from '@/components/CapsuleTabBar';
+import { SideRail } from '@/components/SideRail';
 
-/** Phone: bottom capsule tab bar matching the site's mobile capsule.
- *  Tablet (>=768dp): desktop-like side rail, matching the site's desktop UI.
- *  Phase 1 wires the exact capsule/rail styling from the site components. */
+/** Phone: floating capsule tab bar replicating the site's MobileBottomNav
+ *  (Home / Modules / Social / QBank / More). Tablet (>=768dp): desktop-like
+ *  left rail replicating the site's desktop Sidebar. */
 export default function TabsLayout() {
   const { width } = useWindowDimensions();
   const { colors } = useTheme();
@@ -16,22 +19,47 @@ export default function TabsLayout() {
 
   return (
     <Tabs
+      tabBar={(props) => (isTablet ? <SideRail {...props} /> : <CapsuleTabBar {...props} />)}
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.foreground,
-        tabBarInactiveTintColor: colors.mutedForeground,
-        tabBarStyle: {
-          backgroundColor: colors.card,
-          borderTopColor: colors.border,
-          position: isTablet ? 'left' : 'bottom',
-        },
+        sceneStyle: isTablet ? { marginLeft: 256, backgroundColor: colors.background } : { backgroundColor: colors.background },
       }}
     >
-      <Tabs.Screen name="index" options={{ title: t('tabs.home') }} />
-      <Tabs.Screen name="modules" options={{ title: t('tabs.modules') }} />
-      <Tabs.Screen name="qbank" options={{ title: t('tabs.qbank') }} />
-      <Tabs.Screen name="social" options={{ title: t('tabs.social') }} />
-      <Tabs.Screen name="profile" options={{ title: t('tabs.profile') }} />
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: t('tabs.home'),
+          tabBarIcon: ({ color, size }) => <Home size={size ?? 22} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="modules"
+        options={{
+          title: t('tabs.modules'),
+          tabBarIcon: ({ color, size }) => <BookOpen size={size ?? 22} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="social"
+        options={{
+          title: t('tabs.social'),
+          tabBarIcon: ({ color, size }) => <Users size={size ?? 22} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="qbank"
+        options={{
+          title: t('tabs.qbank'),
+          tabBarIcon: ({ color, size }) => <HelpCircle size={size ?? 22} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="more"
+        options={{
+          title: t('tabs.more'),
+          tabBarIcon: ({ color, size }) => <Grid size={size ?? 22} color={color} />,
+        }}
+      />
     </Tabs>
   );
 }

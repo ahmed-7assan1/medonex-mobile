@@ -144,6 +144,8 @@ export const dark: ThemeColors = {
 
 export const fonts = {
   sans: 'Inter_400Regular',
+  sansMedium: 'Inter_500Medium',
+  sansSemiBold: 'Inter_600SemiBold',
   sansBold: 'Inter_700Bold',
   display: 'PlusJakartaSans_700Bold',
   arabic: 'Cairo_400Regular',
@@ -154,3 +156,54 @@ export const fonts = {
 /** Tablet breakpoint: at/above this width the app switches to the
  *  desktop-like layout (side rail instead of the bottom capsule). */
 export const TABLET_BREAKPOINT = 768;
+
+/** Mobile-dashboard surface tokens (.settings-ui / --st-*), the phone UI
+ *  the dashboard, settings and community share. */
+export interface StColors {
+  bg: string;
+  surface: string;
+  surfacePressed: string;
+  border: string;
+  text: string;
+  muted: string;
+  pillFill: string;
+  pillText: string;
+}
+
+export const stLight: StColors = {
+  bg: '#F4F4F5',
+  surface: '#FFFFFF',
+  surfacePressed: '#EDEDEF',
+  border: '#E4E4E7',
+  text: '#111111',
+  muted: '#6B6B70',
+  pillFill: '#111111',
+  pillText: '#FFFFFF',
+};
+
+export const stDark: StColors = {
+  bg: '#09090B',
+  surface: '#202020',
+  surfacePressed: '#292929',
+  border: '#2C2C2C',
+  text: '#F5F5F5',
+  muted: '#9A9A9A',
+  pillFill: '#FFFFFF',
+  pillText: '#111111',
+};
+
+/** Phone dashboard metrics from src/components/dashboard/mobile/tokens.ts. */
+export const mTokens = {
+  cardRadius: 20,
+  cardPad: 14,
+  gutter: 16,
+  sectionsGap: 28,
+  headingGap: 10,
+  sectionSize: 16,
+  cardTitleSize: 15,
+  cardDescSize: 12,
+  metaSize: 11,
+  valueSize: 20,
+  iconBtn: 44,
+  avatar: 40,
+} as const;

@@ -15,12 +15,31 @@
   "tabs": {
     "home": "Home",
     "modules": "Modules",
-    "qbank": "QBank",
     "social": "Social",
-    "profile": "Profile"
+    "qbank": "QBank",
+    "more": "More"
   },
   "home": {
-    "greeting": "Welcome back",
-    "continueStudying": "Continue studying"
+    "yourProgress": "Your progress",
+    "goal": "Goal",
+    "streak": "Streak",
+    "rank": "Rank",
+    "continueLearning": "Continue learning",
+    "resumeLecture": "Resume lecture",
+    "yourLearningSpace": "Your learning space",
+    "whatToLearn": "What would you like to learn today?",
+    "exploreModules": "Explore modules",
+    "questionBank": "Question bank",
+    "testYourself": "Test yourself with practice quizzes",
+    "startQuiz": "Start a quiz",
+    "aiAssistant": "AI assistant",
+    "askDrQ": "Ask Dr. Q anything about your studies",
+    "openAIChat": "Open AI Chat",
+    "suggestedLectures": "Suggested lectures",
+    "myMedSpace": "My MedSpace",
+    "medSpaceTitle": "Your personal workspace",
+    "medSpaceDesc": "Everything you collect and create in MedOneX will live here.",
+    "platformServices": "Platform Services",
+    "topLearners": "Top Learners"
   }
 }
