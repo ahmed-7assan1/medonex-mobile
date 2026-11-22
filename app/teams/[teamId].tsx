@@ -11,7 +11,7 @@ import {
 } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme/ThemeContext';
-import { TABLET_BREAKPOINT } from '@/theme/tokens';
+import { TABLET_BREAKPOINT, SCROLL_BOTTOM_PAD } from '@/theme/tokens';
 import { FIXTURE_TEAMS, FIXTURE_TEAM_MEMBERS, FIXTURE_TEAM_POSTS } from '@/lib/fixtures';
 import { PostCard } from '@/components/social/PostCard';
 
@@ -49,7 +49,7 @@ export default function TeamProfileScreen() {
 
   return (
     <View style={[styles.root, { backgroundColor: st.bg }]}>
-      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 96 }}>
+      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + SCROLL_BOTTOM_PAD }}>
         {/* Cover */}
         <View style={[styles.cover, { backgroundColor: colors.muted + '66' }]}>
           <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.primary + '14' }]} />

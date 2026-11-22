@@ -10,7 +10,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme/ThemeContext';
 import { FadeEdges } from '@/components/FadeEdges';
-import { TABLET_BREAKPOINT } from '@/theme/tokens';
+import { TABLET_BREAKPOINT, SCROLL_BOTTOM_PAD } from '@/theme/tokens';
 import { FIXTURE_TEAMS } from '@/lib/fixtures';
 
 /** /teams — pixel match of the site's TeamsDirectory: search field, team
@@ -48,7 +48,7 @@ export default function TeamsScreen() {
         style={{ flex: 1 }}
         contentContainerStyle={{
           padding: 16,
-          paddingBottom: insets.bottom + 96,
+          paddingBottom: insets.bottom + SCROLL_BOTTOM_PAD,
           maxWidth: 1024,
           width: '100%',
           alignSelf: 'center',

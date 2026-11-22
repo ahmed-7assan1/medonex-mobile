@@ -3,7 +3,7 @@ import { View, Text, Pressable, ScrollView, StyleSheet, useWindowDimensions } fr
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft, X } from 'lucide-react-native';
 import { useTheme } from '@/theme/ThemeContext';
-import { TABLET_BREAKPOINT } from '@/theme/tokens';
+import { TABLET_BREAKPOINT, SCROLL_BOTTOM_PAD } from '@/theme/tokens';
 
 /** Shared settings overlay shell (site: SettingsOverlay):
  *  phone = full-screen sheet that slides up like a new page (back arrow +
@@ -47,7 +47,7 @@ export function SettingsOverlay({
         </Pressable>
         <Text style={{ flex: 1, color: st.text, fontSize: 18, fontFamily: fonts.sansBold }}>{title}</Text>
       </View>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 16, paddingBottom: insets.bottom + 60 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 16, paddingBottom: insets.bottom + SCROLL_BOTTOM_PAD }}>
         {children}
       </ScrollView>
     </View>

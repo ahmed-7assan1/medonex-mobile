@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { FIXTURE_FEED, FIXTURE_FORUMS, isPreviewFixtures } from './fixtures';
 import { api, apiV1, ApiError } from './api';
 
 export type ForumType = 'GLOBAL' | 'UNIVERSITY' | 'FACULTY' | 'SEMESTER' | 'PRIVATE';
@@ -71,14 +72,17 @@ async function guestSafe<T>(fn: () => Promise<T>): Promise<T | null> {
   }
 }
 
-export const useForums = () =>
-  useQuery({ queryKey: ['forums'], queryFn: () => guestSafe(() => apiV1.get<Forum[]>('/forums')), staleTime: 5 * 60_000 });
+export const useForums = () => {
+  const q = useQuery({ queryKey: ['forums'], queryFn: () => guestSafe(() => apiV1.get<Forum[]>('/forums')), staleTime: 5 * 60_000, enabled: !isPreviewFixtures() });
+  // Pages phase: show fixture content when the backend is unreachable.
+  return { ...q, data: isPreviewFixtures() ? FIXTURE_FORUMS : q.data ?? (q.isError ? FIXTURE_FORUMS : q.data) };
+};
 
 export const useTiers = () =>
   useQuery({ queryKey: ['community-tiers'], queryFn: () => guestSafe(() => apiV1.get<{ tiers: TierInfo[] }>('/community/tiers')), staleTime: 5 * 60_000 });
 
-export const useCommunityFeed = (tier?: string) =>
-  useQuery({
+export const useCommunityFeed = (tier?: string) => {
+  const q = useQuery({
     queryKey: ['community-feed', tier ?? 'default'],
     queryFn: () =>
       guestSafe(() =>
@@ -87,7 +91,11 @@ export const useCommunityFeed = (tier?: string) =>
         ),
       ),
     staleTime: 60_000,
+    enabled: !isPreviewFixtures(),
   });
+  // Pages phase: show fixture content when the backend is unreachable.
+  return { ...q, data: isPreviewFixtures() ? FIXTURE_FEED : q.data ?? (q.isError ? FIXTURE_FEED : q.data) };
+};
 
 export const useRooms = () =>
   useQuery({

@@ -13,7 +13,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme/ThemeContext';
 import { FadeEdges } from '@/components/FadeEdges';
-import { TABLET_BREAKPOINT } from '@/theme/tokens';
+import { TABLET_BREAKPOINT, SCROLL_BOTTOM_PAD } from '@/theme/tokens';
 import { FIXTURE_MODULE_BUNDLE, FIXTURE_TASKS, FIXTURE_COMPLETIONS, type FixtureTask } from '@/lib/fixtures';
 
 /** /taskat — pixel match of the site's TaskatClient + DailyFocus +
@@ -109,7 +109,7 @@ export default function TaskatScreen() {
         style={{ flex: 1 }}
         contentContainerStyle={{
           padding: 16,
-          paddingBottom: insets.bottom + 96,
+          paddingBottom: insets.bottom + SCROLL_BOTTOM_PAD,
           maxWidth: 1024,
           width: '100%',
           alignSelf: 'center',

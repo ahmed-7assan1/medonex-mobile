@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft, FileText, FileImage, FileVideo, Trash2, Download } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme/ThemeContext';
-import { TABLET_BREAKPOINT } from '@/theme/tokens';
+import { TABLET_BREAKPOINT, SCROLL_BOTTOM_PAD } from '@/theme/tokens';
 import { FIXTURE_DOWNLOADS } from '@/lib/fixtures';
 import { FadeEdges } from '@/components/FadeEdges';
 
@@ -29,7 +29,7 @@ export default function DownloadsScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: st.bg }}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 96 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + SCROLL_BOTTOM_PAD }}>
         <View style={{ width: '100%', maxWidth: 760, alignSelf: 'center', paddingHorizontal: isTablet ? 24 : 0 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: isTablet ? 0 : 16, paddingTop: insets.top + 14, paddingBottom: 18 }}>
             <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => router.back()}

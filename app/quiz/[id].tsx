@@ -12,7 +12,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme/ThemeContext';
 import { FadeEdges } from '@/components/FadeEdges';
-import { TABLET_BREAKPOINT } from '@/theme/tokens';
+import { TABLET_BREAKPOINT, SCROLL_BOTTOM_PAD } from '@/theme/tokens';
 import { GLASS_OPACITY, PERF_TIER } from '@/theme/perf';
 import { fixtureQuiz, type FixtureQuizQuestion } from '@/lib/fixtures';
 import { QuizQuestionHeader, QuizQuestionContent } from '@/components/quiz/QuizQuestion';
@@ -216,7 +216,7 @@ export default function QuizPlayerScreen() {
         style={{ flex: 1 }}
         contentContainerStyle={{
           paddingTop: insets.top + 64,
-          paddingBottom: insets.bottom + 140,
+          paddingBottom: insets.bottom + SCROLL_BOTTOM_PAD,
           paddingHorizontal: 16,
           maxWidth: 896,
           width: '100%',

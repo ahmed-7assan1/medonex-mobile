@@ -15,6 +15,7 @@ import { FadeEdges } from '@/components/FadeEdges';
 import { SettingsOverlay } from '@/components/settings/SettingsOverlay';
 import { SettingsOverlayBody } from '@/components/settings/SettingsOverlayBody';
 import { useAuth } from '@/lib/auth';
+import { SCROLL_BOTTOM_PAD } from '@/theme/tokens';
 
 type RowItem = { id: string; title: string; icon: any };
 
@@ -160,7 +161,7 @@ export default function SettingsScreen() {
     <View style={[styles.root, { backgroundColor: st.bg, paddingTop: insets.top + 8 }]}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + SCROLL_BOTTOM_PAD }]}
       >
         {/* Route title */}
         <View style={styles.titleRow}>

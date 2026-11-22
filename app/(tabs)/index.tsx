@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme/ThemeContext';
-import { TABLET_BREAKPOINT } from '@/theme/tokens';
+import { TABLET_BREAKPOINT, SCROLL_BOTTOM_PAD } from '@/theme/tokens';
 import { useHome, firstNameOf } from '@/lib/home';
 import { ProfileHeader } from '@/components/home/ProfileHeader';
 import { AchievementsStrip } from '@/components/home/AchievementsStrip';
@@ -56,7 +56,7 @@ export default function HomeScreen() {
     <View style={[styles.root, { backgroundColor: st.bg, paddingTop: insets.top + 12 }]}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 120 }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + SCROLL_BOTTOM_PAD }}
         refreshControl={
           <RefreshControl refreshing={home.isRefetching} onRefresh={() => home.refetch()} tintColor={st.muted} />
         }

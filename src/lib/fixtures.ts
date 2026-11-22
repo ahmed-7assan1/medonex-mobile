@@ -6,6 +6,16 @@ import type { ModuleBundle } from './modules';
 
 export const IS_DEMO = true;
 
+/** Preview tooling only (web export screenshots): when dist/preview.html set
+ *  this flag, data hooks skip the network and return fixtures immediately. */
+export const isPreviewFixtures = (): boolean => {
+  try {
+    return typeof localStorage !== 'undefined' && localStorage.getItem('previewFixtures') === '1';
+  } catch {
+    return false;
+  }
+};
+
 const lec = (id: string, title: string, type: 'LECTURE' | 'PRACTICAL', q: number, files: number, order: number) => ({
   id,
   title,
@@ -544,3 +554,112 @@ export const FIXTURE_DOWNLOADS = [
   { id: 'dl4', name: 'Pharmacology Tables.pdf', group: 'PDF', size: '2.1 MB', date: 'Last week' },
   { id: 'dl5', name: 'Renal Physiology — Lecture 2.mp4', group: 'LECTURE', size: '156 MB', date: 'Last week' },
 ];
+
+// ——— Tabs fixtures: home, modules catalog, qbank cards, social forums/feed ———
+import type { HomeData } from './home';
+import type { ModulesCatalogResponse, ModuleWithStats } from './modules';
+import type { PastPapersResponse, QuizPaperCard } from './quiz';
+import type { Forum, Post } from './community';
+
+const MOD_STATS: ModuleWithStats[] = [
+  { id: 'demo', name: 'Anatomy & Embryology', imageUrl: null, subjectsCount: 4, lecturesCount: 13, questionsCount: 130, percentage: 62 },
+  { id: 'm-physio', name: 'Physiology', imageUrl: null, subjectsCount: 3, lecturesCount: 11, questionsCount: 96, percentage: 35 },
+  { id: 'm-biochem', name: 'Biochemistry', imageUrl: null, subjectsCount: 3, lecturesCount: 9, questionsCount: 74, percentage: 12 },
+  { id: 'm-patho', name: 'Pathology', imageUrl: null, subjectsCount: 4, lecturesCount: 15, questionsCount: 140, percentage: 0 },
+  { id: 'm-pharm', name: 'Pharmacology', imageUrl: null, subjectsCount: 3, lecturesCount: 10, questionsCount: 88, percentage: 0 },
+  { id: 'm-micro', name: 'Microbiology', imageUrl: null, subjectsCount: 3, lecturesCount: 12, questionsCount: 101, percentage: 0 },
+];
+
+export const FIXTURE_HOME: HomeData = {
+  user: {
+    id: 'me', name: 'Ahmed Hassan', nickname: 'ahmed.hassan', email: 'ahmed@medonex.me', image: null,
+    points: 1280,
+    rank: { id: 'r3', label: 'Pro', badge: null },
+    university: { id: 'cu', name: 'Cairo University' },
+    semester: { id: 'sem5', name: 'Semester 5' },
+  },
+  stats: { totalAttempts: 47, avgScore: 78, completedLectures: 21, points: 1280, rank: { id: 'r3', label: 'Pro', badge: null }, streak: 6 },
+  recentActivity: [
+    { lastViewedAt: '2026-11-21T18:30:00Z', isCompleted: false, lecture: { id: 'l3', title: 'Brachial Plexus Made Simple', subject: { id: 's-anat', name: 'Anatomy', module: { id: 'demo', name: 'Anatomy & Embryology' } } } },
+  ],
+  suggestedPapers: [
+    { id: 'p1', title: 'Anatomy Final 2025 — Upper Limb', module: { id: 'demo', name: 'Anatomy & Embryology' }, _count: { attempts: 342 } },
+    { id: 'p2', title: 'Midterm Mock: Histology & Embryo', module: { id: 'demo', name: 'Anatomy & Embryology' }, _count: { attempts: 187 } },
+  ],
+  todayTasks: [
+    { id: 't1', title: 'Revise brachial plexus diagrams', time: '10:00', completed: false },
+    { id: 't2', title: 'Finish 20 anatomy MCQs', time: '13:00', completed: false },
+    { id: 't3', title: 'Watch histology slide session', time: '17:00', completed: true },
+  ],
+  unreadNotifs: 3,
+  adBanners: [],
+  topUsers: [
+    { id: 'u-top1', name: 'Mariam Khaled', image: null, points: 2410, rank: { badge: null, label: 'Elite' } },
+    { id: 'u-top2', name: 'Omar Adel', image: null, points: 1975, rank: { badge: null, label: 'Pro' } },
+    { id: 'u-top3', name: 'Sara Mahmoud', image: null, points: 1680, rank: { badge: null, label: 'Pro' } },
+  ],
+};
+
+export const FIXTURE_CATALOG: ModulesCatalogResponse = {
+  isGuest: false,
+  isAdmin: false,
+  hasNoSemester: false,
+  view: {
+    hasAnyModules: true,
+    inProgressStats: MOD_STATS.filter((m) => m.percentage > 0),
+    completedStats: [],
+    semesterGroups: [{ semesterId: 'sem5', name: 'Semester 5', yearNumber: 3, modules: MOD_STATS }],
+    totalModules: MOD_STATS.length,
+    totalLectures: MOD_STATS.reduce((a, m) => a + m.lecturesCount, 0),
+    totalQuestions: MOD_STATS.reduce((a, m) => a + m.questionsCount, 0),
+    overallPercent: 18,
+    sortedByLectures: [...MOD_STATS].sort((a, b) => b.lecturesCount - a.lecturesCount),
+  },
+  continueHref: '/modules/demo',
+};
+
+const QB_CARDS: QuizPaperCard[] = [
+  { id: 'p1', title: 'Anatomy Final 2025 — Upper Limb', moduleName: 'Anatomy & Embryology', timeLimitMin: 60, isInteractive: true, questionCount: 40, attemptCount: 342, bestScore: 82, attempts: [{ id: 'a1', score: 82, createdAt: '2026-11-18T14:00:00Z' }], inProgress: false },
+  { id: 'p2', title: 'Midterm Mock: Histology & Embryo', moduleName: 'Anatomy & Embryology', timeLimitMin: 40, isInteractive: true, questionCount: 25, attemptCount: 187, bestScore: null, attempts: [], inProgress: true },
+  { id: 'p3', title: 'Anatomy Final 2024 (Legacy)', moduleName: 'Anatomy & Embryology', timeLimitMin: 90, isInteractive: false, questionCount: 60, attemptCount: 516, bestScore: null, attempts: [], inProgress: false },
+  { id: 'p4', title: 'Physiology Block Exam: Nerve & Muscle', moduleName: 'Physiology', timeLimitMin: 45, isInteractive: true, questionCount: 30, attemptCount: 129, bestScore: 68, attempts: [{ id: 'a2', score: 68, createdAt: '2026-11-10T12:00:00Z' }], inProgress: false },
+];
+
+export const FIXTURE_PAST_PAPERS: PastPapersResponse = {
+  cards: QB_CARDS,
+  paperCount: QB_CARDS.length,
+  completedPapers: 2,
+  avgScore: 75,
+  isAdmin: false,
+};
+
+export const FIXTURE_FORUMS: Forum[] = [
+  { id: 'f-global', name: 'MedOneX Community', type: 'GLOBAL', status: 'ACTIVE', unreadCount: 4 },
+  { id: 'f-uni', name: 'Cairo University', type: 'UNIVERSITY', status: 'ACTIVE', unreadCount: 1 },
+  { id: 'f-sem', name: 'Semester 5 — Medicine', type: 'SEMESTER', status: 'ACTIVE', unreadCount: 0 },
+];
+
+export const FIXTURE_FEED: { items: Post[]; nextCursor: string | null; hasMore: boolean } = {
+  items: [
+    {
+      id: 'post1', content: 'Finally finished the brachial plexus lecture series. The mnemonics in the last lecture are gold — highly recommended before the midterm.', imageUrl: null, attachments: [],
+      author: { id: 'u-top1', name: 'Mariam Khaled', avatarUrl: null, rankLabel: 'Elite' }, isAnonymous: false,
+      forumId: 'f-global', forumName: 'MedOneX Community', isPinned: false, hashtags: ['anatomy', 'midterm'],
+      reactionCounts: { like: 24, love: 6 }, userReaction: null, commentCount: 8, shareCount: 2, isSaved: false, likesCount: 30, createdAt: '2026-11-21T16:20:00Z',
+    },
+    {
+      id: 'post2', content: 'Does anyone have a good summary for the histology slide session? The practical exam is in two weeks and I am lost on skin & glands.', imageUrl: null, attachments: [],
+      author: { id: 'u-top2', name: 'Omar Adel', avatarUrl: null, rankLabel: 'Pro' }, isAnonymous: false,
+      forumId: 'f-uni', forumName: 'Cairo University', isPinned: false, hashtags: ['histology', 'help'],
+      reactionCounts: { like: 11 }, userReaction: 'like', commentCount: 14, shareCount: 0, isSaved: true, likesCount: 11, createdAt: '2026-11-21T09:05:00Z',
+    },
+    {
+      id: 'post3', content: 'Dr Q just explained the spiral groove injury better in 30 seconds than a whole textbook chapter. Try it on the nerve injuries lecture.', imageUrl: null, attachments: [],
+      author: null, isAnonymous: true,
+      forumId: 'f-sem', forumName: 'Semester 5 — Medicine', isPinned: false, hashtags: ['drq', 'anatomy'],
+      reactionCounts: { like: 17, haha: 2 }, userReaction: null, commentCount: 5, shareCount: 1, isSaved: false, likesCount: 19, createdAt: '2026-11-20T20:45:00Z',
+    },
+  ],
+  nextCursor: null,
+  hasMore: false,
+};

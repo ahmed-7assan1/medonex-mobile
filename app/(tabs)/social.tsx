@@ -10,6 +10,7 @@ import { useForums, useCommunityFeed } from '@/lib/community';
 import { ForumTabs } from '@/components/social/ForumTabs';
 import { RoomsRow } from '@/components/social/RoomsRow';
 import { PostCard } from '@/components/social/PostCard';
+import { SCROLL_BOTTOM_PAD } from '@/theme/tokens';
 
 /** OneX Community phone feed — forum tabs + rooms row + flat post rows,
  *  replicating community-mobile/CommunityFeed. Guests get the sign-in
@@ -41,7 +42,7 @@ export default function SocialScreen() {
         renderItem={({ item }) => <PostCard post={item} />}
         ListHeaderComponent={<RoomsRow />}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 140 }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + SCROLL_BOTTOM_PAD }}
         refreshControl={
           <RefreshControl refreshing={feed.isRefetching} onRefresh={() => { forums.refetch(); feed.refetch(); }} tintColor={st.muted} />
         }

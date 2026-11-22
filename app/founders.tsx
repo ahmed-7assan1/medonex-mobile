@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ShieldCheck, ArrowLeft, Star, Award, Heart } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme/ThemeContext';
-import { TABLET_BREAKPOINT } from '@/theme/tokens';
+import { TABLET_BREAKPOINT, SCROLL_BOTTOM_PAD } from '@/theme/tokens';
 import { FIXTURE_PLATFORM_TEAM } from '@/lib/fixtures';
 import { FadeEdges } from '@/components/FadeEdges';
 
@@ -23,7 +23,7 @@ export default function FoundersScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: st.bg }}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 96 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + SCROLL_BOTTOM_PAD }}>
         {/* Hero */}
         <View style={{ height: isTablet ? 340 : 260, justifyContent: 'center' }}>
           <LinearGradient colors={[colors.primary + '33', st.bg]} style={StyleSheet.absoluteFill} />

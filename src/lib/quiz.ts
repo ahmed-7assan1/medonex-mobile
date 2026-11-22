@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiV1, ApiError } from './api';
+import { FIXTURE_PAST_PAPERS, isPreviewFixtures } from './fixtures';
 
 export interface QuizPaperAttempt { id: string; score: number; createdAt: string; }
 
@@ -29,7 +30,7 @@ export type QuizFilter = 'all' | 'in_progress' | 'completed' | 'not_started';
 
 /** /api/v1/past-papers/cards — 401 for guests (the site redirects to /login). */
 export function usePastPapers() {
-  return useQuery({
+  const q = useQuery({
     queryKey: ['past-papers'],
     queryFn: async () => {
       try {
@@ -40,5 +41,8 @@ export function usePastPapers() {
       }
     },
     staleTime: 5 * 60 * 1000,
+    enabled: !isPreviewFixtures(),
   });
+  // Pages phase: show fixture content when the backend is unreachable.
+  return { ...q, data: isPreviewFixtures() ? FIXTURE_PAST_PAPERS : q.data ?? (q.isError ? FIXTURE_PAST_PAPERS : q.data) };
 }

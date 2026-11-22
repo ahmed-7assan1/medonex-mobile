@@ -5,7 +5,7 @@ import { Search, X, FileText } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme/ThemeContext';
-import { TABLET_BREAKPOINT } from '@/theme/tokens';
+import { TABLET_BREAKPOINT, SCROLL_BOTTOM_PAD } from '@/theme/tokens';
 import { usePastPapers, type QuizFilter, type QuizPaperCard } from '@/lib/quiz';
 import { QuizStatsRow } from '@/components/quiz/QuizStatsRow';
 import { QuizFilterChips } from '@/components/quiz/QuizFilterChips';
@@ -136,7 +136,7 @@ export default function QBankScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
-          { paddingHorizontal: 12, paddingBottom: 120, gap: 16 },
+          { paddingHorizontal: 12, paddingBottom: insets.bottom + SCROLL_BOTTOM_PAD, gap: 16 },
           isTablet && { maxWidth: 1504, width: '100%', alignSelf: 'center', paddingHorizontal: 32 },
         ]}
         refreshControl={

@@ -11,7 +11,7 @@ import {
 } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme/ThemeContext';
-import { TABLET_BREAKPOINT } from '@/theme/tokens';
+import { TABLET_BREAKPOINT, SCROLL_BOTTOM_PAD } from '@/theme/tokens';
 import { FIXTURE_ATLAS_SYSTEMS, FIXTURE_ATLAS_STRUCTURES, type FixtureAtlasStructure } from '@/lib/fixtures';
 import { FadeEdges } from '@/components/FadeEdges';
 
@@ -82,7 +82,7 @@ export default function AtlasScreen() {
     const tc = TYPE_COLORS[selected.type] ?? TYPE_COLORS.organ;
     return (
       <View style={{ flex: 1, backgroundColor: BG }}>
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 96 }}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + SCROLL_BOTTOM_PAD }}>
           <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 24, paddingTop: insets.top + 16 }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
               <Pressable accessibilityRole="button" onPress={() => setSelected(null)} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -197,7 +197,7 @@ export default function AtlasScreen() {
   /* ── Landing + system views ── */
   return (
     <View style={{ flex: 1, backgroundColor: BG }}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 96 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + SCROLL_BOTTOM_PAD }}>
         {/* Hero */}
         <View style={{ height: isTablet ? 340 : 280, justifyContent: 'flex-end' }}>
           <LinearGradient colors={['rgba(8,145,178,0.35)', 'rgba(10,10,10,0.2)', BG]} style={StyleSheet.absoluteFill} />

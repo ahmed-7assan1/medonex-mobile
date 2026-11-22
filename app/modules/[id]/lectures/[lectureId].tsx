@@ -12,7 +12,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme/ThemeContext';
 import { FadeEdges } from '@/components/FadeEdges';
-import { TABLET_BREAKPOINT } from '@/theme/tokens';
+import { TABLET_BREAKPOINT, SCROLL_BOTTOM_PAD } from '@/theme/tokens';
 import { fixtureLecture } from '@/lib/fixtures';
 
 type TabId = 'overview' | 'videos' | 'materials' | 'recordings' | 'flashcards' | 'questions' | 'notes' | 'checklist';
@@ -369,7 +369,7 @@ export default function LectureScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingHorizontal: 16, paddingTop: 12, paddingBottom: 120,
+          paddingHorizontal: 16, paddingTop: 12, paddingBottom: insets.bottom + SCROLL_BOTTOM_PAD,
           maxWidth: isTablet ? 960 : undefined, alignSelf: isTablet ? 'center' : undefined, width: '100%',
         }}
       >

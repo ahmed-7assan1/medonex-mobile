@@ -5,7 +5,7 @@ import { Search } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme/ThemeContext';
-import { TABLET_BREAKPOINT } from '@/theme/tokens';
+import { TABLET_BREAKPOINT, SCROLL_BOTTOM_PAD } from '@/theme/tokens';
 import { useModulesCatalog } from '@/lib/modules';
 import { StatsOverview } from '@/components/modules/StatsOverview';
 import { QuickActionsCard } from '@/components/modules/QuickActionsCard';
@@ -33,7 +33,7 @@ export default function ModulesScreen() {
     <View style={[styles.root, { backgroundColor: colors.background, paddingTop: insets.top + 12 }]}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + SCROLL_BOTTOM_PAD }}
         refreshControl={
           <RefreshControl refreshing={catalog.isRefetching} onRefresh={() => catalog.refetch()} tintColor={colors.mutedForeground} />
         }

@@ -11,7 +11,7 @@ import {
 } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme/ThemeContext';
-import { TABLET_BREAKPOINT } from '@/theme/tokens';
+import { TABLET_BREAKPOINT, SCROLL_BOTTOM_PAD } from '@/theme/tokens';
 import { FIXTURE_PROFILE_POSTS, type FixtureProfileUser } from '@/lib/fixtures';
 import { PostCard } from '@/components/social/PostCard';
 import { FadeEdges } from '@/components/FadeEdges';
@@ -193,7 +193,7 @@ export function ProfileView({ user, isOwn }: { user: FixtureProfileUser; isOwn: 
 
   return (
     <View style={{ flex: 1, backgroundColor: st.bg }}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 96 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + SCROLL_BOTTOM_PAD }}>
         {/* Tablet: standalone fixed-style back button (desktop layout) */}
         <View style={{ width: '100%', maxWidth: 1080, alignSelf: 'center', paddingHorizontal: 16 }}>
           <View style={{ paddingTop: insets.top + (isTablet ? 16 : 8), alignItems: 'flex-start' }}>

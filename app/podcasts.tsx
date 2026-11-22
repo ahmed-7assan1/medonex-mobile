@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Headphones, Play, Search, ArrowLeft, Clock, TrendingUp, CalendarClock } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme/ThemeContext';
-import { TABLET_BREAKPOINT } from '@/theme/tokens';
+import { TABLET_BREAKPOINT, SCROLL_BOTTOM_PAD } from '@/theme/tokens';
 import { FIXTURE_EPISODES } from '@/lib/fixtures';
 import { FadeEdges } from '@/components/FadeEdges';
 
@@ -35,7 +35,7 @@ export default function PodcastsScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: st.bg }}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 96 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + SCROLL_BOTTOM_PAD }}>
         <View style={{ width: '100%', maxWidth: 1080, alignSelf: 'center', paddingHorizontal: 16 }}>
           <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => router.back()}
             style={[styles.backBtn, { top: insets.top + 12, backgroundColor: st.surface, borderColor: st.border }]}>

@@ -157,6 +157,10 @@ export const fonts = {
  *  desktop-like layout (side rail instead of the bottom capsule). */
 export const TABLET_BREAKPOINT = 768;
 
+/** Bottom padding for scroll content: the bottom fade is 160 + insets, so the
+ *  last item must clear it (160 fade + 10 breathing room). Ahmed, 22 Nov. */
+export const SCROLL_BOTTOM_PAD = 170;
+
 /** Mobile-dashboard surface tokens (.settings-ui / --st-*), the phone UI
  *  the dashboard, settings and community share. */
 export interface StColors {

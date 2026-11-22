@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Sparkles, Video, Mic2, Clock, User, Settings, Bookmark, Layers, LogOut } from 'lucide-react-native';
 import { useTheme } from '@/theme/ThemeContext';
 import { useAuth } from '@/lib/auth';
+import { SCROLL_BOTTOM_PAD } from '@/theme/tokens';
 
 /** "More" grid — the capsule's middle button on the site opens the same
  *  kind of sheet; here it is a tab page listing every other destination. */
@@ -30,7 +31,7 @@ export default function MoreScreen() {
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: st.bg }}
-      contentContainerStyle={{ paddingTop: insets.top + 12, paddingHorizontal: 16, paddingBottom: 120 }}
+      contentContainerStyle={{ paddingTop: insets.top + 12, paddingHorizontal: 16, paddingBottom: insets.bottom + SCROLL_BOTTOM_PAD }}
     >
       <Text style={[styles.heading, { color: st.text, fontFamily: fonts.sansBold }]}>{t('tabs.more')}</Text>
       <View style={styles.grid}>

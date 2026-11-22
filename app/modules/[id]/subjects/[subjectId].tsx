@@ -13,7 +13,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme/ThemeContext';
 import { FadeEdges } from '@/components/FadeEdges';
-import { TABLET_BREAKPOINT } from '@/theme/tokens';
+import { TABLET_BREAKPOINT, SCROLL_BOTTOM_PAD } from '@/theme/tokens';
 import { useModuleBundle } from '@/lib/modules';
 import { ApiError } from '@/lib/api';
 import { FIXTURE_MODULE_BUNDLE } from '@/lib/fixtures';
@@ -334,7 +334,7 @@ export default function SubjectLecturesScreen() {
     <View style={[styles.root, { backgroundColor: st.bg, paddingTop: insets.top + 8 }]}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 60, maxWidth: isTablet ? 1100 : undefined, alignSelf: isTablet ? 'center' : undefined, width: '100%' }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + SCROLL_BOTTOM_PAD, maxWidth: isTablet ? 1100 : undefined, alignSelf: isTablet ? 'center' : undefined, width: '100%' }}
         refreshControl={
           <RefreshControl refreshing={bundle.isRefetching} onRefresh={() => bundle.refetch()} tintColor={st.muted} />
         }

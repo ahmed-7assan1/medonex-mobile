@@ -39,6 +39,24 @@ export default function RootLayout() {
     }
   }, [fontsLoaded, fontError]);
 
+  // Preview tooling only (web): scrolled-to-bottom screenshots for design
+  // review. Set via localStorage.previewScrollBottom by dist/preview.html.
+  useEffect(() => {
+    try {
+      if (typeof window === 'undefined' || !window.localStorage?.getItem('previewScrollBottom')) return;
+      const scrollAll = () => {
+        try { window.scrollTo(0, document.body?.scrollHeight ?? 0); } catch { /* noop */ }
+        document.querySelectorAll('div').forEach((el) => {
+          if (el.scrollHeight > el.clientHeight + 20) {
+            el.scrollTop = el.scrollHeight;
+          }
+        });
+      };
+      const timers = [800, 2000, 4000, 7000, 10000, 13000].map((ms) => setTimeout(scrollAll, ms));
+      return () => timers.forEach(clearTimeout);
+    } catch { /* noop */ }
+  }, []);
+
   if (!ready) {
     return (
       <View style={{ flex: 1, backgroundColor: '#0B0B0B', alignItems: 'center', justifyContent: 'center' }}>
