@@ -233,3 +233,92 @@ export const FIXTURE_COMPLETIONS: Record<string, boolean> = {
   l7: true, l8: false, l9: false, l10: false,
   l11: false, l12: false, l13: false,
 };
+
+/* ─── Teams fixtures (directory + team profile) ─── */
+
+export interface FixtureTeam {
+  id: string;
+  name: string;
+  description: string;
+  faculty: string;
+  followersCount: number;
+  lectures: number;
+  posts: number;
+}
+
+export const FIXTURE_TEAMS: FixtureTeam[] = [
+  {
+    id: 'team-1',
+    name: 'Anatomy Warriors',
+    description: 'Daily anatomy spotters, mnemonics and dissection-room tips. Curated by top-ranked students for practical exam mastery.',
+    faculty: 'Medicine',
+    followersCount: 1284,
+    lectures: 46,
+    posts: 312,
+  },
+  {
+    id: 'team-2',
+    name: 'Pharma Squad',
+    description: 'Pharmacology made simple: drug cards, interaction alerts and weekly quizzes on high-yield medications.',
+    faculty: 'Pharmacy',
+    followersCount: 862,
+    lectures: 31,
+    posts: 198,
+  },
+  {
+    id: 'team-3',
+    name: 'Clinical Skills Hub',
+    description: 'OSCE stations, history-taking frameworks and physical-exam checklists with peer practice sessions.',
+    faculty: 'Medicine',
+    followersCount: 643,
+    lectures: 22,
+    posts: 141,
+  },
+];
+
+export const FIXTURE_TEAM_MEMBERS = [
+  { userId: 'u1', name: 'Mariam Khaled', role: 'LEADER' },
+  { userId: 'u2', name: 'Omar El-Sayed', role: 'ADMIN' },
+  { userId: 'u3', name: 'Sara Mostafa', role: 'MEMBER' },
+  { userId: 'u4', name: 'Youssef Adel', role: 'MEMBER' },
+  { userId: 'u5', name: 'Nour Ibrahim', role: 'MEMBER' },
+];
+
+export const FIXTURE_TEAM_POSTS = [
+  {
+    id: 'tp1',
+    content: 'New spotter set is up: 20 high-yield brachial plexus images. Solve them before Thursday\'s session and compare your answers in the comments.',
+    imageUrl: null,
+    attachments: [],
+    author: { id: 'u1', name: 'Mariam Khaled', image: null },
+    isAnonymous: false,
+    forumId: 'team-1',
+    forumName: 'Anatomy Warriors',
+    isPinned: true,
+    hashtags: ['anatomy', 'spotters'],
+    reactionCounts: { like: 48, love: 12 },
+    userReaction: null,
+    commentCount: 17,
+    shareCount: 3,
+    isSaved: false,
+    createdAt: new Date(Date.now() - 3 * 3600 * 1000).toISOString(),
+  },
+  {
+    id: 'tp2',
+    content: 'Mnemonic of the week for the rotator cuff: SITS — Supraspinatus, Infraspinatus, Teres minor, Subscapularis. Save it for the practical!',
+    imageUrl: null,
+    attachments: [],
+    author: { id: 'u2', name: 'Omar El-Sayed', image: null },
+    isAnonymous: false,
+    forumId: 'team-1',
+    forumName: 'Anatomy Warriors',
+    isPinned: false,
+    hashtags: ['mnemonics'],
+    reactionCounts: { like: 31 },
+    userReaction: 'like',
+    commentCount: 6,
+    shareCount: 1,
+    isSaved: true,
+    createdAt: new Date(Date.now() - 26 * 3600 * 1000).toISOString(),
+  },
+];

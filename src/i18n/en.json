@@ -230,5 +230,32 @@
     "zeroContent": "Zero content items found.",
     "individualCourses": "Individual Courses",
     "noStandalone": "No individual courses outside your modules yet."
+  },
+  "teams": {
+    "title": "Teams",
+    "community": "Community",
+    "heading": "Medical Teams",
+    "subtitle": "Discover and follow specialized medical teams. Access exclusive lectures, summaries, and community discussions curated by top students and doctors.",
+    "searchPlaceholder": "Search teams by name or faculty...",
+    "noTeams": "No teams found",
+    "noTeamsSub": "Try adjusting your search criteria.",
+    "followers": "Followers",
+    "lectures": "Lectures",
+    "posts": "Posts",
+    "followTeam": "Follow Team",
+    "following": "Following",
+    "about": "About the Team",
+    "feed": "Community Feed",
+    "tasks": "Tasks",
+    "flashcards": "Flashcards",
+    "leaderboard": "Leaderboard",
+    "members": "Members",
+    "simulationTasks": "Simulation Tasks",
+    "simulationTasksSub": "Clinical scenarios and OSCE stations assigned to this room will appear here.",
+    "teamFlashcards": "Team Flashcards",
+    "teamFlashcardsSub": "Shared spaced-repetition decks for collaborative studying.",
+    "activeRankings": "Active Rankings",
+    "pts": "pts",
+    "addMember": "Add New Member"
   }
 }
