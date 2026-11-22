@@ -113,3 +113,98 @@ export const FIXTURE_LECTURE_PRACTICAL = {
 export function fixtureLecture(id: string) {
   return id === 'l5' || id === 'l6' ? FIXTURE_LECTURE_PRACTICAL : FIXTURE_LECTURE;
 }
+
+/* ─── Quiz player fixtures (mirror MedQs0 QuizClient Question shape) ─── */
+
+export interface FixtureQuizQuestion {
+  id: string;
+  questionType: 'MCQ' | 'ESSAY';
+  body: string;
+  imageUrl?: string | null;
+  choices: { key: string; text: string }[];
+  answer: string;
+  explanation?: string;
+  difficulty: 'EASY' | 'MEDIUM' | 'HARD';
+}
+
+export interface FixtureQuiz {
+  id: string;
+  title: string;
+  timeLimitMin: number | null;
+  questions: FixtureQuizQuestion[];
+}
+
+const mcq = (
+  id: string,
+  difficulty: FixtureQuizQuestion['difficulty'],
+  body: string,
+  choices: [string, string, string, string],
+  answer: string,
+  explanation: string,
+): FixtureQuizQuestion => ({
+  id,
+  questionType: 'MCQ',
+  body,
+  choices: [
+    { key: 'A', text: choices[0] },
+    { key: 'B', text: choices[1] },
+    { key: 'C', text: choices[2] },
+    { key: 'D', text: choices[3] },
+  ],
+  answer,
+  explanation,
+  difficulty,
+});
+
+export const FIXTURE_QUIZ: FixtureQuiz = {
+  id: 'demo',
+  title: 'Upper Limb — Mock Paper 1',
+  timeLimitMin: null,
+  questions: [
+    mcq('q1', 'EASY',
+      'A patient presents with wrist drop after a midshaft humeral fracture. Which nerve is most likely injured in the spiral groove?',
+      ['Radial nerve', 'Ulnar nerve', 'Median nerve', 'Axillary nerve'],
+      'A',
+      'The radial nerve winds around the posterior humerus in the spiral (radial) groove, so midshaft humeral fractures classically injure it, causing wrist drop.'),
+    mcq('q2', 'MEDIUM',
+      'Numbness of the lateral three and a half fingers with thenar wasting suggests compression of which structure?',
+      ['Ulnar nerve at the cubital tunnel', 'Median nerve in the carpal tunnel', 'Radial nerve at the arcade of Frohse', 'Musculocutaneous nerve in the coracobrachialis'],
+      'B',
+      'Carpal tunnel syndrome compresses the median nerve under the flexor retinaculum, affecting the lateral 3½ digits and thenar muscles (LOAF).'),
+    mcq('q3', 'HARD',
+      'Erb-Duchenne palsy ("waiter\'s tip" posture) results from injury to which roots of the brachial plexus?',
+      ['C8–T1', 'C5–C6', 'C7–C8', 'T1 only'],
+      'B',
+      'Excessive downward traction on the shoulder tears the upper trunk (C5–C6), paralyzing deltoid, biceps, and brachialis — the waiter\'s tip posture.'),
+    mcq('q4', 'EASY',
+      'The deltoid muscle is innervated by which nerve?',
+      ['Axillary nerve', 'Radial nerve', 'Suprascapular nerve', 'Long thoracic nerve'],
+      'A',
+      'The axillary nerve (C5–C6) supplies the deltoid and teres minor, with sensation over the regimental badge area.'),
+    mcq('q5', 'MEDIUM',
+      'Which rotator cuff muscle initiates the first 15 degrees of arm abduction?',
+      ['Infraspinatus', 'Teres minor', 'Subscapularis', 'Supraspinatus'],
+      'D',
+      'The supraspinatus (suprascapular nerve) initiates abduction; the deltoid continues it beyond 15 degrees.'),
+    mcq('q6', 'HARD',
+      'Klumpke\'s paralysis, often from upward traction of the arm, classically involves which structures?',
+      ['Upper trunk C5–C6', 'Middle trunk C7', 'Lower trunk C8–T1', 'Posterior cord'],
+      'C',
+      'Lower trunk injury (C8–T1) paralyzes the intrinsic hand muscles and finger flexors — "claw hand" — and may include Horner syndrome.'),
+    mcq('q7', 'MEDIUM',
+      'The floor of the anatomical snuffbox is formed mainly by which bone?',
+      ['Lunate', 'Scaphoid', 'Hamate', 'Pisiform'],
+      'B',
+      'The snuffbox floor is the scaphoid (and trapezium). Tenderness here after a fall on an outstretched hand suggests a scaphoid fracture.'),
+    mcq('q8', 'EASY',
+      'Which superficial vein of the upper limb begins at the lateral end of the dorsal venous arch?',
+      ['Basilic vein', 'Cephalic vein', 'Median cubital vein', 'Axillary vein'],
+      'B',
+      'The cephalic vein starts laterally from the dorsal venous arch and runs in the deltopectoral groove to drain into the axillary vein.'),
+  ],
+};
+
+/** Same paper for any id in the pages phase; wiring phase replaces this. */
+export function fixtureQuiz(id: string): FixtureQuiz {
+  return { ...FIXTURE_QUIZ, id };
+}
