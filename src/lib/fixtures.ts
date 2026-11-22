@@ -322,3 +322,89 @@ export const FIXTURE_TEAM_POSTS = [
     createdAt: new Date(Date.now() - 26 * 3600 * 1000).toISOString(),
   },
 ];
+
+/* ── Profile (site: ProfileServerView) ─────────────────────────────── */
+
+export type FixtureProfileStat = { label: string; value: string; accent?: boolean };
+
+export type FixtureProfileUser = {
+  id: string;
+  name: string;
+  handle: string;
+  bio: string;
+  university: string;
+  semester: string;
+  rank: string;
+  rankColor: string;
+  streak: number;
+  joined: string;
+  verified: boolean;
+  stats: FixtureProfileStat[];
+  quizHistory: { id: string; title: string; score: number; date: string }[];
+  achievements: { id: string; title: string; desc: string; unlocked: boolean }[];
+};
+
+export const FIXTURE_PROFILE_USERS: Record<string, FixtureProfileUser> = {
+  'u1': {
+    id: 'u1',
+    name: 'Mariam Khaled',
+    handle: 'mariam.k',
+    bio: 'Year 4 med student @ Cairo University. Anatomy nerd, spotter-set curator for Anatomy Warriors. Coffee first, dissection second.',
+    university: 'Cairo University',
+    semester: 'Semester 7',
+    rank: 'Expert',
+    rankColor: '#E8C777',
+    streak: 12,
+    joined: 'September 2024',
+    verified: true,
+    stats: [
+      { label: 'Experience points', value: '1,840', accent: true },
+      { label: 'Completed quizzes', value: '96' },
+      { label: 'Average accuracy', value: '87%' },
+      { label: 'Followers', value: '342' },
+    ],
+    quizHistory: [
+      { id: 'qh1', title: 'Brachial Plexus Spotters', score: 92, date: '2 days ago' },
+      { id: 'qh2', title: 'Upper Limb Anatomy — Midterm Set', score: 85, date: '5 days ago' },
+      { id: 'qh3', title: 'Cardiac Cycle Rapid Review', score: 78, date: '1 week ago' },
+    ],
+    achievements: [
+      { id: 'a1', title: 'Spotter Master', desc: '50 anatomy spotter sets solved', unlocked: true },
+      { id: 'a2', title: 'On Fire', desc: '10-day study streak', unlocked: true },
+      { id: 'a3', title: 'Team Player', desc: '100 helpful community posts', unlocked: true },
+      { id: 'a4', title: 'Perfectionist', desc: '100% on any full exam', unlocked: false },
+    ],
+  },
+  me: {
+    id: 'me',
+    name: 'Ahmed Hassan',
+    handle: 'ahmed.hassan',
+    bio: 'Founder of MedOneX. Med student building the study tools I always wanted.',
+    university: 'Cairo University',
+    semester: 'Semester 5',
+    rank: 'Contributor',
+    rankColor: '#7CC4FF',
+    streak: 5,
+    joined: 'January 2025',
+    verified: true,
+    stats: [
+      { label: 'Experience points', value: '620', accent: true },
+      { label: 'Completed quizzes', value: '41' },
+      { label: 'Average accuracy', value: '81%' },
+      { label: 'Followers', value: '128' },
+    ],
+    quizHistory: [
+      { id: 'qh1', title: 'Anatomy Quick Drill', score: 88, date: '1 day ago' },
+      { id: 'qh2', title: 'Physiology Basics Set', score: 74, date: '4 days ago' },
+    ],
+    achievements: [
+      { id: 'a1', title: 'First Steps', desc: 'Completed your first quiz', unlocked: true },
+      { id: 'a2', title: 'On Fire', desc: '10-day study streak', unlocked: false },
+    ],
+  },
+};
+
+export const FIXTURE_PROFILE_POSTS: Record<string, typeof FIXTURE_TEAM_POSTS> = {
+  u1: [FIXTURE_TEAM_POSTS[0], FIXTURE_TEAM_POSTS[1]],
+  me: [FIXTURE_TEAM_POSTS[1]],
+};

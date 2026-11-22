@@ -257,5 +257,24 @@
     "activeRankings": "Active Rankings",
     "pts": "pts",
     "addMember": "Add New Member"
+  },
+  "profile": {
+    "posts": "Posts",
+    "quizzes": "Quizzes",
+    "saved": "Saved",
+    "achievements": "Achievements",
+    "follow": "Follow",
+    "following": "Following",
+    "editProfile": "Edit profile",
+    "share": "Share profile",
+    "settings": "Settings",
+    "joined": "Joined {{date}}",
+    "dayStreak": "{{count}}-day streak",
+    "stat": {
+      "Experience points": "Experience points",
+      "Completed quizzes": "Completed quizzes",
+      "Average accuracy": "Average accuracy",
+      "Followers": "Followers"
+    }
   }
 }

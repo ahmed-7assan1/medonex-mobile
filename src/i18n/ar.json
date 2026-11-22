@@ -257,5 +257,24 @@
     "activeRankings": "الترتيب النشط",
     "pts": "نقطة",
     "addMember": "إضافة عضو جديد"
+  },
+  "profile": {
+    "posts": "المنشورات",
+    "quizzes": "الاختبارات",
+    "saved": "المحفوظات",
+    "achievements": "الإنجازات",
+    "follow": "متابعة",
+    "following": "بتابعه",
+    "editProfile": "تعديل الملف",
+    "share": "مشاركة الملف",
+    "settings": "الإعدادات",
+    "joined": "انضم {{date}}",
+    "dayStreak": "سلسلة {{count}} يوم",
+    "stat": {
+      "Experience points": "نقاط الخبرة",
+      "Completed quizzes": "اختبارات مكتملة",
+      "Average accuracy": "متوسط الدقة",
+      "Followers": "المتابعون"
+    }
   }
 }
