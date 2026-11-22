@@ -45,8 +45,8 @@
     ],
     "extra": {
       "apiBase": "https://www.medonex.me",
-      "googleWebClientId": "",
-      "googleAndroidClientId": "",
+      "googleWebClientId": "679363914727-s0pj266mn1nnvfkn91fbbc4a1s86fg7c.apps.googleusercontent.com",
+      "googleAndroidClientId": "679363914727-36088khfgjsatbqi8e8132eprhifb722.apps.googleusercontent.com",
       "googleIosClientId": "",
       "router": {},
       "eas": {
