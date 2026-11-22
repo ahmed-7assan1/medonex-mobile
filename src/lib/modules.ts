@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiV1, ApiError } from './api';
-import { FIXTURE_CATALOG, isPreviewFixtures } from './fixtures';
+import { FIXTURE_CATALOG, isFixtureMode } from './fixtures';
 
 /** /api/v1/modules/catalog response (MedQs0 catalog-types.ts). */
 export interface ModuleWithStats {
@@ -38,10 +38,10 @@ export function useModulesCatalog() {
     queryKey: ['modules-catalog'],
     queryFn: () => apiV1.get<ModulesCatalogResponse>('/modules/catalog'),
     staleTime: 5 * 60 * 1000,
-    enabled: !isPreviewFixtures(),
+    enabled: !isFixtureMode(),
   });
   // Pages phase: show fixture content when the backend is unreachable.
-  return { ...q, data: isPreviewFixtures() ? FIXTURE_CATALOG : q.data ?? (q.isError ? FIXTURE_CATALOG : q.data) };
+  return { ...q, data: isFixtureMode() ? FIXTURE_CATALOG : q.data ?? (q.isError ? FIXTURE_CATALOG : q.data) };
 }
 
 /** GET /api/v1/modules/[moduleId]/bundle response (MedQs0 bundle route). */

@@ -16,10 +16,10 @@ export default function TabsLayout() {
   const { width } = useWindowDimensions();
   const { colors } = useTheme();
   const { t } = useTranslation();
-  const { token, bootstrapped } = useAuth();
+  const { token, bootstrapped, isGuest } = useAuth();
   const isTablet = width >= TABLET_BREAKPOINT;
 
-  if (bootstrapped && !token) {
+  if (bootstrapped && !token && !isGuest) {
     return <Redirect href="/(auth)/login" />;
   }
 

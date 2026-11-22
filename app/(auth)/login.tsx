@@ -15,11 +15,11 @@ export default function LoginScreen() {
   const { colors, fonts } = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { token, bootstrapped, signIn } = useAuth();
+  const { token, bootstrapped, isGuest, signIn, signInAsGuest } = useAuth();
   const google = useGoogleSignIn();
   const [error, setError] = useState<string | null>(null);
 
-  if (bootstrapped && token) {
+  if (bootstrapped && (token || isGuest)) {
     return <Redirect href="/(tabs)" />;
   }
 
@@ -79,6 +79,20 @@ export default function LoginScreen() {
         {error && (
           <Text style={[styles.error, { color: colors.destructive, fontFamily: fonts.sans }]}>{error}</Text>
         )}
+
+        {/* Guest trial: fixtures only — no account, no API calls, no writes. */}
+        <Pressable
+          accessibilityRole="button"
+          onPress={async () => {
+            await signInAsGuest();
+            router.replace('/(tabs)');
+          }}
+          style={({ pressed }) => [styles.guestBtn, pressed && { opacity: 0.7 }]}
+        >
+          <Text style={[styles.guestLabel, { color: colors.mutedForeground, fontFamily: fonts.sansMedium }]}>
+            {t('auth.continueAsGuest')}
+          </Text>
+        </Pressable>
       </View>
 
       <Text style={[styles.footer, { color: colors.mutedForeground }]}>medonex.me</Text>
@@ -111,5 +125,7 @@ const styles = StyleSheet.create({
   gMark: { width: 22, alignItems: 'center' },
   googleLabel: { fontSize: 14, fontWeight: '500' },
   error: { marginTop: 16, fontSize: 13, textAlign: 'center', maxWidth: 320 },
+  guestBtn: { marginTop: 20, paddingVertical: 8, paddingHorizontal: 16 },
+  guestLabel: { fontSize: 14, fontWeight: '500', textDecorationLine: 'underline' },
   footer: { textAlign: 'center', fontSize: 12 },
 });

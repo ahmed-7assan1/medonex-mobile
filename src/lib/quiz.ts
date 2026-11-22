@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiV1, ApiError } from './api';
-import { FIXTURE_PAST_PAPERS, isPreviewFixtures } from './fixtures';
+import { FIXTURE_PAST_PAPERS, isFixtureMode } from './fixtures';
 
 export interface QuizPaperAttempt { id: string; score: number; createdAt: string; }
 
@@ -41,8 +41,8 @@ export function usePastPapers() {
       }
     },
     staleTime: 5 * 60 * 1000,
-    enabled: !isPreviewFixtures(),
+    enabled: !isFixtureMode(),
   });
   // Pages phase: show fixture content when the backend is unreachable.
-  return { ...q, data: isPreviewFixtures() ? FIXTURE_PAST_PAPERS : q.data ?? (q.isError ? FIXTURE_PAST_PAPERS : q.data) };
+  return { ...q, data: isFixtureMode() ? FIXTURE_PAST_PAPERS : q.data ?? (q.isError ? FIXTURE_PAST_PAPERS : q.data) };
 }

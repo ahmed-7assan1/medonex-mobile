@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from './api';
-import { FIXTURE_HOME, isPreviewFixtures } from './fixtures';
+import { FIXTURE_HOME, isFixtureMode } from './fixtures';
 
 /** Response of GET /api/mobile/home (MedQs0 src/app/api/mobile/home/route.ts). */
 export interface HomeData {
@@ -55,10 +55,10 @@ export function useHome() {
     queryKey: ['home'],
     queryFn: () => api.get<HomeData>('/home'),
     staleTime: 5 * 60 * 1000,
-    enabled: !isPreviewFixtures(),
+    enabled: !isFixtureMode(),
   });
   // Pages phase: show fixture content when the backend is unreachable.
-  return { ...q, data: isPreviewFixtures() ? FIXTURE_HOME : q.data ?? (q.isError ? FIXTURE_HOME : q.data) };
+  return { ...q, data: isFixtureMode() ? FIXTURE_HOME : q.data ?? (q.isError ? FIXTURE_HOME : q.data) };
 }
 
 export function firstNameOf(name: string | null | undefined, email?: string): string {

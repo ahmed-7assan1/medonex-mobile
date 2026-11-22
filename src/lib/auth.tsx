@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
+import { setGuestMode } from './fixtures';
 
 export interface AuthUser {
   id: string;
@@ -17,14 +18,22 @@ interface AuthState {
   user: AuthUser | null;
   /** false while restoring the saved session at boot. */
   bootstrapped: boolean;
+  /** Guest trial mode: fixtures only, no API calls, no writes. */
+  isGuest: boolean;
   signIn: (token: string, user: AuthUser) => Promise<void>;
+  signInAsGuest: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
 
+/** Placeholder profile while browsing as a guest; settings falls back to its
+ *  guest-name label. Never sent to the backend. */
+const GUEST_USER: AuthUser = { id: 'guest', name: null, email: '' };
+
 const TOKEN_KEY = 'sessionToken'; // api.ts reads the same key
 const USER_KEY = 'authUser';
+const GUEST_KEY = 'guestMode';
 
 async function secureGet(key: string): Promise<string | null> {
   try {
@@ -53,12 +62,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [bootstrapped, setBootstrapped] = useState(false);
+  const [isGuest, setIsGuest] = useState(false);
 
   useEffect(() => {
     (async () => {
-      const [t, u] = await Promise.all([secureGet(TOKEN_KEY), secureGet(USER_KEY)]);
+      const [t, u, g] = await Promise.all([secureGet(TOKEN_KEY), secureGet(USER_KEY), secureGet(GUEST_KEY)]);
       if (t) setToken(t);
       if (u) { try { setUser(JSON.parse(u)); } catch { /* ignore */ } }
+      if (!t && g === '1') { setIsGuest(true); setGuestMode(true); }
       setBootstrapped(true);
     })();
   }, []);
@@ -68,18 +79,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       token,
       user,
       bootstrapped,
+      isGuest,
       signIn: async (t, u) => {
         setToken(t);
         setUser(u);
-        await Promise.all([secureSet(TOKEN_KEY, t), secureSet(USER_KEY, JSON.stringify(u))]);
+        setIsGuest(false);
+        setGuestMode(false);
+        await Promise.all([secureSet(TOKEN_KEY, t), secureSet(USER_KEY, JSON.stringify(u)), secureDelete(GUEST_KEY)]);
+      },
+      signInAsGuest: async () => {
+        setToken(null);
+        setUser(GUEST_USER);
+        setIsGuest(true);
+        setGuestMode(true);
+        await Promise.all([secureDelete(TOKEN_KEY), secureDelete(USER_KEY), secureSet(GUEST_KEY, '1')]);
       },
       signOut: async () => {
         setToken(null);
         setUser(null);
-        await Promise.all([secureDelete(TOKEN_KEY), secureDelete(USER_KEY)]);
+        setIsGuest(false);
+        setGuestMode(false);
+        await Promise.all([secureDelete(TOKEN_KEY), secureDelete(USER_KEY), secureDelete(GUEST_KEY)]);
       },
     }),
-    [token, user, bootstrapped],
+    [token, user, bootstrapped, isGuest],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

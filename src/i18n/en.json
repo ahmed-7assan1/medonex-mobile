@@ -14,7 +14,8 @@
     "configMissing": "Sign-in is being set up. Please try again soon.",
     "endpointMissing": "Sign-in will be available shortly.",
     "failed": "Couldn't sign in with Google. Please try again.",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "continueAsGuest": "Continue as guest"
   },
   "tabs": {
     "home": "Home",

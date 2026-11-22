@@ -16,6 +16,35 @@ export const isPreviewFixtures = (): boolean => {
   }
 };
 
+/** Guest mode (login screen "Continue as guest"): trial without an account.
+ *  Data hooks return fixtures immediately and never hit the network — guest
+ *  browsing is local-only, no API calls and no writes. The flag is set by the
+ *  auth provider (native, in-memory + SecureStore) and mirrored to
+ *  localStorage so the web export picks it up too. */
+let guestModeActive = false;
+export const setGuestMode = (on: boolean): void => {
+  guestModeActive = on;
+  try {
+    if (typeof localStorage !== 'undefined') {
+      if (on) localStorage.setItem('guestMode', '1');
+      else localStorage.removeItem('guestMode');
+    }
+  } catch {
+    /* ignore */
+  }
+};
+export const isGuestMode = (): boolean => {
+  if (guestModeActive) return true;
+  try {
+    return typeof localStorage !== 'undefined' && localStorage.getItem('guestMode') === '1';
+  } catch {
+    return false;
+  }
+};
+
+/** True when hooks must serve fixtures without touching the network. */
+export const isFixtureMode = (): boolean => isPreviewFixtures() || isGuestMode();
+
 const lec = (id: string, title: string, type: 'LECTURE' | 'PRACTICAL', q: number, files: number, order: number) => ({
   id,
   title,

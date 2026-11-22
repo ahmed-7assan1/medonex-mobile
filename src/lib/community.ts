@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { FIXTURE_FEED, FIXTURE_FORUMS, isPreviewFixtures } from './fixtures';
+import { FIXTURE_FEED, FIXTURE_FORUMS, isFixtureMode } from './fixtures';
 import { api, apiV1, ApiError } from './api';
 
 export type ForumType = 'GLOBAL' | 'UNIVERSITY' | 'FACULTY' | 'SEMESTER' | 'PRIVATE';
@@ -73,9 +73,9 @@ async function guestSafe<T>(fn: () => Promise<T>): Promise<T | null> {
 }
 
 export const useForums = () => {
-  const q = useQuery({ queryKey: ['forums'], queryFn: () => guestSafe(() => apiV1.get<Forum[]>('/forums')), staleTime: 5 * 60_000, enabled: !isPreviewFixtures() });
+  const q = useQuery({ queryKey: ['forums'], queryFn: () => guestSafe(() => apiV1.get<Forum[]>('/forums')), staleTime: 5 * 60_000, enabled: !isFixtureMode() });
   // Pages phase: show fixture content when the backend is unreachable.
-  return { ...q, data: isPreviewFixtures() ? FIXTURE_FORUMS : q.data ?? (q.isError ? FIXTURE_FORUMS : q.data) };
+  return { ...q, data: isFixtureMode() ? FIXTURE_FORUMS : q.data ?? (q.isError ? FIXTURE_FORUMS : q.data) };
 };
 
 export const useTiers = () =>
@@ -91,10 +91,10 @@ export const useCommunityFeed = (tier?: string) => {
         ),
       ),
     staleTime: 60_000,
-    enabled: !isPreviewFixtures(),
+    enabled: !isFixtureMode(),
   });
   // Pages phase: show fixture content when the backend is unreachable.
-  return { ...q, data: isPreviewFixtures() ? FIXTURE_FEED : q.data ?? (q.isError ? FIXTURE_FEED : q.data) };
+  return { ...q, data: isFixtureMode() ? FIXTURE_FEED : q.data ?? (q.isError ? FIXTURE_FEED : q.data) };
 };
 
 export const useRooms = () =>
