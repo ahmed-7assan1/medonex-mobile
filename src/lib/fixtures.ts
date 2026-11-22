@@ -208,3 +208,28 @@ export const FIXTURE_QUIZ: FixtureQuiz = {
 export function fixtureQuiz(id: string): FixtureQuiz {
   return { ...FIXTURE_QUIZ, id };
 }
+
+/* ─── Taskat fixtures (DailyFocus tasks + curriculum checklist) ─── */
+
+export interface FixtureTask {
+  id: string;
+  title: string;
+  time?: string;
+  lectureId?: string | null;
+  priority: 'HIGH' | 'MEDIUM' | 'LOW';
+  completed: boolean;
+}
+
+export const FIXTURE_TASKS: FixtureTask[] = [
+  { id: 't1', title: 'Study: Brachial Plexus Made Simple', time: '09:00 AM', lectureId: 'l3', priority: 'HIGH', completed: true },
+  { id: 't2', title: 'Revise upper limb flashcards', time: '01:30 PM', priority: 'MEDIUM', completed: false },
+  { id: 't3', title: 'Solve 20 MCQs — Nerve Injuries', time: '06:00 PM', lectureId: 'l4', priority: 'MEDIUM', completed: false },
+  { id: 't4', title: 'Watch dissection recording (Axilla)', priority: 'LOW', completed: false },
+];
+
+/** Checklist completion per lecture id (mirrors activities[0].isCompleted). */
+export const FIXTURE_COMPLETIONS: Record<string, boolean> = {
+  l1: true, l2: true, l3: true, l4: false, l5: false, l6: false,
+  l7: true, l8: false, l9: false, l10: false,
+  l11: false, l12: false, l13: false,
+};

@@ -7,7 +7,9 @@ import { useTheme } from '@/theme/ThemeContext';
 /** The mobile site's edge fades: a bottom gradient (10rem + safe area,
  *  background → transparent upwards) separating scrolling content from the
  *  floating capsule, and a matching top gradient under the status area.
- *  Purely visual, never intercepts touches. */
+ *  Purely visual, never intercepts touches. z-order: always BELOW the
+ *  floating buttons/capsules (bars use zIndex 10) so it never covers or
+ *  dims them — Ahmed, 22 Nov. */
 export function FadeEdges({ top = true, bottom = true }: { top?: boolean; bottom?: boolean }) {
   const { st } = useTheme();
   const insets = useSafeAreaInsets();
@@ -36,6 +38,6 @@ export function FadeEdges({ top = true, bottom = true }: { top?: boolean; bottom
 }
 
 const styles = StyleSheet.create({
-  top: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 30 },
-  bottom: { position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 30 },
+  top: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 5 },
+  bottom: { position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 5 },
 });
