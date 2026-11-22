@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  View, Text, Pressable, ScrollView, TextInput, StyleSheet, Image,
+  View, Text, Pressable, ScrollView, TextInput, StyleSheet, Image, useWindowDimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,6 +11,7 @@ import {
 } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme/ThemeContext';
+import { FadeEdges } from '@/components/FadeEdges';
 import { useAuth } from '@/lib/auth';
 
 type RowItem = { id: string; title: string; icon: any };
@@ -48,6 +49,8 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user } = useAuth();
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
 
   const [pwOpen, setPwOpen] = useState(false);
   const [pwCurrent, setPwCurrent] = useState('');
@@ -217,6 +220,7 @@ export default function SettingsScreen() {
           </View>
         </View>
       </ScrollView>
+      {!isTablet && <FadeEdges />}
     </View>
   );
 }

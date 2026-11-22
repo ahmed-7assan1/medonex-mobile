@@ -4,6 +4,8 @@ import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useTheme } from '@/theme/ThemeContext';
+import { FadeEdges } from './FadeEdges';
+import { USE_LIVE_BLUR, GLASS_OPACITY } from '@/theme/perf';
 
 /** Floating capsule tab bar, replicating the site's restyled MobileBottomNav
  *  (feat/mobile-nav-fab-style): 48px glass capsule (bg-white/70 | white/10,
@@ -14,14 +16,18 @@ export function CapsuleTabBar({ state, descriptors, navigation }: BottomTabBarPr
   const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
 
-  return (
-    <View pointerEvents="box-none" style={[styles.wrap, { paddingBottom: insets.bottom + 12 }]}>
-      <BlurView intensity={50} tint={isDark ? 'dark' : 'light'} style={styles.blur}>
+  const glassBg = isDark
+    ? `rgba(255,255,255,${GLASS_OPACITY.dark})`
+    : `rgba(255,255,255,${GLASS_OPACITY.light})`;
+
+  const capsuleBody = (
         <View
           style={[
             styles.capsule,
             {
-              backgroundColor: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.70)',
+              backgroundColor: USE_LIVE_BLUR
+                ? (isDark ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.70)')
+                : glassBg,
               borderColor: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.10)',
             },
           ]}
@@ -59,8 +65,23 @@ export function CapsuleTabBar({ state, descriptors, navigation }: BottomTabBarPr
             );
           })}
         </View>
-      </BlurView>
-    </View>
+  );
+
+  return (
+    <>
+      {/* Edge fades: bottom separates content from the floating capsule,
+          top softens the status-area edge — the mobile site's pattern. */}
+      <FadeEdges />
+      <View pointerEvents="box-none" style={[styles.wrap, { paddingBottom: insets.bottom + 12 }]}>
+        {USE_LIVE_BLUR ? (
+          <BlurView intensity={50} tint={isDark ? 'dark' : 'light'} style={styles.blur}>
+            {capsuleBody}
+          </BlurView>
+        ) : (
+          <View style={[styles.blur, styles.blurFallback]}>{capsuleBody}</View>
+        )}
+      </View>
+    </>
   );
 }
 
@@ -78,10 +99,12 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     width: '100%',
     maxWidth: 420,
+  },
+  blurFallback: {
     shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.12,
     shadowRadius: 12,
-    shadowOffset: { width: 0, height: 2 },
     elevation: 6,
   },
   capsule: {

@@ -11,6 +11,7 @@ import {
 } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme/ThemeContext';
+import { FadeEdges } from '@/components/FadeEdges';
 import { TABLET_BREAKPOINT } from '@/theme/tokens';
 import { useModuleBundle, BundleSubject, BundlePaper } from '@/lib/modules';
 import { ApiError } from '@/lib/api';
@@ -420,6 +421,7 @@ export default function ModuleDetailScreen() {
         {header}
         {body}
       </ScrollView>
+      {!isTablet && <FadeEdges />}
     </View>
   );
 }

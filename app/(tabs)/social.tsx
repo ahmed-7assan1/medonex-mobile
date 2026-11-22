@@ -2,6 +2,8 @@ import React, { useMemo, useState } from 'react';
 import { View, Text, Pressable, FlatList, RefreshControl, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SquarePen, Users } from 'lucide-react-native';
+import { GlassFab } from '@/components/GlassFab';
+import { LIST_PERF } from '@/theme/perf';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme/ThemeContext';
 import { useForums, useCommunityFeed } from '@/lib/community';
@@ -30,6 +32,10 @@ export default function SocialScreen() {
       )}
 
       <FlatList
+        removeClippedSubviews
+        windowSize={LIST_PERF.windowSize}
+        maxToRenderPerBatch={LIST_PERF.maxToRenderPerBatch}
+        initialNumToRender={LIST_PERF.initialNumToRender}
         data={posts}
         keyExtractor={(p) => p.id}
         renderItem={({ item }) => <PostCard post={item} />}
@@ -54,23 +60,12 @@ export default function SocialScreen() {
         }
       />
 
-      {/* Create-post FAB — pinned above the capsule like the site
-          (76px capsule + 12px gap + safe area). */}
+      {/* Create-post FAB — the site's new glass button style,
+          pinned above the capsule (76px capsule + 12px gap + safe area). */}
       <View pointerEvents="box-none" style={[styles.fabWrap, { bottom: insets.bottom + 76 + 12 }]}>
-        <Pressable
-          accessibilityLabel="Create post"
-          onPress={() => { /* composer sheet — later phase */ }}
-          style={({ pressed }) => [
-            styles.fab,
-            {
-              backgroundColor: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.70)',
-              borderColor: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.10)',
-            },
-            pressed && { transform: [{ scale: 0.95 }] },
-          ]}
-        >
+        <GlassFab label="Create post" onPress={() => { /* composer sheet — later phase */ }}>
           <SquarePen size={18} color={isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)'} />
-        </Pressable>
+        </GlassFab>
       </View>
     </View>
   );
