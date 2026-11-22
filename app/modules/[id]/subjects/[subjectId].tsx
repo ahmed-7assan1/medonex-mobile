@@ -15,6 +15,7 @@ import { useTheme } from '@/theme/ThemeContext';
 import { TABLET_BREAKPOINT } from '@/theme/tokens';
 import { useModuleBundle } from '@/lib/modules';
 import { ApiError } from '@/lib/api';
+import { FIXTURE_MODULE_BUNDLE } from '@/lib/fixtures';
 
 const SUBJECT_ICONS: Record<string, any> = {
   Activity, Atom, Bone, Brain, Dna, FlaskConical, Layers, Microscope, Pill, Shield,
@@ -59,8 +60,9 @@ export default function SubjectLecturesScreen() {
   const bundle = useModuleBundle(moduleId ?? '');
   const [activeTab, setActiveTab] = useState<'lectures' | 'practical'>('lectures');
 
-  const isGuest = bundle.error instanceof ApiError && bundle.error.status === 401;
-  const mod = bundle.data?.module;
+  // Pages phase: fixtures stand in for live data until wiring (Ahmed, 22 Nov).
+  const failed = bundle.error instanceof ApiError;
+  const mod = (bundle.data ?? (failed ? FIXTURE_MODULE_BUNDLE : undefined))?.module;
   const subject = mod?.subjects.find((s) => s.id === subjectId);
 
   const { lectures, practicalLectures } = useMemo(() => {
@@ -99,17 +101,7 @@ export default function SubjectLecturesScreen() {
 
   let body: React.ReactNode = null;
 
-  if (isGuest) {
-    body = (
-      <View style={[styles.emptyCard, { backgroundColor: st.surface, borderColor: st.border }]}>
-        <View style={[styles.emptyIcon, { backgroundColor: st.surfacePressed, borderColor: st.border }]}>
-          <BookOpen size={28} color={colors.primary} />
-        </View>
-        <Text style={{ color: st.text, fontSize: 15, fontWeight: '700', fontFamily: fonts.sansBold }}>{t('subject.signInTitle')}</Text>
-        <Text style={{ color: st.muted, fontSize: 12, marginTop: 4, textAlign: 'center' }}>{t('subject.signInDesc')}</Text>
-      </View>
-    );
-  } else if (!subject) {
+  if (!subject) {
     body = (
       <View style={{ gap: 12 }}>
         <View style={{ backgroundColor: st.surface, height: 44, borderRadius: 999, opacity: 0.6 }} />

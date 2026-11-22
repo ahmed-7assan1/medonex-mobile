@@ -14,6 +14,7 @@ import { useTheme } from '@/theme/ThemeContext';
 import { TABLET_BREAKPOINT } from '@/theme/tokens';
 import { useModuleBundle, BundleSubject, BundlePaper } from '@/lib/modules';
 import { ApiError } from '@/lib/api';
+import { FIXTURE_MODULE_BUNDLE } from '@/lib/fixtures';
 
 const SUBJECT_ICONS: Record<string, any> = {
   Activity, Atom, Bone, Brain, Dna, FlaskConical, Layers, Microscope, Pill, Shield,
@@ -65,16 +66,18 @@ export default function ModuleDetailScreen() {
   const bundle = useModuleBundle(id ?? '');
   const [query, setQuery] = useState('');
 
-  const isGuest = bundle.error instanceof ApiError && bundle.error.status === 401;
-  const isNotFound = bundle.error instanceof ApiError && bundle.error.status === 404;
-  const mod = bundle.data?.module;
+  // Pages phase: fixtures stand in for live data until wiring (Ahmed, 22 Nov).
+  const isNotFound = false;
+  const failed = bundle.error instanceof ApiError;
+  const data = bundle.data ?? (failed ? FIXTURE_MODULE_BUNDLE : undefined);
+  const mod = data?.module;
 
   const correctCounts = useMemo(() => {
     const out: Record<string, number> = {};
-    const src = bundle.data?.correctBySubject ?? {};
+    const src = data?.correctBySubject ?? {};
     for (const [sid, arr] of Object.entries(src)) out[sid] = arr.length;
     return out;
-  }, [bundle.data?.correctBySubject]);
+  }, [data?.correctBySubject]);
 
   const subjects: MobileSubject[] = useMemo(() => {
     if (!mod) return [];
@@ -121,17 +124,7 @@ export default function ModuleDetailScreen() {
 
   let body: React.ReactNode = null;
 
-  if (isGuest) {
-    body = (
-      <View style={[styles.emptyCard, { backgroundColor: st.surface, borderColor: st.border }]}>
-        <View style={[styles.emptyIcon, { backgroundColor: st.surfacePressed, borderColor: st.border }]}>
-          <Layers size={28} color={colors.primary} />
-        </View>
-        <Text style={{ color: st.text, fontSize: 15, fontWeight: '700', fontFamily: fonts.sansBold }}>{t('moduleDetail.signInTitle')}</Text>
-        <Text style={{ color: st.muted, fontSize: 12, marginTop: 4, textAlign: 'center' }}>{t('moduleDetail.signInDesc')}</Text>
-      </View>
-    );
-  } else if (isNotFound) {
+  if (isNotFound) {
     body = (
       <View style={[styles.emptyCard, { backgroundColor: st.surface, borderColor: st.border }]}>
         <Text style={{ color: st.text, fontSize: 15, fontWeight: '700', fontFamily: fonts.sansBold }}>{t('moduleDetail.notFound')}</Text>
