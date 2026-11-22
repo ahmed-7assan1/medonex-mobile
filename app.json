@@ -28,7 +28,7 @@
       ]
     },
     "updates": {
-      "url": "https://updates.medonex.me/manifest",
+      "url": "https://u.expo.dev/ad7b62cd-8fde-4c05-99c2-d09bf406cec1",
       "enabled": true,
       "checkAutomatically": "ON_LOAD",
       "fallbackToCacheTimeout": 0
@@ -47,7 +47,11 @@
       "apiBase": "https://www.medonex.me",
       "googleWebClientId": "",
       "googleAndroidClientId": "",
-      "googleIosClientId": ""
+      "googleIosClientId": "",
+      "router": {},
+      "eas": {
+        "projectId": "ad7b62cd-8fde-4c05-99c2-d09bf406cec1"
+      }
     },
     "owner": "medonex"
   }
