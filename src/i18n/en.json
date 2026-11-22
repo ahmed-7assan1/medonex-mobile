@@ -67,5 +67,11 @@
     "signInDesc": "Quizzes, attempts and scores are personal — sign in to see yours.",
     "noMatch": "No quizzes match your search.",
     "emptyView": "No quizzes in this view yet."
+  },
+  "social": {
+    "signInTitle": "Sign in to join the community",
+    "signInDesc": "Forums, rooms and posts are for members — sign in to see your university community.",
+    "emptyTitle": "No posts yet",
+    "emptyDesc": "Be the first to post in this forum."
   }
 }
