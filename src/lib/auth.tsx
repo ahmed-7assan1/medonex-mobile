@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
@@ -59,6 +60,7 @@ async function secureDelete(key: string): Promise<void> {
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const queryClient=useQueryClient();
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [bootstrapped, setBootstrapped] = useState(false);
@@ -81,6 +83,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       bootstrapped,
       isGuest,
       signIn: async (t, u) => {
+        await queryClient.cancelQueries();
+        queryClient.clear();
         setToken(t);
         setUser(u);
         setIsGuest(false);
@@ -88,6 +92,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await Promise.all([secureSet(TOKEN_KEY, t), secureSet(USER_KEY, JSON.stringify(u)), secureDelete(GUEST_KEY)]);
       },
       signInAsGuest: async () => {
+        await queryClient.cancelQueries();
+        queryClient.clear();
         setToken(null);
         setUser(GUEST_USER);
         setIsGuest(true);
@@ -95,6 +101,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await Promise.all([secureDelete(TOKEN_KEY), secureDelete(USER_KEY), secureSet(GUEST_KEY, '1')]);
       },
       signOut: async () => {
+        await queryClient.cancelQueries();
+        queryClient.clear();
         setToken(null);
         setUser(null);
         setIsGuest(false);

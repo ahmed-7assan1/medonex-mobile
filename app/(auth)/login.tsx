@@ -11,7 +11,7 @@ import { useGoogleSignIn, ExchangeError } from '@/lib/googleAuth';
  *  decision: id_token from Google gets exchanged for a mobile JWT at
  *  /api/mobile/auth/google (endpoint pending Ahmed's OK). */
 export default function LoginScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { colors, fonts } = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -34,6 +34,10 @@ export default function LoginScreen() {
         setError(t('auth.configMissing'));
       } else if (e instanceof ExchangeError && e.code === 'endpoint-missing') {
         setError(t('auth.endpointMissing'));
+      } else if(e instanceof ExchangeError && (e.code==='profile-required'||e.code==='account-link-required')) {
+        setError(i18n.language==='ar'?'كمّل بيانات حسابك أو ربطه على medonex.me الأول، وبعدها جرّب تسجيل الدخول هنا.':'Complete your profile or account linking on medonex.me first, then sign in here.');
+      } else if(e instanceof ExchangeError && e.code==='play-services') {
+        setError(i18n.language==='ar'?'خدمات Google Play محتاجة تحديث أو مش متاحة على الجهاز.':'Google Play Services needs an update or is unavailable on this device.');
       } else if (!(e instanceof ExchangeError && e.message === 'cancelled')) {
         setError(t('auth.failed'));
       }
@@ -55,7 +59,7 @@ export default function LoginScreen() {
 
         <Pressable
           accessibilityRole="button"
-          disabled={google.busy}
+          disabled={google.busy || !google.ready}
           onPress={onGoogle}
           style={({ pressed }) => [
             styles.googleBtn,
@@ -83,6 +87,7 @@ export default function LoginScreen() {
         {/* Guest trial: fixtures only — no account, no API calls, no writes. */}
         <Pressable
           accessibilityRole="button"
+          disabled={google.busy}
           onPress={async () => {
             await signInAsGuest();
             router.replace('/(tabs)');

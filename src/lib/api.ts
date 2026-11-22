@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import Constants from 'expo-constants';
 import { isGuestMode } from './fixtures';
@@ -17,7 +18,7 @@ interface FetchOptions extends RequestInit {
 async function authHeaders(custom?: HeadersInit): Promise<Headers> {
   const headers = new Headers({ 'Content-Type': 'application/json', Accept: 'application/json', ...(custom as object) });
   try {
-    const token = await SecureStore.getItemAsync('sessionToken');
+    const token = Platform.OS === 'web' ? globalThis.localStorage?.getItem('sessionToken') : await SecureStore.getItemAsync('sessionToken');
     if (token) headers.set('Authorization', `Bearer ${token}`);
   } catch {
     // SecureStore unavailable (web preview) — proceed unauthenticated.
