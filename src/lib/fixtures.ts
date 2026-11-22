@@ -600,6 +600,11 @@ const MOD_STATS: ModuleWithStats[] = [
 ];
 
 export const FIXTURE_HOME: HomeData = {
+  dailyTarget: 50, todayItemCount: 18, progressToNext: 42,
+  suggestedLectures: [
+    { lectureId: 'l4', moduleId: 'demo', title: 'Nerve Injuries of the Upper Limb', moduleName: 'Anatomy & Embryology', subjectName: 'Anatomy', description: 'Review the major peripheral nerve injuries and their clinical signs.', imageUrl: null },
+    { lectureId: 'l8', moduleId: 'demo', title: 'Connective Tissue Proper', moduleName: 'Anatomy & Embryology', subjectName: 'Histology', description: 'Explore the structure and function of connective tissues.', imageUrl: null },
+  ],
   user: {
     id: 'me', name: 'Ahmed Hassan', nickname: 'ahmed.hassan', email: 'ahmed@medonex.me', image: null,
     points: 1280,

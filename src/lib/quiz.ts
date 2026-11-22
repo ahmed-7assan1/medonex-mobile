@@ -33,6 +33,7 @@ export function usePastPapers() {
   const q = useQuery({
     queryKey: ['past-papers'],
     queryFn: async () => {
+      if (isFixtureMode()) return FIXTURE_PAST_PAPERS;
       try {
         return await apiV1.get<PastPapersResponse>('/past-papers/cards');
       } catch (e) {

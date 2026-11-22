@@ -1,5 +1,6 @@
 import * as SecureStore from 'expo-secure-store';
 import Constants from 'expo-constants';
+import { isGuestMode } from './fixtures';
 
 /** Public API base of the MedOneX website. Not a secret. */
 const BASE: string =
@@ -25,6 +26,7 @@ async function authHeaders(custom?: HeadersInit): Promise<Headers> {
 }
 
 export async function apiFetch<T>(path: string, options: FetchOptions = {}): Promise<T> {
+  if (isGuestMode()) throw new ApiError(403, 'Guest preview is local-only');
   const url = `${API_URL}${path.startsWith('/') ? path : `/${path}`}`;
   const headers = await authHeaders(options.headers);
   const controller = new AbortController();
@@ -56,6 +58,7 @@ export const api = {
 };
 
 async function apiV1Fetch<T>(path: string, options: FetchOptions = {}): Promise<T> {
+  if (isGuestMode()) throw new ApiError(403, 'Guest preview is local-only');
   const url = `${API_V1_URL}${path.startsWith('/') ? path : `/${path}`}`;
   const headers = await authHeaders(options.headers);
   const controller = new AbortController();

@@ -87,7 +87,7 @@ export function ContinueLearningCarousel({ lastLecture }: { lastLecture: LastLec
 
   const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const x = e.nativeEvent.contentOffset.x;
-    const i = Math.round(x / cardWidth.current);
+    const i = Math.round(Math.abs(x) / (cardWidth.current + 12));
     if (i !== idx) setIdx(Math.max(0, Math.min(slides.length - 1, i)));
   };
 

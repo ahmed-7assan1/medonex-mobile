@@ -73,18 +73,18 @@ async function guestSafe<T>(fn: () => Promise<T>): Promise<T | null> {
 }
 
 export const useForums = () => {
-  const q = useQuery({ queryKey: ['forums'], queryFn: () => guestSafe(() => apiV1.get<Forum[]>('/forums')), staleTime: 5 * 60_000, enabled: !isFixtureMode() });
+  const q = useQuery({ queryKey: ['forums'], queryFn: () => isFixtureMode() ? Promise.resolve(FIXTURE_FORUMS) : guestSafe(() => apiV1.get<Forum[]>('/forums')), staleTime: 5 * 60_000, enabled: !isFixtureMode() });
   // Pages phase: show fixture content when the backend is unreachable.
   return { ...q, data: isFixtureMode() ? FIXTURE_FORUMS : q.data ?? (q.isError ? FIXTURE_FORUMS : q.data) };
 };
 
 export const useTiers = () =>
-  useQuery({ queryKey: ['community-tiers'], queryFn: () => guestSafe(() => apiV1.get<{ tiers: TierInfo[] }>('/community/tiers')), staleTime: 5 * 60_000 });
+  useQuery({ queryKey: ['community-tiers'], queryFn: () => isFixtureMode() ? Promise.resolve({ tiers: [] as TierInfo[] }) : guestSafe(() => apiV1.get<{ tiers: TierInfo[] }>('/community/tiers')), staleTime: 5 * 60_000 });
 
 export const useCommunityFeed = (tier?: string) => {
   const q = useQuery({
     queryKey: ['community-feed', tier ?? 'default'],
-    queryFn: () =>
+    queryFn: () => isFixtureMode() ? Promise.resolve(FIXTURE_FEED) :
       guestSafe(() =>
         apiV1.get<{ items: Post[]; nextCursor: string | null; hasMore: boolean }>(
           `/community/feed?limit=10${tier ? `&tier=${encodeURIComponent(tier)}` : ''}`,
@@ -101,6 +101,7 @@ export const useRooms = () =>
   useQuery({
     queryKey: ['rooms'],
     queryFn: async () => {
+      if (isFixtureMode()) return { myRoom: null, rooms: [] as RoomSummary[] };
       const [mine, all] = await Promise.all([
         guestSafe(() => api.get<RoomSummary[]>('/rooms/me')),
         guestSafe(() => apiV1.get<RoomSummary[]>('/rooms')),

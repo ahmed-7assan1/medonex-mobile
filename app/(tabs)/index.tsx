@@ -35,16 +35,16 @@ export default function HomeScreen() {
       lectureTitle: a.lecture.title,
       subjectName: a.lecture.subject?.name ?? null,
       channelName: a.lecture.subject?.module?.name ?? null,
-      coverImageUrl: null,
+      coverImageUrl: a.lecture.coverImageUrl ?? null,
     };
   }, [data]);
 
-  const suggested: SuggestedLecture[] = useMemo(() => [], []);
+  const suggested: SuggestedLecture[] = data?.suggestedLectures ?? [];
 
   const goal = useMemo(() => {
     const tasks = data?.todayTasks ?? [];
-    const done = tasks.filter((x) => x.completed ?? x.isDone ?? x.done).length;
-    const target = tasks.length;
+    const done = data?.todayItemCount ?? tasks.filter((x) => x.completed ?? x.isDone ?? x.done).length;
+    const target = data?.dailyTarget ?? 50;
     return { done, target, pct: target > 0 ? (done / target) * 100 : 0 };
   }, [data]);
 
@@ -75,7 +75,7 @@ export default function HomeScreen() {
             goalPct={goal.pct}
             streak={data?.stats?.streak ?? 0}
             rankLabel={data?.stats?.rank?.label ?? '—'}
-            rankPct={null}
+            rankPct={data?.progressToNext ?? 0}
           />
           <ContinueLearningCarousel lastLecture={lastLecture} />
           <SuggestedLecturesCarousel lectures={suggested} />

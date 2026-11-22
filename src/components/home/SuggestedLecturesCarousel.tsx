@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable, Image, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, Pressable, Image, ScrollView, StyleSheet, useWindowDimensions } from 'react-native';
 import { BookOpen } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -23,6 +23,7 @@ export function SuggestedLecturesCarousel({ lectures }: { lectures: SuggestedLec
   const { st, fonts } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
+  const { width } = useWindowDimensions();
   if (lectures.length === 0) return null;
 
   return (
@@ -42,6 +43,7 @@ export function SuggestedLecturesCarousel({ lectures }: { lectures: SuggestedLec
             onPress={() => router.push(`/modules/${l.moduleId}/lectures/${l.lectureId}` as never)}
             style={({ pressed }) => [
               styles.card,
+              { width: Math.min(280, (width - 32) * 0.72) },
               { backgroundColor: st.surface, borderColor: st.border },
               pressed && { backgroundColor: st.surfacePressed, transform: [{ scale: 0.985 }] },
             ]}

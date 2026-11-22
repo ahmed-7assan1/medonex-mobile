@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiV1, ApiError } from './api';
-import { FIXTURE_CATALOG, isFixtureMode } from './fixtures';
+import { FIXTURE_CATALOG, FIXTURE_MODULE_BUNDLE, isFixtureMode } from './fixtures';
 
 /** /api/v1/modules/catalog response (MedQs0 catalog-types.ts). */
 export interface ModuleWithStats {
@@ -36,7 +36,7 @@ export interface ModulesCatalogResponse {
 export function useModulesCatalog() {
   const q = useQuery({
     queryKey: ['modules-catalog'],
-    queryFn: () => apiV1.get<ModulesCatalogResponse>('/modules/catalog'),
+    queryFn: () => isFixtureMode() ? Promise.resolve(FIXTURE_CATALOG) : apiV1.get<ModulesCatalogResponse>('/modules/catalog'),
     staleTime: 5 * 60 * 1000,
     enabled: !isFixtureMode(),
   });
@@ -77,10 +77,12 @@ export interface ModuleBundle {
 }
 
 export function useModuleBundle(moduleId: string) {
-  return useQuery({
+  const q = useQuery({
     queryKey: ['module-bundle', moduleId],
-    queryFn: () => apiV1.get<ModuleBundle>(`/modules/${encodeURIComponent(moduleId)}/bundle`),
+    queryFn: () => isFixtureMode() ? Promise.resolve(FIXTURE_MODULE_BUNDLE) : apiV1.get<ModuleBundle>(`/modules/${encodeURIComponent(moduleId)}/bundle`),
+    enabled: !isFixtureMode(),
     staleTime: 5 * 60 * 1000,
     retry: (count, err) => !(err instanceof Error && 'status' in err && (err as { status: number }).status === 401) && count < 2,
   });
+  return { ...q, data: isFixtureMode() ? FIXTURE_MODULE_BUNDLE : q.data };
 }

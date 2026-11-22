@@ -26,7 +26,7 @@ export function CapsuleTabBar({ state, descriptors, navigation }: BottomTabBarPr
             styles.capsule,
             {
               backgroundColor: USE_LIVE_BLUR
-                ? (isDark ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.70)')
+                ? (isDark ? 'rgba(11,11,11,0.85)' : 'rgba(255,255,255,0.80)')
                 : glassBg,
               borderColor: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.10)',
             },
@@ -91,6 +91,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
+    zIndex: 20,
+    elevation: 20,
     alignItems: 'center',
     paddingHorizontal: 16,
   },
