@@ -408,3 +408,28 @@ export const FIXTURE_PROFILE_POSTS: Record<string, typeof FIXTURE_TEAM_POSTS> = 
   u1: [FIXTURE_TEAM_POSTS[0], FIXTURE_TEAM_POSTS[1]],
   me: [FIXTURE_TEAM_POSTS[1]],
 };
+
+/* ── Dr Q chat (site: DrQChat) ─────────────────────────────────────── */
+
+export type FixtureChatMessage = { id: string; role: 'user' | 'assistant'; text: string; time: string };
+
+export const FIXTURE_DRQ_MESSAGES: FixtureChatMessage[] = [
+  { id: 'm1', role: 'user', text: 'Explain the renin-angiotensin-aldosterone system in simple steps', time: '09:41' },
+  {
+    id: 'm2', role: 'assistant',
+    text: 'Think of RAAS as the body\'s blood-pressure rescue team:\n\n1. Low pressure or low Na⁺ at the kidney → juxtaglomerular cells release **renin**.\n2. Renin converts angiotensinogen (from the liver) into **angiotensin I**.\n3. ACE in the lungs converts it into **angiotensin II** — the main actor.\n4. Angiotensin II vasoconstricts, triggers **aldosterone** (Na⁺ and water retention), ADH release, and thirst.\n\nNet effect: higher volume + higher resistance = pressure restored.',
+    time: '09:41',
+  },
+  { id: 'm3', role: 'user', text: 'Give me one quick MCQ on it', time: '09:42' },
+  {
+    id: 'm4', role: 'assistant',
+    text: 'A drug blocks ACE. Which change do you expect?\n\nA) ↑ Angiotensin II\nB) ↓ Aldosterone\nC) ↑ Blood pressure\nD) ↓ Renin\n\n**Answer: B** — no ACE means no angiotensin II, so aldosterone falls (and renin actually rises by feedback).',
+    time: '09:42',
+  },
+];
+
+export const FIXTURE_DRQ_SUGGESTIONS = [
+  'Explain the cardiac action potential',
+  'Quiz me on antibiotics',
+  'Summarize the nephron in 5 points',
+];
