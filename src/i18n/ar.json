@@ -77,5 +77,29 @@
     "signInDesc": "المنتديات والرومات والبوستات للأعضاء — سجّل دخولك عشان تشوف مجتمع جامعتك.",
     "emptyTitle": "مفيش بوستات لسه",
     "emptyDesc": "كن أول واحد يكتب في المنتدى ده."
+  },
+  "moduleDetail": {
+    "back": "رجوع",
+    "searchSubjects": "ابحث في المواد...",
+    "subjects": "المواد",
+    "assessments": "التقييمات",
+    "attempts": "محاولة",
+    "noSubjects": "لا توجد مواد بعد",
+    "noSubjectsDesc": "هذه المادة لا تحتوي على مواد متاحة حاليًا.",
+    "noMatchSubjects": "لا توجد مواد مطابقة",
+    "noMatchSubjectsDesc": "جرّب اسم مادة آخر.",
+    "signInTitle": "سجّل الدخول لعرض هذه المادة",
+    "signInDesc": "تفاصيل المادة والتقدم والتقييمات تحتاج حسابًا.",
+    "notFound": "المادة غير موجودة",
+    "notFoundDesc": "هذه المادة غير متاحة لفصلك الدراسي الحالي.",
+    "academicModule": "مادة أكاديمية",
+    "curriculum": "المنهج",
+    "disciplines": "التخصصات المتاحة",
+    "assessmentsSub": "امتحانات السنوات السابقة والتجريبية",
+    "lectures": "المحاضرات",
+    "questions": "الأسئلة",
+    "mastery": "الإتقان",
+    "done": "منجز",
+    "interactive": "تفاعلي"
   }
 }

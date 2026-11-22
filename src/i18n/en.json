@@ -77,5 +77,29 @@
     "signInDesc": "Forums, rooms and posts are for members — sign in to see your university community.",
     "emptyTitle": "No posts yet",
     "emptyDesc": "Be the first to post in this forum."
+  },
+  "moduleDetail": {
+    "back": "Back",
+    "searchSubjects": "Search subjects...",
+    "subjects": "Subjects",
+    "assessments": "Assessments",
+    "attempts": "attempts",
+    "noSubjects": "No subjects yet",
+    "noSubjectsDesc": "This module has no subjects available right now.",
+    "noMatchSubjects": "No matching subjects",
+    "noMatchSubjectsDesc": "Try another subject name.",
+    "signInTitle": "Sign in to view this module",
+    "signInDesc": "Module details, progress and assessments need an account.",
+    "notFound": "Module not found",
+    "notFoundDesc": "This module is unavailable for your current semester.",
+    "academicModule": "Academic Module",
+    "curriculum": "Curriculum",
+    "disciplines": "Available Disciplines",
+    "assessmentsSub": "Previous Years & Mock Exams",
+    "lectures": "Lectures",
+    "questions": "Questions",
+    "mastery": "Mastery",
+    "done": "Done",
+    "interactive": "Interactive"
   }
 }
