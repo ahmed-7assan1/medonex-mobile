@@ -1,0 +1,9 @@
+name = "medonex-mobile-updates"
+main = "src/index.ts"
+compatibility_date = "2026-11-22"
+
+# Route: updates.medonex.me/* (add via Cloudflare dashboard, no secrets here)
+
+[[r2_buckets]]
+binding = "MEDONEX_APP_UPDATES"
+bucket_name = "medonex-app-updates"

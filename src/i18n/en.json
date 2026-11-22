@@ -1,0 +1,26 @@
+{
+  "common": {
+    "appName": "MedOneX",
+    "loading": "Loading...",
+    "retry": "Retry",
+    "save": "Save",
+    "cancel": "Cancel",
+    "comingSoon": "Coming soon"
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "signInGoogle": "Continue with Google",
+    "tagline": "Your medical learning companion"
+  },
+  "tabs": {
+    "home": "Home",
+    "modules": "Modules",
+    "qbank": "QBank",
+    "social": "Social",
+    "profile": "Profile"
+  },
+  "home": {
+    "greeting": "Welcome back",
+    "continueStudying": "Continue studying"
+  }
+}

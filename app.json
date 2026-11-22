@@ -1,0 +1,49 @@
+{
+  "expo": {
+    "name": "MedOneX",
+    "slug": "medonex-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "medonex",
+    "userInterfaceStyle": "automatic",
+    "backgroundColor": "#0B0B0B",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0B0B0B"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.medonex.app",
+      "userInterfaceStyle": "automatic"
+    },
+    "android": {
+      "package": "com.medonex.app",
+      "edgeToEdgeEnabled": true,
+      "userInterfaceStyle": "automatic",
+      "permissions": ["NOTIFICATIONS"]
+    },
+    "updates": {
+      "url": "https://updates.medonex.me/manifest",
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-secure-store",
+      "expo-updates",
+      "expo-localization"
+    ],
+    "extra": {
+      "apiBase": "https://www.medonex.me"
+    },
+    "owner": "medonex"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "common": {
+    "appName": "MedOneX",
+    "loading": "جاري التحميل...",
+    "retry": "حاول تاني",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "comingSoon": "قريبًا"
+  },
+  "auth": {
+    "signIn": "تسجيل الدخول",
+    "signInGoogle": "كمّل بجوجل",
+    "tagline": "رفيقك في تعلم الطب"
+  },
+  "tabs": {
+    "home": "الرئيسية",
+    "modules": "المواد",
+    "qbank": "بنك الأسئلة",
+    "social": "السوشيال",
+    "profile": "حسابي"
+  },
+  "home": {
+    "greeting": "أهلًا بعودتك",
+    "continueStudying": "كمّل مذاكرتك"
+  }
+}

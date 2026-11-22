@@ -1,0 +1,15 @@
+node_modules/
+.expo/
+dist/
+build/
+*.log
+.DS_Store
+# NEVER commit secrets. This is a PUBLIC repository.
+.env
+.env.*
+*.pem
+*.key
+*.keystore
+*.p12
+GoogleService-Info.plist
+google-services.json
