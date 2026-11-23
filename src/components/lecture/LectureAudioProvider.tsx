@@ -6,7 +6,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Alert, AppState } from "react-native";
+import { Alert, AppState, Platform } from "react-native";
 import { useAuth } from "@/lib/auth";
 import { downloadUrl } from "@/lib/offline-downloads";
 import {
@@ -171,12 +171,13 @@ function AccountAudio({
       if (state !== "active") flush();
     });
     const save = () => flush();
-    if (typeof window !== "undefined")
-      window.addEventListener("pagehide", save);
+    // NOTE: React Native defines a `window` global but without DOM
+    // addEventListener; `typeof window !== "undefined"` is not a web guard
+    // on native and crashes release builds on startup.
+    if (Platform.OS === "web") window.addEventListener("pagehide", save);
     return () => {
       sub.remove();
-      if (typeof window !== "undefined")
-        window.removeEventListener("pagehide", save);
+      if (Platform.OS === "web") window.removeEventListener("pagehide", save);
       flush();
     };
   }, [scope]);
