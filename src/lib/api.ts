@@ -41,6 +41,10 @@ export async function apiFetch<T>(path: string, options: FetchOptions = {}): Pro
     const isJson = res.headers.get('content-type')?.includes('application/json');
     const body = isJson ? await res.json() : await res.text();
     if (!res.ok) throw new ApiError(res.status, body);
+    // A route the server does not have answers with the website's HTML
+    // not-found page and HTTP 200. Treat it as a missing endpoint so screens
+    // show their error state instead of crashing while parsing HTML as data.
+    if (!isJson) throw new ApiError(404, { error: 'endpoint-missing' });
     return body as T;
   } catch (err) {
     clearTimeout(timer);
@@ -91,6 +95,7 @@ async function apiV1Fetch<T>(path: string, options: FetchOptions = {}): Promise<
     const isJson = res.headers.get('content-type')?.includes('application/json');
     const body = isJson ? await res.json() : await res.text();
     if (!res.ok) throw new ApiError(res.status, body);
+    if (!isJson) throw new ApiError(404, { error: 'endpoint-missing' });
     return body as T;
   } catch (err) {
     clearTimeout(timer);
