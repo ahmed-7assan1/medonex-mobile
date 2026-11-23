@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Pressable, ActivityIndicator, StyleSheet } from 'react-native';
 import { Redirect, useRouter, useLocalSearchParams } from 'expo-router';
 import {lectureSignInReturn} from '@/lib/lecture-sign-in';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme/ThemeContext';
 import { useAuth } from '@/lib/auth';
 import { useGoogleSignIn, ExchangeError } from '@/lib/googleAuth';
+import { api, ApiError } from '@/lib/api';
 
 /** Sign-in — styled after the site's /login. Google-only per the platform
  *  decision: id_token from Google gets exchanged for a mobile JWT at
@@ -21,6 +22,9 @@ export default function LoginScreen() {
   const { token, bootstrapped, isGuest, signIn, signInAsGuest } = useAuth();
   const google = useGoogleSignIn();
   const [error, setError] = useState<string | null>(null);
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordBusy, setPasswordBusy] = useState(false);
 
   const upgradingGuest=isGuest&&params.upgrade==='1';
   if (bootstrapped && (token || (isGuest&&!upgradingGuest))) {
@@ -48,6 +52,30 @@ export default function LoginScreen() {
     }
   };
 
+  const onPasswordSignIn = async () => {
+    setError(null);
+    const id = identifier.trim();
+    if (!id || !password) {
+      setError(t('auth.missingFields'));
+      return;
+    }
+    setPasswordBusy(true);
+    try {
+      const body = id.includes('@') ? { email: id, password } : { studentId: id, password };
+      const { token: tkn, user } = await api.post<{ token: string; user: Parameters<typeof signIn>[1] }>('/login', body);
+      await signIn(tkn, user);
+      router.replace(returnPath as never);
+    } catch (e) {
+      if (e instanceof ApiError && (e.status === 400 || e.status === 401 || e.status === 404)) {
+        setError(t('auth.invalidCredentials'));
+      } else {
+        setError(t('auth.failed'));
+      }
+    } finally {
+      setPasswordBusy(false);
+    }
+  };
+
   return (
     <View
       style={[
@@ -61,9 +89,54 @@ export default function LoginScreen() {
           {t('auth.tagline')}
         </Text>
 
+        <TextInput
+          value={identifier}
+          onChangeText={setIdentifier}
+          placeholder={t('auth.email')}
+          placeholderTextColor={colors.mutedForeground}
+          autoCapitalize="none"
+          autoCorrect={false}
+          keyboardType="email-address"
+          textContentType="username"
+          style={[styles.input, { color: colors.foreground, backgroundColor: colors.card, borderColor: colors.border, fontFamily: fonts.sans }]}
+        />
+        <TextInput
+          value={password}
+          onChangeText={setPassword}
+          placeholder={t('auth.password')}
+          placeholderTextColor={colors.mutedForeground}
+          secureTextEntry
+          autoCapitalize="none"
+          autoCorrect={false}
+          textContentType="password"
+          onSubmitEditing={onPasswordSignIn}
+          style={[styles.input, { color: colors.foreground, backgroundColor: colors.card, borderColor: colors.border, fontFamily: fonts.sans, marginTop: 10 }]}
+        />
         <Pressable
           accessibilityRole="button"
-          disabled={google.busy || !google.ready}
+          disabled={passwordBusy || google.busy}
+          onPress={onPasswordSignIn}
+          style={({ pressed }) => [
+            styles.googleBtn,
+            { backgroundColor: colors.card, borderColor: colors.border, marginTop: 12 },
+            pressed && { opacity: 0.85 },
+            passwordBusy && { opacity: 0.6 },
+          ]}
+        >
+          {passwordBusy ? (
+            <ActivityIndicator color={colors.mutedForeground} size="small" />
+          ) : (
+            <Text style={[styles.googleLabel, { color: colors.foreground, fontFamily: fonts.sansMedium }]}>
+              {t('auth.signIn')}
+            </Text>
+          )}
+        </Pressable>
+
+        <Text style={[styles.orText, { color: colors.mutedForeground, fontFamily: fonts.sans }]}>{t('auth.or')}</Text>
+
+        <Pressable
+          accessibilityRole="button"
+          disabled={google.busy || !google.ready || passwordBusy}
           onPress={onGoogle}
           style={({ pressed }) => [
             styles.googleBtn,
@@ -91,7 +164,7 @@ export default function LoginScreen() {
         {/* Guest trial: fixtures only — no account, no API calls, no writes. */}
         <Pressable
           accessibilityRole="button"
-          disabled={google.busy}
+          disabled={google.busy || passwordBusy}
           onPress={async () => {
             if(upgradingGuest){router.canGoBack()?router.back():router.replace(returnPath as never);return;}
             await signInAsGuest();
@@ -135,6 +208,16 @@ const styles = StyleSheet.create({
   gMark: { width: 22, alignItems: 'center' },
   googleLabel: { fontSize: 14, fontWeight: '500' },
   error: { marginTop: 16, fontSize: 13, textAlign: 'center', maxWidth: 320 },
+  input: {
+    width: '100%',
+    maxWidth: 340,
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    fontSize: 14,
+  },
+  orText: { marginVertical: 14, fontSize: 13 },
   guestBtn: { marginTop: 20, paddingVertical: 8, paddingHorizontal: 16 },
   guestLabel: { fontSize: 14, fontWeight: '500', textDecorationLine: 'underline' },
   footer: { textAlign: 'center', fontSize: 12 },
