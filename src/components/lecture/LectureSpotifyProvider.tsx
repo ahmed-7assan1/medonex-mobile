@@ -117,14 +117,16 @@ function AccountSpotify({
       if (s !== "active") flush();
     });
     const hide = () => flush();
-    if (typeof window !== "undefined")
+    // Platform guard: Hermes exposes `window` but not DOM addEventListener;
+    // `typeof window !== "undefined"` is not a web guard
+    if (Platform.OS === "web")
       window.addEventListener("pagehide", hide);
     return () => {
       live.current = false;
       request.current++;
       off();
       app.remove();
-      if (typeof window !== "undefined")
+      if (Platform.OS === "web")
         window.removeEventListener("pagehide", hide);
       flush();
     };
@@ -142,10 +144,10 @@ function AccountSpotify({
     const key = (e: KeyboardEvent) => {
       if (e.key === "Escape") closeSheet();
     };
-    if (typeof window !== "undefined") window.addEventListener("keydown", key);
+    if (Platform.OS === "web") window.addEventListener("keydown", key);
     return () => {
       sub.remove();
-      if (typeof window !== "undefined")
+      if (Platform.OS === "web")
         window.removeEventListener("keydown", key);
     };
   }, [sheetOpen]);

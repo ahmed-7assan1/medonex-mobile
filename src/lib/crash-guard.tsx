@@ -101,7 +101,7 @@ export function installCrashGuard(): void {
     });
   } catch { /* noop */ }
   try {
-    if (typeof window !== 'undefined') {
+    if (Platform.OS === 'web') {
       window.addEventListener('unhandledrejection', (event) => reportCrash((event as PromiseRejectionEvent).reason, false));
       window.addEventListener('error', (event) => reportCrash((event as ErrorEvent).error ?? (event as ErrorEvent).message, false));
     }
