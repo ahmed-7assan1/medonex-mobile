@@ -1,5 +1,6 @@
 import { CrashGate, installCrashGuard } from '@/lib/crash-guard';
 import {LectureSpotifyProvider} from '@/components/lecture/LectureSpotifyProvider';
+import { purgeStaleCaches } from '@/lib/cache-janitor';
 import { LectureAudioProvider } from '@/components/lecture/LectureAudioProvider';
 import { StudentOverlayProvider } from '@/components/StudentOverlay';
 import React, { useEffect, useState } from 'react';
@@ -52,6 +53,12 @@ function RootLayoutInner() {
     Cairo_700Bold,
   });
   const [ready, setReady] = useState(false);
+
+  // Cold-start cache cleanup: stale share-sheet copies of offline files and
+  // leaked PDF viewer sessions grow without bound otherwise.
+  useEffect(() => {
+    void purgeStaleCaches().catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (fontsLoaded || fontError) {

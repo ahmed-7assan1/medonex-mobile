@@ -69,6 +69,7 @@ const offline = moduleAt("src/lib/offline-downloads.ts", {
   "@tanstack/react-query": {},
   "./auth": {},
   "./atomic-json": {},
+  "./offline-merge": moduleAt("src/lib/offline-merge.ts", {}),
 });
 const pdf = moduleAt("src/lib/pdf-source.ts", {
   "react-native": RN,

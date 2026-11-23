@@ -8,6 +8,8 @@ import { useTheme } from '@/theme/ThemeContext';
 import { useAuth } from '@/lib/auth';
 import { useGoogleSignIn, ExchangeError } from '@/lib/googleAuth';
 import { api, ApiError } from '@/lib/api';
+import { useQueryClient } from '@tanstack/react-query';
+import { migrateOfflineScope } from '@/lib/offline-downloads';
 
 /** Sign-in — styled after the site's /login. Google-only per the platform
  *  decision: id_token from Google gets exchanged for a mobile JWT at
@@ -20,6 +22,16 @@ export default function LoginScreen() {
   const params=useLocalSearchParams<{upgrade?:string;next?:string}>();
   const returnPath=lectureSignInReturn(params.next)??'/(tabs)';
   const { token, bootstrapped, isGuest, signIn, signInAsGuest } = useAuth();
+  const queryClient = useQueryClient();
+  // Adopt any files downloaded while in guest mode so they stay visible (and
+  // don't sit orphaned on disk) under the signed-in account.
+  const adoptGuestFiles = (userId: string) => {
+    void migrateOfflineScope('guest', userId)
+      .then((moved) => {
+        if (moved > 0) void queryClient.invalidateQueries({ queryKey: ['offline-downloads'] });
+      })
+      .catch(() => {});
+  };
   const google = useGoogleSignIn();
   const [error, setError] = useState<string | null>(null);
   const [identifier, setIdentifier] = useState('');
@@ -36,6 +48,7 @@ export default function LoginScreen() {
     try {
       const { token: tkn, user } = await google.signIn();
       await signIn(tkn, user);
+      adoptGuestFiles(user.id);
       router.replace(returnPath as never);
     } catch (e) {
       if (e instanceof ExchangeError && e.code === 'config-missing') {
@@ -64,6 +77,7 @@ export default function LoginScreen() {
       const body = id.includes('@') ? { email: id, password } : { studentId: id, password };
       const { token: tkn, user } = await api.post<{ token: string; user: Parameters<typeof signIn>[1] }>('/login', body);
       await signIn(tkn, user);
+      adoptGuestFiles(user.id);
       router.replace(returnPath as never);
     } catch (e) {
       if (e instanceof ApiError && (e.status === 400 || e.status === 401 || e.status === 404)) {
