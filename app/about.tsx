@@ -1,5 +1,6 @@
+import{useStudentDimensions as useWindowDimensions}from'@/lib/student-viewport';
 import React from 'react';
-import { View, Text, Pressable, ScrollView, StyleSheet, useWindowDimensions } from 'react-native';
+import { View, Text, Pressable, ScrollView, StyleSheet, } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Sparkles, ArrowLeft, Heart, Code } from 'lucide-react-native';
@@ -17,8 +18,8 @@ const ICONS: Record<string, any> = { code: Code, sparkles: Sparkles };
 export default function AboutScreen() {
   const { t } = useTranslation();
   const { colors, fonts, st } = useTheme();
-  const { width } = useWindowDimensions();
-  const isTablet = width >= TABLET_BREAKPOINT;
+  const {viewportWidth, width } = useWindowDimensions();
+  const isTablet = viewportWidth >= TABLET_BREAKPOINT;
   const insets = useSafeAreaInsets();
   const router = useRouter();
 

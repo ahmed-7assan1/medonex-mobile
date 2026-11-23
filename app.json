@@ -2,7 +2,7 @@
   "expo": {
     "name": "MedOneX",
     "slug": "medonex-mobile",
-    "version": "1.0.0",
+    "version": "1.0.8",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "medonex",
@@ -25,7 +25,8 @@
       "userInterfaceStyle": "automatic",
       "permissions": [
         "NOTIFICATIONS"
-      ]
+      ],
+      "versionCode": 8
     },
     "updates": {
       "url": "https://u.expo.dev/ad7b62cd-8fde-4c05-99c2-d09bf406cec1",
@@ -41,7 +42,8 @@
       "expo-font",
       "expo-secure-store",
       "expo-updates",
-      "expo-localization"
+      "expo-localization",
+      "expo-asset"
     ],
     "extra": {
       "apiBase": "https://www.medonex.me",

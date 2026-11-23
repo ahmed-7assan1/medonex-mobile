@@ -1,3 +1,4 @@
+import { DRAWER_LINKS } from '@/lib/navigation';
 import React from 'react';
 import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -10,20 +11,11 @@ import { SCROLL_BOTTOM_PAD } from '@/theme/tokens';
 
 /** "More" grid — the capsule's middle button on the site opens the same
  *  kind of sheet; here it is a tab page listing every other destination. */
-const ITEMS = [
-  { key: 'ai', label: 'Dr Q — AI Tutor', href: '/ai-chat', icon: Sparkles },
-  { key: 'videos', label: 'OneX Videos', href: '/videos', icon: Video },
-  { key: 'reels', label: 'Reels', href: '/videos/reels', icon: Layers },
-  { key: 'podcasts', label: 'Podcasts', href: '/podcasts', icon: Mic2 },
-  { key: 'taskat', label: 'Taskat', href: '/taskat', icon: Clock },
-  { key: 'saved', label: 'Saved', href: '/saved', icon: Bookmark },
-  { key: 'profile', label: 'Profile', href: '/profile', icon: User },
-  { key: 'settings', label: 'Settings', href: '/settings', icon: Settings },
-] as const;
+const ITEMS = DRAWER_LINKS;
 
 export default function MoreScreen() {
   const { st, fonts } = useTheme();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { signOut } = useAuth();
@@ -38,8 +30,8 @@ export default function MoreScreen() {
         {ITEMS.map((it) => {
           const Icon = it.icon;
           return (
-            <Pressable
-              key={it.key}
+            <Pressable accessibilityRole="button"
+              key={it.href}
               onPress={() => router.push(it.href as never)}
               style={({ pressed }) => [
                 styles.tile,
@@ -48,11 +40,11 @@ export default function MoreScreen() {
               ]}
             >
               <Icon size={22} color={st.text} />
-              <Text style={[styles.tileLabel, { color: st.text }]}>{it.label}</Text>
+              <Text style={[styles.tileLabel, { color: st.text }]}>{i18n.language === 'ar' ? it.ar : it.en}</Text>
             </Pressable>
           );
         })}
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={async () => { await signOut(); router.replace('/(auth)/login'); }}
           style={({ pressed }) => [
             styles.tile,

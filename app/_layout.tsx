@@ -1,6 +1,11 @@
+import { CrashGate, installCrashGuard } from '@/lib/crash-guard';
+import {LectureSpotifyProvider} from '@/components/lecture/LectureSpotifyProvider';
+import { purgeStaleCaches } from '@/lib/cache-janitor';
+import { LectureAudioProvider } from '@/components/lecture/LectureAudioProvider';
+import { StudentOverlayProvider } from '@/components/StudentOverlay';
 import React, { useEffect, useState } from 'react';
 import { View, ActivityIndicator } from 'react-native';
-import { Stack } from 'expo-router';
+import { Stack,useSegments,useRouter,useRootNavigationState } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -9,18 +14,38 @@ import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_7
 import { PlusJakartaSans_700Bold } from '@expo-google-fonts/plus-jakarta-sans';
 import { Cairo_400Regular, Cairo_700Bold } from '@expo-google-fonts/cairo';
 import { ThemeProvider } from '@/theme/ThemeContext';
-import { AuthProvider } from '@/lib/auth';
+import { AuthProvider,useAuth } from '@/lib/auth';
+import { ApiError } from '@/lib/api';
+import{WebAlertHost}from'@/components/WebAlertHost';
 import '@/i18n';
+import{DesktopStudentChrome}from'@/components/DesktopStudentChrome';
+import{usePrefetchPrimaryTabs}from'@/lib/prefetch';
+import{useUpdateGate}from'@/lib/update-gate';
+import{UpdateGate}from'@/components/UpdateGate';
 
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: { staleTime: 1000 * 60 * 5, gcTime: 1000 * 60 * 60 * 24 },
+    queries: { staleTime: 1000 * 60 * 5, gcTime: 1000 * 60 * 60 * 24, retry:(failures,error)=>!(error instanceof ApiError&&[401,403,404].includes(error.status))&&failures<1 },
   },
 });
 
 void SplashScreen.preventAutoHideAsync().catch(() => {});
 
+// Install global crash capture before any other module-scope work runs.
+installCrashGuard();
+
 export default function RootLayout() {
+  // The gate must sit above every hook and provider: a release-build throw in
+  // useFonts, a provider or the first screen render would otherwise kill the
+  // process with only the OS "keeps stopping" dialog and no stack.
+  return (
+    <CrashGate>
+      <RootLayoutInner/>
+    </CrashGate>
+  );
+}
+
+function RootLayoutInner() {
   const [fontsLoaded, fontError] = useFonts({
     Inter_400Regular,
     Inter_500Medium,
@@ -31,6 +56,12 @@ export default function RootLayout() {
     Cairo_700Bold,
   });
   const [ready, setReady] = useState(false);
+
+  // Cold-start cache cleanup: stale share-sheet copies of offline files and
+  // leaked PDF viewer sessions grow without bound otherwise.
+  useEffect(() => {
+    void purgeStaleCaches().catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (fontsLoaded || fontError) {
@@ -71,14 +102,23 @@ export default function RootLayout() {
         <ThemeProvider>
           <AuthProvider>
             <StatusBar style="auto" />
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="index" />
-              <Stack.Screen name="(auth)/login" />
-              <Stack.Screen name="(tabs)" />
-            </Stack>
+            <GatedApp><StudentOverlayProvider><LectureAudioProvider><LectureSpotifyProvider><DesktopStudentChrome><ProtectedStack/></DesktopStudentChrome></LectureSpotifyProvider></LectureAudioProvider></StudentOverlayProvider></GatedApp>
+            <WebAlertHost/>
           </AuthProvider>
         </ThemeProvider>
       </QueryClientProvider>
     </SafeAreaProvider>
   );
 }
+
+// The forced-update gate replaces the whole app tree while the running
+// build is below the manifest's minimum supported version. "checking" falls
+// through to the app so launch never waits on the manifest network fetch;
+// a previously stored requirement flips the gate on within a frame.
+function GatedApp({children}:{children:React.ReactNode}){
+  const gate=useUpdateGate();
+  if(gate.status==='required')return <UpdateGate manifest={gate.manifest} current={gate.current} recheck={gate.recheck}/>;
+  return <>{children}</>;
+}
+
+function ProtectedStack(){usePrefetchPrimaryTabs();const{bootstrapped,token,isGuest}=useAuth();const segments=useSegments();const router=useRouter();const navigation=useRootNavigationState();const section=String(segments[0]||'');const publicRoute=['(auth)','terms','about','founders'].includes(section);useEffect(()=>{if(bootstrapped&&navigation?.key&&!token&&!isGuest&&!publicRoute)router.replace('/(auth)/login')},[bootstrapped,token,isGuest,publicRoute,navigation?.key]);return <Stack screenOptions={{headerShown:false}}><Stack.Screen name="index"/><Stack.Screen name="(auth)/login"/><Stack.Screen name="(tabs)"/></Stack>}

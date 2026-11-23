@@ -43,7 +43,7 @@ export const isGuestMode = (): boolean => {
 };
 
 /** True when hooks must serve fixtures without touching the network. */
-export const isFixtureMode = (): boolean => isPreviewFixtures() || isGuestMode();
+export const isFixtureMode = (): boolean => isGuestMode();
 
 const lec = (id: string, title: string, type: 'LECTURE' | 'PRACTICAL', q: number, files: number, order: number) => ({
   id,
@@ -150,14 +150,19 @@ export const FIXTURE_LECTURE_PRACTICAL = {
 };
 
 export function fixtureLecture(id: string) {
-  return id === 'l5' || id === 'l6' ? FIXTURE_LECTURE_PRACTICAL : FIXTURE_LECTURE;
+  const base = id === 'l5' || id === 'l6' ? FIXTURE_LECTURE_PRACTICAL : FIXTURE_LECTURE;
+  const subject = FIXTURE_MODULE_BUNDLE.module.subjects.find(s => s.lectures.some(l => l.id === id));
+  const lecture = subject?.lectures.find(l => l.id === id);
+  return lecture && subject ? { ...base, id: lecture.id, title: lecture.title, subject: { ...base.subject, id: subject.id, name: subject.name } } : base;
 }
 
 /* ─── Quiz player fixtures (mirror MedQs0 QuizClient Question shape) ─── */
 
 export interface FixtureQuizQuestion {
+  videoUrl?: string | null;
   id: string;
-  questionType: 'MCQ' | 'ESSAY';
+  questionType: 'MCQ' | 'ESSAY' | 'MULTI_SELECT' | 'TRUE_FALSE' | 'CASE_BASED';
+  stemLayout?: 'STANDARD' | 'IMAGE_OVERLAY';
   body: string;
   imageUrl?: string | null;
   choices: { key: string; text: string }[];
@@ -375,7 +380,11 @@ export type FixtureProfileUser = {
   semester: string;
   rank: string;
   rankColor: string;
-  streak: number;
+  streak?: number;
+  coverImage?:string|null;
+  role?:string;
+  hideRank?:boolean;
+  postCount?:number;
   joined: string;
   verified: boolean;
   stats: FixtureProfileStat[];
@@ -600,6 +609,11 @@ const MOD_STATS: ModuleWithStats[] = [
 ];
 
 export const FIXTURE_HOME: HomeData = {
+  dailyTarget: 50, todayItemCount: 18, progressToNext: 42,
+  suggestedLectures: [
+    { lectureId: 'l4', moduleId: 'demo', title: 'Nerve Injuries of the Upper Limb', moduleName: 'Anatomy & Embryology', subjectName: 'Anatomy', description: 'Review the major peripheral nerve injuries and their clinical signs.', imageUrl: null },
+    { lectureId: 'l8', moduleId: 'demo', title: 'Connective Tissue Proper', moduleName: 'Anatomy & Embryology', subjectName: 'Histology', description: 'Explore the structure and function of connective tissues.', imageUrl: null },
+  ],
   user: {
     id: 'me', name: 'Ahmed Hassan', nickname: 'ahmed.hassan', email: 'ahmed@medonex.me', image: null,
     points: 1280,
@@ -663,9 +677,9 @@ export const FIXTURE_PAST_PAPERS: PastPapersResponse = {
 };
 
 export const FIXTURE_FORUMS: Forum[] = [
-  { id: 'f-global', name: 'MedOneX Community', type: 'GLOBAL', status: 'ACTIVE', unreadCount: 4 },
-  { id: 'f-uni', name: 'Cairo University', type: 'UNIVERSITY', status: 'ACTIVE', unreadCount: 1 },
-  { id: 'f-sem', name: 'Semester 5 — Medicine', type: 'SEMESTER', status: 'ACTIVE', unreadCount: 0 },
+  { id: 'f-global', name: 'MedOneX Community', type: 'GLOBAL', status: 'OPEN', unreadCount: 4 },
+  { id: 'f-uni', name: 'Cairo University', type: 'UNIVERSITY', status: 'OPEN', unreadCount: 1 },
+  { id: 'f-sem', name: 'Semester 5 — Medicine', type: 'SEMESTER', status: 'OPEN', unreadCount: 0 },
 ];
 
 export const FIXTURE_FEED: { items: Post[]; nextCursor: string | null; hasMore: boolean } = {

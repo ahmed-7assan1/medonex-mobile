@@ -7,7 +7,7 @@ import { useTheme } from '@/theme/ThemeContext';
 import { useAuth } from '@/lib/auth';
 import { TABLET_BREAKPOINT } from '@/theme/tokens';
 import { CapsuleTabBar } from '@/components/CapsuleTabBar';
-import { SideRail } from '@/components/SideRail';
+
 
 /** Phone: floating capsule tab bar replicating the site's MobileBottomNav
  *  (Home / Modules / Social / QBank / More). Tablet (>=768dp): desktop-like
@@ -25,10 +25,10 @@ export default function TabsLayout() {
 
   return (
     <Tabs
-      tabBar={(props) => (isTablet ? <SideRail {...props} /> : <CapsuleTabBar {...props} />)}
+      tabBar={(props) => (isTablet ? null : <CapsuleTabBar {...props} />)}
       screenOptions={{
         headerShown: false,
-        sceneStyle: isTablet ? { marginLeft: 256, backgroundColor: colors.background } : { backgroundColor: colors.background },
+        sceneStyle: { backgroundColor: colors.background },
       }}
     >
       <Tabs.Screen

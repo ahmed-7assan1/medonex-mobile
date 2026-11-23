@@ -1,15 +1,9 @@
 import React from 'react';
-import { View, Text } from 'react-native';
-import { useTranslation } from 'react-i18next';
+import { View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { NotificationsSheet } from '@/components/NotificationsSheet';
 import { useTheme } from '@/theme/ThemeContext';
-
-/** Placeholder for /notifications — built in a later phase. */
-export default function Screen() {
-  const { t } = useTranslation();
-  const { st, fonts } = useTheme();
-  return (
-    <View style={{ flex: 1, backgroundColor: st.bg, alignItems: 'center', justifyContent: 'center' }}>
-      <Text style={{ color: st.muted, fontFamily: fonts.sans, fontSize: 15 }}>{t('common.comingSoon')}</Text>
-    </View>
-  );
+export default function NotificationsScreen(){
+ const router=useRouter(); const {st}=useTheme();
+ return <View style={{flex:1,backgroundColor:st.bg}}><NotificationsSheet open onClose={()=>router.canGoBack()?router.back():router.replace('/')} /></View>;
 }

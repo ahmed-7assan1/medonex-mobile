@@ -30,12 +30,12 @@ export function QuizCard({ paper, onStart }: { paper: QuizPaperCard; onStart: (p
           <Text numberOfLines={1} style={[styles.title, { color: colors.foreground, fontFamily: fonts.sansBold }]}>{paper.title}</Text>
           <Text numberOfLines={1} style={[styles.module, { color: colors.mutedForeground }]}>{paper.moduleName.toUpperCase()}</Text>
         </View>
-        <Pressable onPress={() => onStart(paper)} style={({ pressed }) => [pressed && { opacity: 0.9, transform: [{ scale: 0.97 }] }]}>
+        <Pressable accessibilityRole="button" onPress={() => onStart(paper)} style={({ pressed }) => [pressed && { opacity: 0.9, transform: [{ scale: 0.97 }] }]}>
           <LinearGradient colors={[cta.color, cta.color + 'DD']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.cta}>
             <Text style={styles.ctaText}>{cta.label.toUpperCase()}</Text>
           </LinearGradient>
         </Pressable>
-        <Pressable onPress={share} accessibilityLabel="Share quiz" style={[styles.shareBtn, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <Pressable accessibilityRole="button" onPress={share} accessibilityLabel="Share quiz" style={[styles.shareBtn, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Share2 size={16} color={colors.mutedForeground} />
         </Pressable>
       </View>

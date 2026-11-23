@@ -16,12 +16,12 @@ interface Props {
 /** Site: dashboard/mobile/ProfileHeader.tsx — avatar 40 + name 18 semibold,
  *  two 44px round blurred icon buttons, destructive dot on the bell. */
 export function ProfileHeader({ firstName, userImage, unread, onOpenAI, onOpenNotifications }: Props) {
-  const { st, colors, fonts } = useTheme();
+  const { st, colors, fonts, isDark } = useTheme();
   const router = useRouter();
 
   const iconBtn: StyleProp<ViewStyle> = [
     styles.iconBtn,
-    { borderColor: st.border, backgroundColor: st.surface + 'C7' /* 78% */ },
+    { backgroundColor: 'transparent' },
   ];
 
   return (
@@ -48,7 +48,7 @@ export function ProfileHeader({ firstName, userImage, unread, onOpenAI, onOpenNo
         </Text>
       </View>
 
-      <View style={styles.actions}>
+      <View style={[styles.actions, { backgroundColor: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.70)', borderColor: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.10)' }]}>
         <Pressable accessibilityRole="button" accessibilityLabel="AI Assistant" onPress={onOpenAI} style={iconBtn}>
           <Sparkles size={19} color={st.text} />
         </Pressable>
@@ -81,19 +81,18 @@ const styles = StyleSheet.create({
   avatar: { width: mTokens.avatar, height: mTokens.avatar, borderRadius: 999, borderWidth: 1 },
   avatarFallback: { alignItems: 'center', justifyContent: 'center' },
   name: { fontSize: 18, fontWeight: '600', letterSpacing: -0.3, flexShrink: 1 },
-  actions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  actions: { flexDirection: 'row', alignItems: 'center', gap: 2, height: 48, padding: 4, borderRadius: 24, borderWidth: 1 },
   iconBtn: {
-    width: mTokens.iconBtn,
-    height: mTokens.iconBtn,
+    width: 40,
+    height: 40,
     borderRadius: 999,
-    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
     shadowOpacity: 0.05,
     shadowRadius: 2,
     shadowOffset: { width: 0, height: 1 },
-    elevation: 1,
+    elevation: 0,
   },
   dot: {
     position: 'absolute',

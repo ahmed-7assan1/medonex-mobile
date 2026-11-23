@@ -1,6 +1,12 @@
+import{useStudentDimensions as useWindowDimensions}from'@/lib/student-viewport';
 import React, { useState } from 'react';
-import { View, Text, Pressable, Image, ScrollView, Share, StyleSheet, useWindowDimensions } from 'react-native';
-import { BadgeCheck, EyeOff, Pin, Heart, MessageCircle, Share2, Bookmark, ChevronDown } from 'lucide-react-native';
+import { View, Text, Pressable, Image, ScrollView, Share, StyleSheet, Alert,Platform } from 'react-native';
+import { BadgeCheck, EyeOff, Pin, Heart, MessageCircle, Share2, Bookmark, ChevronDown, Layers } from 'lucide-react-native';
+import {useRouter} from 'expo-router';
+import {CommentsSheet} from './CommentsSheet';
+import{WebsitePostStudy}from'./WebsitePostStudy';
+import{PostRichContent}from'./PostRichContent';
+import {isFixtureMode} from '@/lib/fixtures';
 import { useTheme } from '@/theme/ThemeContext';
 import { timeAgo, compact } from './format';
 import type { Post } from '@/lib/community';
@@ -8,9 +14,14 @@ import type { Post } from '@/lib/community';
 /** Site: post/PostRow.tsx + community-mobile/PostCard.tsx — flat row on the
  *  page background: 44px avatar, name · rank · time · forum line, content
  *  (15px/20, collapsible), image carousel, action bar. */
-export function PostCard({ post }: { post: Post }) {
-  const { st, colors, fonts } = useTheme();
-  const { width } = useWindowDimensions();
+export function PostCard({ post,contentWidth }: { post: Post;contentWidth?:number }) {
+  const { st, colors, fonts:themeFonts } = useTheme();
+  const fonts=contentWidth?{...themeFonts,sans:Platform.OS==='android'?'sans-serif':'Arial',sansBold:Platform.OS==='android'?'sans-serif':'Arial'}:themeFonts;
+  const {viewportWidth, width } = useWindowDimensions();
+  const router=useRouter();
+  const [commentsOpen,setCommentsOpen]=useState(false);
+  const [studyOpen,setStudyOpen]=useState(false);
+  const readOnly=()=>Alert.alert('Read-only preview','No changes have been saved to your account.');
   const [expanded, setExpanded] = useState(false);
   const [liked, setLiked] = useState(Boolean(post.userReaction));
   const [saved, setSaved] = useState(Boolean(post.isSaved));
@@ -22,8 +33,9 @@ export function PostCard({ post }: { post: Post }) {
   if (images.length === 0 && post.imageUrl) images.push(post.imageUrl);
 
   const share = async () => {
+    if(isFixtureMode()){Alert.alert('Guest preview','Sample posts cannot be shared.');return}
     try {
-      await Share.share({ message: `https://www.medonex.me/post/${post.id}` });
+      await Share.share({ message: `https://www.medonex.me/social?post=${encodeURIComponent(post.id)}` });
     } catch { /* dismissed */ }
   };
 
@@ -44,7 +56,7 @@ export function PostCard({ post }: { post: Post }) {
 
         <View style={styles.body}>
           <View style={styles.nameLine}>
-            <Text numberOfLines={1} style={[styles.name, { color: st.text, fontFamily: fonts.sansBold }]}>{name}</Text>
+            <Text onPress={()=>{if(!isAnon&&post.author?.id)router.push(`/profile/${post.author.id}` as never)}} numberOfLines={1} style={[styles.name, { color: st.text, fontFamily: fonts.sansBold }]}>{name}</Text>
             {!isAnon && post.author!.telegramVerified && <BadgeCheck size={16} color="#1DA1F2" />}
             {!isAnon && post.author!.rankLabel && (
               <View style={[styles.rankPill, { backgroundColor: colors.primary + '1A' }]}>
@@ -73,7 +85,7 @@ export function PostCard({ post }: { post: Post }) {
                 {post.content}
               </Text>
               {post.content.length > 140 && (
-                <Pressable onPress={() => setExpanded((v) => !v)} style={styles.showMore}>
+                <Pressable accessibilityRole="button" onPress={() => setExpanded((v) => !v)} style={styles.showMore}>
                   <Text style={{ color: colors.primary, fontSize: 14, fontWeight: '600' }}>
                     {expanded ? 'Show less' : 'Show more'}
                   </Text>
@@ -97,31 +109,35 @@ export function PostCard({ post }: { post: Post }) {
                 <Image
                   key={`${url}-${i}`}
                   source={{ uri: url }}
-                  style={{ width: width - 32 - 56, height: (width - 32 - 56) * 0.66, borderRadius: 16 }}
+                  style={{ width: (contentWidth??width) - 32 - 56, height: ((contentWidth??width) - 32 - 56) * 0.66, borderRadius: 16 }}
                   resizeMode="cover"
                 />
               ))}
             </ScrollView>
           )}
 
+          <PostRichContent post={post}/>
           <View style={styles.actions}>
-            <Pressable onPress={() => { /* comments drawer — later phase */ }} style={styles.actionBtn}>
+            <Pressable accessibilityRole="button" onPress={()=>setCommentsOpen(true)} style={styles.actionBtn}>
               <MessageCircle size={18} color={st.muted} />
               <Text style={[styles.actionCount, { color: st.muted }]}>{compact(post.commentCount)}</Text>
             </Pressable>
-            <Pressable onPress={() => setLiked((v) => !v)} style={styles.actionBtn} accessibilityState={{ selected: liked }}>
+            <Pressable accessibilityRole="button" onPress={()=>isFixtureMode()?setLiked(v=>!v):readOnly()} style={styles.actionBtn} accessibilityState={{ selected: liked }}>
               <Heart size={18} color={liked ? '#F91880' : st.muted} fill={liked ? '#F91880' : 'transparent'} />
               <Text style={[styles.actionCount, { color: liked ? '#F91880' : st.muted }]}>{compact(likes)}</Text>
             </Pressable>
-            <Pressable onPress={share} style={styles.actionBtn}>
+            <Pressable accessibilityRole="button" onPress={share} style={styles.actionBtn}>
               <Share2 size={18} color={st.muted} />
             </Pressable>
-            <Pressable onPress={() => setSaved((v) => !v)} style={styles.actionBtn} accessibilityState={{ selected: saved }}>
+            <Pressable accessibilityRole="button" onPress={()=>isFixtureMode()?setSaved(v=>!v):readOnly()} style={styles.actionBtn} accessibilityState={{ selected: saved }}>
               <Bookmark size={18} color={saved ? colors.primary : st.muted} fill={saved ? colors.primary : 'transparent'} />
             </Pressable>
+            {!!(post.questions?.length||post.flashcards?.length)&&<Pressable accessibilityRole="button" accessibilityLabel="Study content" onPress={()=>setStudyOpen(true)} style={styles.actionBtn}><Layers size={18} strokeWidth={1.7} color={colors.primary}/></Pressable>}
           </View>
         </View>
       </View>
+      <WebsitePostStudy post={post} open={studyOpen} onClose={()=>setStudyOpen(false)}/>
+      <CommentsSheet postId={commentsOpen?post.id:null} onClose={()=>setCommentsOpen(false)}/>
     </View>
   );
 }

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useStudyStore } from '@/lib/local-study-store';
 import { View, Text, Pressable, Image, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Bookmark } from 'lucide-react-native';
@@ -14,7 +15,8 @@ export function ModuleRow({ module, index = 0 }: { module: ModuleWithStats; inde
   const { colors, fonts } = useTheme();
   const router = useRouter();
   const accent = ACCENTS[index % ACCENTS.length];
-  const [saved, setSaved] = useState(false);
+  const saved = useStudyStore(s => s.savedModuleIds.includes(module.id));
+  const toggleModule = useStudyStore(s => s.toggleModule);
 
   return (
     <View style={[styles.row, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -53,7 +55,7 @@ export function ModuleRow({ module, index = 0 }: { module: ModuleWithStats; inde
         accessibilityRole="button"
         accessibilityLabel={saved ? `Remove ${module.name} from saved modules` : `Save ${module.name}`}
         accessibilityState={{ selected: saved }}
-        onPress={() => setSaved((s) => !s)}
+        onPress={() => toggleModule(module.id)}
         hitSlop={6}
         style={({ pressed }) => [styles.bookmark, pressed && { backgroundColor: colors.muted }]}
       >

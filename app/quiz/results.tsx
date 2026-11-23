@@ -1,7 +1,7 @@
+import{useStudentDimensions as useWindowDimensions}from'@/lib/student-viewport';
 import React, { useMemo, useRef, useState } from 'react';
 import {
-  View, Text, Pressable, ScrollView, StyleSheet, Modal, useWindowDimensions,
-} from 'react-native';
+  View, Text, Pressable, ScrollView, StyleSheet, Modal, } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -13,8 +13,9 @@ import { useTheme } from '@/theme/ThemeContext';
 import { FadeEdges } from '@/components/FadeEdges';
 import { TABLET_BREAKPOINT, SCROLL_BOTTOM_PAD } from '@/theme/tokens';
 import { GLASS_OPACITY, PERF_TIER } from '@/theme/perf';
-import { getQuizResult } from '@/lib/quiz-store';
+import { getQuizResult,setQuizResult,type QuizResult } from '@/lib/quiz-store';
 import { QuizQuestionHeader, QuizQuestionContent } from '@/components/quiz/QuizQuestion';
+import {ShareScoreCard} from '@/components/quiz/ShareScoreCard';
 
 /** /quiz/results — pixel match of the site's attempt results page
  *  (quiz/attempt/[attemptId]/page.tsx + ResultsReview + ResultsChrome):
@@ -22,18 +23,19 @@ import { QuizQuestionHeader, QuizQuestionContent } from '@/components/quiz/QuizQ
  *  pills, big glass score circle with score-colored ring, status pill,
  *  collapsible review rows, question-map sheet, retake sheet. Reads the
  *  last attempt from the in-memory quiz store until the wiring phase. */
-export default function QuizResultsScreen() {
+export default function QuizResultsScreen(){return <QuizResultsView result={getQuizResult()}/>;}
+export function QuizResultsView({result}:{result:QuizResult|null}) {
   const { colors, fonts, isDark } = useTheme();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { width } = useWindowDimensions();
-  const isTablet = width >= TABLET_BREAKPOINT;
+  const {viewportWidth, width } = useWindowDimensions();
+  const isTablet = viewportWidth >= TABLET_BREAKPOINT;
 
-  const result = getQuizResult();
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
   const [mapOpen, setMapOpen] = useState(false);
   const [retakeOpen, setRetakeOpen] = useState(false);
+  const reviewTop = useRef(0);
   const offsets = useRef<Record<number, number>>({});
   const scrollRef = useRef<ScrollView>(null);
 
@@ -45,11 +47,12 @@ export default function QuizResultsScreen() {
   if (!result) {
     return (
       <View style={[styles.root, { backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' }]}>
-        <Text style={{ color: colors.mutedForeground, fontFamily: fonts.sans }}>{t('quiz.loadingResults')}</Text>
+        <Text style={{ color: colors.mutedForeground, fontFamily: fonts.sans, textAlign:'center',padding:24 }}>{t('common.noPracticeResult',{defaultValue:'No practice result on this device yet.'})}</Text><Pressable accessibilityRole="button" onPress={()=>router.replace('/qbank')} style={{padding:16}}><Text style={{color:colors.primary,fontFamily:fonts.sansBold}}>{t('quiz.backToQuizzes')}</Text></Pressable>
       </View>
     );
   }
 
+  const retryPath=`/quiz/${result.source==='lecture'?'lecture/':''}${encodeURIComponent(result.paperId)}`;
   const score = result.score;
   const accent = score >= 70 ? '#10B981' : score >= 50 ? '#F59E0B' : '#EF4444';
   const accentFg = score >= 70 ? (isDark ? '#6EE7B7' : '#047857') : score >= 50 ? (isDark ? '#FCD34D' : '#B45309') : (isDark ? '#FCA5A5' : '#DC2626');
@@ -57,22 +60,19 @@ export default function QuizResultsScreen() {
 
   const mins = Math.floor(result.timeTaken / 60);
   const secs = result.timeTaken % 60;
-  const dateLabel = new Date().toLocaleDateString('en-US', { dateStyle: 'long' });
+  const dateLabel = result.createdAt&&Number.isFinite(Date.parse(result.createdAt))?new Date(result.createdAt).toLocaleDateString('en-US', { dateStyle: 'long' }):'Date unavailable';
 
   const toggleExpand = (i: number) => {
-    setExpanded((prev) => {
-      const next = new Set(prev);
-      if (next.has(i)) next.delete(i); else next.add(i);
-      return next;
-    });
+    // Keep one rich renderer mounted so long papers do not create a WebView per answer.
+    setExpanded((prev) => prev.has(i) ? new Set() : new Set([i]));
   };
 
   const jumpTo = (i: number) => {
     setMapOpen(false);
-    setExpanded((prev) => new Set(prev).add(i));
+    setExpanded(new Set([i]));
     setTimeout(() => {
       const y = offsets.current[i];
-      if (typeof y === 'number') scrollRef.current?.scrollTo({ y: Math.max(0, y - 80), animated: PERF_TIER !== 'low' });
+      if (typeof y === 'number') scrollRef.current?.scrollTo({ y: Math.max(0, reviewTop.current + y - 80), animated: PERF_TIER !== 'low' });
     }, 120);
   };
 
@@ -85,13 +85,14 @@ export default function QuizResultsScreen() {
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
+      {result?.localOnly&&<View style={{paddingTop:insets.top+8,paddingHorizontal:20,backgroundColor:colors.background}}><Text style={{color:colors.mutedForeground,fontSize:12,textAlign:'center'}}>Practice result on this device. Not saved to your account.</Text></View>}
       {/* Top bar: back / question map + try again */}
       <View style={[styles.topBar, { paddingTop: insets.top }]}>
         <View style={styles.topRow}>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('quiz.backToQuizzes')}
-            onPress={() => router.dismissAll?.() ?? router.back()}
+            onPress={() => router.replace('/qbank')}
             style={[styles.glassCircle, { backgroundColor: glassBg, borderColor: glassRing }]}
           >
             <ArrowLeft size={16} color={colors.foreground} />
@@ -108,7 +109,8 @@ export default function QuizResultsScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('quiz.tryAgain')}
-            onPress={() => (missed.length > 0 ? setRetakeOpen(true) : router.replace(`/quiz/${result.paperId}` as never))}
+            disabled={!result.paperId}
+            onPress={() => (missed.length > 0 ? setRetakeOpen(true) : router.replace(retryPath as never))}
             style={[styles.tryPill, { backgroundColor: colors.primary }]}
           >
             <RotateCcw size={14} color={colors.primaryForeground} />
@@ -136,6 +138,7 @@ export default function QuizResultsScreen() {
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8, marginBottom: 24 }}>
           {pill(<Calendar size={14} color={colors.mutedForeground} />, dateLabel)}
           {pill(<Clock size={14} color={colors.mutedForeground} />, `${mins}m ${String(secs).padStart(2, '0')}s`)}
+          {!!result.focusLossCount&&pill(null,`${result.focusLossCount} tab switch${result.focusLossCount===1?'':'es'} recorded`)}
         </View>
 
         {/* Score — glass circle */}
@@ -150,17 +153,18 @@ export default function QuizResultsScreen() {
             </View>
             <View style={[styles.metaPill, { backgroundColor: glassBg, borderColor: glassRing }]}>
               <Text style={{ color: colors.mutedForeground, fontSize: 10, fontFamily: fonts.sansMedium }}>
-                {t('quiz.correctLine', { c: result.correct, n: result.total })}
+                {t('quiz.correctLine', { c: result.correct, n: result.total })}{result.items.some(item=>item.question.questionType==='ESSAY')?' • essays count as partial credit':''}
               </Text>
             </View>
           </View>
+          <ShareScoreCard result={result}/>
         </View>
 
         <Text style={{ color: colors.foreground, fontSize: 20, fontFamily: fonts.sansSemiBold, marginBottom: 16 }}>
           {t('quiz.reviewAnswers')}
         </Text>
 
-        <View style={{ gap: 16 }}>
+        <View onLayout={event=>{reviewTop.current=event.nativeEvent.layout.y}} style={{ gap: 16 }}>
           {result.items.map((item, i) => {
             const isOpen = expanded.has(i);
             const snippet = item.question.body.replace(/\s+/g, ' ').trim().slice(0, 56);
@@ -169,6 +173,7 @@ export default function QuizResultsScreen() {
                 <Pressable
                   key={item.question.id}
                   accessibilityRole="button"
+                  accessibilityLabel={`Review question ${i+1}`}
                   accessibilityState={{ expanded: false }}
                   onPress={() => toggleExpand(i)}
                   onLayout={(e) => { offsets.current[i] = e.nativeEvent.layout.y; }}
@@ -191,6 +196,7 @@ export default function QuizResultsScreen() {
               <View key={item.question.id} onLayout={(e) => { offsets.current[i] = e.nativeEvent.layout.y; }}>
                 <Pressable
                   accessibilityRole="button"
+                  accessibilityLabel={`Hide answer to question ${i+1}`}
                   accessibilityState={{ expanded: true }}
                   onPress={() => toggleExpand(i)}
                   style={[styles.hidePill, { backgroundColor: glassBg, borderColor: glassRing }]}
@@ -201,7 +207,7 @@ export default function QuizResultsScreen() {
                   <ChevronUp size={16} color={colors.mutedForeground} />
                 </Pressable>
                 <QuizQuestionHeader question={item.question} index={i} />
-                <QuizQuestionContent question={item.question} showResult selectedAnswer={item.chosen} />
+                <QuizQuestionContent question={item.question} showResult selectedAnswer={item.chosen} essayReview={item.essayReview} />
               </View>
             );
           })}
@@ -212,7 +218,7 @@ export default function QuizResultsScreen() {
 
       {/* Question map sheet */}
       <Modal visible={mapOpen} transparent animationType={PERF_TIER === 'low' ? 'none' : 'slide'} onRequestClose={() => setMapOpen(false)}>
-        <Pressable style={styles.backdrop} onPress={() => setMapOpen(false)}>
+        <Pressable accessibilityRole="button" style={styles.backdrop} onPress={() => setMapOpen(false)}>
           <Pressable
             onPress={(e) => e.stopPropagation()}
             style={[
@@ -256,7 +262,7 @@ export default function QuizResultsScreen() {
 
       {/* Retake sheet */}
       <Modal visible={retakeOpen} transparent animationType={PERF_TIER === 'low' ? 'none' : 'slide'} onRequestClose={() => setRetakeOpen(false)}>
-        <Pressable style={styles.backdrop} onPress={() => setRetakeOpen(false)}>
+        <Pressable accessibilityRole="button" style={styles.backdrop} onPress={() => setRetakeOpen(false)}>
           <Pressable
             onPress={(e) => e.stopPropagation()}
             style={[styles.sheet, { backgroundColor: isDark ? 'rgba(20,20,22,0.97)' : 'rgba(255,255,255,0.97)', borderColor: glassRing, paddingBottom: Math.max(24, insets.bottom + 20) }, isTablet && styles.sheetModal, isTablet && { backgroundColor: colors.card, borderColor: colors.border }]}
@@ -271,7 +277,7 @@ export default function QuizResultsScreen() {
             <View style={{ paddingHorizontal: 16, gap: 10, marginTop: 8 }}>
               <Pressable
                 accessibilityRole="button"
-                onPress={() => { setRetakeOpen(false); router.replace(`/quiz/${result.paperId}` as never); }}
+                onPress={() => { setRetakeOpen(false); router.replace(retryPath as never); }}
                 style={[styles.optionRow, { backgroundColor: glassBg, borderColor: glassRing }]}
               >
                 <View style={[styles.optionIcon, { backgroundColor: colors.primary + '1A' }]}>
@@ -284,7 +290,7 @@ export default function QuizResultsScreen() {
               </Pressable>
               <Pressable
                 accessibilityRole="button"
-                onPress={() => { setRetakeOpen(false); router.replace(`/quiz/${result.paperId}?missed=1` as never); }}
+                onPress={() => { setRetakeOpen(false); setQuizResult(result); router.replace(`${retryPath}?missed=1` as never); }}
                 style={[styles.optionRow, { backgroundColor: glassBg, borderColor: glassRing }]}
               >
                 <View style={[styles.optionIcon, { backgroundColor: 'rgba(139,92,246,0.12)' }]}>

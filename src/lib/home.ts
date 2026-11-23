@@ -1,9 +1,14 @@
+import { useLiveEnabled } from './query-mode';
 import { useQuery } from '@tanstack/react-query';
 import { api } from './api';
 import { FIXTURE_HOME, isFixtureMode } from './fixtures';
 
 /** Response of GET /api/mobile/home (MedQs0 src/app/api/mobile/home/route.ts). */
 export interface HomeData {
+  suggestedLectures?: Array<{ lectureId: string; moduleId: string; title: string; moduleName?: string; subjectName?: string; description?: string; imageUrl?: string | null }>;
+  dailyTarget?: number;
+  todayItemCount?: number;
+  progressToNext?: number;
   user: {
     id: string;
     name: string | null;
@@ -29,6 +34,7 @@ export interface HomeData {
     lecture: {
       id: string;
       title: string;
+      coverImageUrl?: string | null;
       subject: { id: string; name: string; module: { id: string; name: string } } | null;
     } | null;
   }>;
@@ -53,12 +59,12 @@ export interface HomeData {
 export function useHome() {
   const q = useQuery({
     queryKey: ['home'],
-    queryFn: () => api.get<HomeData>('/home'),
+    queryFn: () => isFixtureMode() ? Promise.resolve(FIXTURE_HOME) : api.get<HomeData>('/home'),
     staleTime: 5 * 60 * 1000,
-    enabled: !isFixtureMode(),
+    enabled: useLiveEnabled(),
   });
   // Pages phase: show fixture content when the backend is unreachable.
-  return { ...q, data: isFixtureMode() ? FIXTURE_HOME : q.data ?? (q.isError ? FIXTURE_HOME : q.data) };
+  return { ...q, data: isFixtureMode() ? FIXTURE_HOME : q.data };
 }
 
 export function firstNameOf(name: string | null | undefined, email?: string): string {

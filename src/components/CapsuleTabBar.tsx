@@ -1,129 +1,17 @@
-import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { BlurView } from 'expo-blur';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { useTheme } from '@/theme/ThemeContext';
-import { FadeEdges } from './FadeEdges';
-import { USE_LIVE_BLUR, GLASS_OPACITY } from '@/theme/perf';
-
-/** Floating capsule tab bar, replicating the site's restyled MobileBottomNav
- *  (feat/mobile-nav-fab-style): 48px glass capsule (bg-white/70 | white/10,
- *  ring black/10 | white/25, blur 20), items 40px with a 20px icon
- *  (scale-110 when active) + 10px label, active = foreground semibold,
- *  no background pill. */
-export function CapsuleTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
-  const { colors, isDark } = useTheme();
-  const insets = useSafeAreaInsets();
-
-  const glassBg = isDark
-    ? `rgba(255,255,255,${GLASS_OPACITY.dark})`
-    : `rgba(255,255,255,${GLASS_OPACITY.light})`;
-
-  const capsuleBody = (
-        <View
-          style={[
-            styles.capsule,
-            {
-              backgroundColor: USE_LIVE_BLUR
-                ? (isDark ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.70)')
-                : glassBg,
-              borderColor: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.10)',
-            },
-          ]}
-        >
-          {state.routes.map((route, index) => {
-            const focused = state.index === index;
-            const { options } = descriptors[route.key];
-            const label = typeof options.title === 'string' ? options.title : route.name;
-            const onPress = () => {
-              const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
-              if (!focused && !event.defaultPrevented) navigation.navigate(route.name);
-            };
-            return (
-              <Pressable
-                key={route.key}
-                accessibilityRole="button"
-                accessibilityState={{ selected: focused }}
-                onPress={onPress}
-                style={({ pressed }) => [styles.item, pressed && { transform: [{ scale: 0.95 }] }]}
-              >
-                <View style={focused ? { transform: [{ scale: 1.1 }] } : undefined}>
-                  {options.tabBarIcon?.({ focused, color: focused ? colors.foreground : colors.mutedForeground, size: 20 })}
-                </View>
-                <Text
-                  numberOfLines={1}
-                  style={[
-                    styles.label,
-                    { color: focused ? colors.foreground : colors.mutedForeground },
-                    focused ? { fontWeight: '600' } : { fontWeight: '500' },
-                  ]}
-                >
-                  {label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-  );
-
-  return (
-    <>
-      {/* Edge fades: bottom separates content from the floating capsule,
-          top softens the status-area edge — the mobile site's pattern. */}
-      <FadeEdges />
-      <View pointerEvents="box-none" style={[styles.wrap, { paddingBottom: insets.bottom + 12 }]}>
-        {USE_LIVE_BLUR ? (
-          <BlurView intensity={50} tint={isDark ? 'dark' : 'light'} style={styles.blur}>
-            {capsuleBody}
-          </BlurView>
-        ) : (
-          <View style={[styles.blur, styles.blurFallback]}>{capsuleBody}</View>
-        )}
-      </View>
-    </>
-  );
-}
-
-const styles = StyleSheet.create({
-  wrap: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    alignItems: 'center',
-    paddingHorizontal: 16,
-  },
-  blur: {
-    borderRadius: 999,
-    overflow: 'hidden',
-    width: '100%',
-    maxWidth: 420,
-  },
-  blurFallback: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    elevation: 6,
-  },
-  capsule: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    height: 48,
-    borderRadius: 999,
-    borderWidth: 1,
-    padding: 4,
-  },
-  item: {
-    flex: 1,
-    minWidth: 0,
-    height: '100%',
-    borderRadius: 999,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 2,
-  },
-  label: { fontSize: 10, lineHeight: 12 },
-});
+import React,{useEffect,useState}from'react';import{BackHandler,Image,Platform,Pressable,ScrollView,StyleSheet,Text,View,useWindowDimensions}from'react-native';import{BlurView}from'expo-blur';import{SvgXml}from'react-native-svg';import{usePathname,useRouter}from'expo-router';import{useTranslation}from'react-i18next';import{useSafeAreaInsets}from'react-native-safe-area-context';import type{BottomTabBarProps}from'@react-navigation/bottom-tabs';import{useTheme}from'@/theme/ThemeContext';import{useAuth}from'@/lib/auth';import{shouldShowStudentCapsule}from'@/lib/student-chrome';import{USE_LIVE_BLUR}from'@/theme/perf';import{FadeEdges}from'./FadeEdges';
+const icons=require('../../assets/student-capsule-icons.json')as Record<string,string>;
+const TABS=[{href:'/dashboard-app',label:'Home',ar:'الرئيسية',icon:'HomeIcon',match:(p:string)=>['/','/dashboard','/dashboard-app'].includes(p)},{href:'/modules',label:'Modules',ar:'المكتبة',icon:'BookOpenIcon',match:(p:string)=>p.startsWith('/modules')},{href:'/social',label:'Social',ar:'المجتمع',icon:'UserGroupIcon',match:(p:string)=>p.startsWith('/social')||p.startsWith('/community')},{href:'/past-papers',label:'QBank',ar:'الأسئلة',icon:'ClipboardDocumentListIcon',match:(p:string)=>p.startsWith('/past-papers')||p.startsWith('/qbank')||p.startsWith('/quiz')}];
+const EXTRAS=[['/videos','Videos','الفيديوهات','PlayCircleIcon'],['/ai-chat','AI Chat','دردشة الذكاء الاصطناعي','SparklesIcon'],['/study-tools','Study Tools','أدوات المذاكرة','AcademicCapIcon'],['/drawmed','DrawMed','الرسم الطبي','RocketLaunchIcon'],['/atlas','Atlas','الأطلس','GlobeAltIcon'],['/teams','Teams','الفِرق','UsersIcon'],['/leaderboard','Leaderboard','المتصدرون','TrophyIcon'],['/podcasts','Podcasts','البودكاست','MicrophoneIcon'],['/transcriptions','Transcriptions','التفريغ الصوتي','DocumentTextIcon'],['/taskat','Taskat','تاسكات','BoltIcon'],['/profile','Profile','الملف الشخصي','UserCircleIcon']];
+const font=Platform.OS==='android'?'sans-serif':'Arial';
+function Icon({name,color,active=false}:{name:string;color:string;active?:boolean}){return <SvgXml xml={(icons[name]??icons.Squares2X2Icon).replaceAll('currentColor',color)} width={20} height={20} style={active?{transform:[{scale:1.1}]}:undefined}/>}
+/** The shared shell owns the source capsule, including non-tab lecture sections. */
+export function StudentPhoneCapsule(){const path=usePathname(),router=useRouter(),{width,height}=useWindowDimensions(),insets=useSafeAreaInsets(),{colors,isDark}=useTheme(),{token,isGuest,bootstrapped,user}=useAuth(),{i18n}=useTranslation();const[expanded,setExpanded]=useState(false);const ar=i18n.language==='ar';useEffect(()=>setExpanded(false),[path,width]);useEffect(()=>{if(!expanded)return;const listener=BackHandler.addEventListener('hardwareBackPress',()=>{setExpanded(false);return true});return()=>listener.remove()},[expanded]);if(width>=768||!bootstrapped||(!token&&!isGuest)||!shouldShowStudentCapsule(path))return null;
+const extra=EXTRAS.find(item=>path===item[0]||path.startsWith(item[0]+'/')),subpage=!TABS.some(item=>item.match(path)),moreActive=subpage||expanded;const text=(en:string,arabic:string)=>ar?arabic:en;const go=(href:string)=>{setExpanded(false);if(path!==href&&!(href==='/dashboard-app'&&path==='/'))router.push(href as never)};
+const surface=isDark?'rgba(11,11,11,0.85)':'rgba(255,255,255,0.80)';const body=<View testID="student-phone-capsule-surface" style={{backgroundColor:surface,borderRadius:expanded?28:24,overflow:'hidden',borderWidth:1,borderColor:isDark?'rgba(255,255,255,.25)':'rgba(0,0,0,.1)'}}>
+ {expanded&&<ScrollView accessibilityLabel="More pages" style={{maxHeight:Math.min(height*.55,440)}} contentContainerStyle={{paddingHorizontal:16,paddingTop:16,paddingBottom:12}}><View style={{flexDirection:ar?'row-reverse':'row',alignItems:'center',justifyContent:'space-between',paddingHorizontal:4,paddingBottom:16}}><Text style={{fontFamily:font,letterSpacing:-.15,fontSize:14,fontWeight:'600',lineHeight:20,color:colors.foreground}}>{text('Explore MedOneX','استكشف MedOneX')}</Text><Pressable accessibilityRole="button" accessibilityLabel="Close more pages" onPress={()=>setExpanded(false)} style={{width:32,height:32,borderRadius:16,alignItems:'center',justifyContent:'center',backgroundColor:colors.muted+'99'}}><Text style={{fontFamily:font,letterSpacing:-.15,fontSize:20,lineHeight:20,color:colors.mutedForeground}}>×</Text></Pressable></View><View style={{flexDirection:ar?'row-reverse':'row',flexWrap:'wrap',columnGap:8,rowGap:12}}>{EXTRAS.map(([href,label,arabic,icon])=>{const active=path===href||path.startsWith(href+'/');return <Pressable key={href} accessibilityRole="link" accessibilityLabel={'More '+label} onPress={()=>go(href)} style={{width:(Math.min(width-32,420)-2-32-16)/3,minHeight:76,paddingVertical:4,borderRadius:16,alignItems:'center',justifyContent:'center',gap:6}}><View style={{width:44,height:44,borderRadius:16,alignItems:'center',justifyContent:'center',backgroundColor:active?colors.primary+'26':colors.muted+'A6'}}><Icon name={icon} color={active?colors.primary:colors.mutedForeground}/></View><Text style={{fontFamily:font,letterSpacing:-.15,fontSize:11,fontWeight:'500',lineHeight:13.75,textAlign:'center',color:active?colors.primary:colors.mutedForeground}}>{text(label,arabic)}</Text></Pressable>})}</View></ScrollView>}
+ <View accessibilityRole="tablist" accessibilityLabel="Primary" style={{height:46,padding:3,flexDirection:ar?'row-reverse':'row',gap:4,borderTopWidth:expanded?1:0,borderTopColor:colors.border+'66'}}>{TABS.map(tab=>{const active=tab.match(path),color=active?colors.foreground:colors.mutedForeground;return <Pressable key={tab.href} accessibilityRole="tab" accessibilityLabel={tab.label} accessibilityState={{selected:active}} onPress={()=>go(tab.href)} style={styles.item}><Icon name={tab.icon} color={color} active={active}/><Text style={{fontFamily:font,letterSpacing:-.15,fontSize:10,lineHeight:10,fontWeight:active?'600':'500',color}}>{text(tab.label,tab.ar)}</Text></Pressable>})}<Pressable accessibilityRole="button" accessibilityLabel={extra?.[1]??'More'} accessibilityState={{expanded}} onPress={()=>setExpanded(value=>!value)} style={[styles.item,{backgroundColor:moreActive?colors.muted+'B3':'transparent'}]}>{path.startsWith('/profile')&&user?.image?<Image source={{uri:user.image}} style={{width:20,height:20,borderRadius:10}}/>:<Icon name={extra?.[3]??'Squares2X2Icon'} color={moreActive?colors.foreground:colors.mutedForeground} active={moreActive}/>}<Text numberOfLines={1} style={{fontFamily:font,letterSpacing:-.15,fontSize:10,lineHeight:10,paddingHorizontal:4,fontWeight:moreActive?'600':'500',color:moreActive?colors.foreground:colors.mutedForeground}}>{extra?text(extra[1],extra[2]):text('More','المزيد')}</Text></Pressable></View>
+ </View>;
+return <><FadeEdges top={false}/>{expanded&&<Pressable accessibilityRole="button" accessibilityLabel="Close more pages backdrop" onPress={()=>setExpanded(false)} style={[StyleSheet.absoluteFill,{zIndex:15,backgroundColor:'rgba(0,0,0,.1)'},Platform.OS==='web'?({backdropFilter:'blur(4px)',WebkitBackdropFilter:'blur(4px)'}as any):undefined]}>{Platform.OS!=='web'&&USE_LIVE_BLUR&&<BlurView intensity={20} tint={isDark?'dark':'light'} pointerEvents="none" style={StyleSheet.absoluteFill}/>}</Pressable>}<View testID="student-phone-capsule" pointerEvents="box-none" style={{position:'absolute',left:0,right:0,bottom:insets.bottom+12,paddingHorizontal:16,zIndex:20,elevation:20,alignItems:'center'}}>{Platform.OS==='web'?React.createElement('div',{style:{width:'100%',maxWidth:420,borderRadius:expanded?28:24,overflow:'hidden',backdropFilter:'blur(20px) saturate(150%)',WebkitBackdropFilter:'blur(20px) saturate(150%)',boxShadow:'0 2px 24px -4px rgba(0,0,0,.25)'}},body):USE_LIVE_BLUR?<BlurView intensity={100} tint={isDark?'dark':'light'} style={{width:'100%',maxWidth:420,borderRadius:expanded?28:24,overflow:'hidden'}}>{body}</BlurView>:<View style={{width:'100%',maxWidth:420,borderRadius:expanded?28:24,overflow:'hidden'}}>{body}</View>}</View></>}
+/** Kept as a compatibility export; global chrome renders the only capsule. */
+export function CapsuleTabBar(_props:BottomTabBarProps){return null}
+const styles=StyleSheet.create({item:{flex:1,minWidth:0,height:'100%',borderRadius:999,alignItems:'center',justifyContent:'center',gap:2}});

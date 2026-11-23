@@ -1,0 +1,105 @@
+{
+  "offers": [
+    {
+      "id": 1,
+      "imageSrc": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=600&auto=format&fit=crop&q=60",
+      "imageAlt": "Medical lectures graphic",
+      "tag": "Learn",
+      "title": "Interactive Lectures",
+      "description": "Curated medical lectures by top instructors.",
+      "brandLogoSrc": "/medonex-logo-new.svg",
+      "brandName": "MedOneX",
+      "href": "/modules"
+    },
+    {
+      "id": 2,
+      "imageSrc": "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=600&auto=format&fit=crop&q=60",
+      "imageAlt": "Quiz graphic",
+      "tag": "Practice",
+      "title": "QBank & Quizzes",
+      "description": "Test your knowledge with high-yield questions.",
+      "brandLogoSrc": "/medonex-logo-new.svg",
+      "brandName": "MedOneX",
+      "href": "/past-papers"
+    },
+    {
+      "id": 3,
+      "imageSrc": "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=600&auto=format&fit=crop&q=60",
+      "imageAlt": "Video graphic",
+      "tag": "Watch",
+      "title": "OneX Videos & Reels",
+      "description": "High-yield video content for quick revision.",
+      "brandLogoSrc": "/medonex-logo-new.svg",
+      "brandName": "MedOneX",
+      "href": "/videos"
+    },
+    {
+      "id": 4,
+      "imageSrc": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&auto=format&fit=crop&q=60",
+      "imageAlt": "Community graphic",
+      "tag": "Connect",
+      "title": "Community Hub",
+      "description": "Join discussions and collaborate with peers.",
+      "brandLogoSrc": "/medonex-logo-new.svg",
+      "brandName": "MedOneX",
+      "href": "/social"
+    },
+    {
+      "id": 5,
+      "imageSrc": "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=600&auto=format&fit=crop&q=60",
+      "imageAlt": "Recordings graphic",
+      "tag": "Record",
+      "title": "Recordings",
+      "description": "Access all recorded sessions and rewatch anytime.",
+      "brandLogoSrc": "/medonex-logo-new.svg",
+      "brandName": "MedOneX",
+      "href": "/recordings"
+    },
+    {
+      "id": 6,
+      "imageSrc": "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=600&auto=format&fit=crop&q=60",
+      "imageAlt": "AI medical graphic",
+      "tag": "AI",
+      "title": "AI Medical Tutor",
+      "description": "AI-powered assistant for medical learning.",
+      "brandLogoSrc": "/medonex-logo-new.svg",
+      "brandName": "MedOneX",
+      "href": "/ai-chat"
+    },
+    {
+      "id": 7,
+      "imageSrc": "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&auto=format&fit=crop&q=60",
+      "imageAlt": "Study rooms graphic",
+      "tag": "Collaborate",
+      "title": "Study Rooms",
+      "description": "Join study rooms and collaborate with peers.",
+      "brandLogoSrc": "/medonex-logo-new.svg",
+      "brandName": "MedOneX",
+      "href": "/teams"
+    }
+  ],
+  "features": [
+    {
+      "quote": "Master every lecture with curated medical content.",
+      "author": "Interactive Lectures",
+      "role": "Start Learning",
+      "company": "MedOneX",
+      "image": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=600&auto=format&fit=crop&q=60"
+    },
+    {
+      "quote": "Practice smarter with high-yield QBank & quizzes.",
+      "author": "QBank & Quizzes",
+      "role": "Test Yourself",
+      "company": "MedOneX",
+      "image": "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=600&auto=format&fit=crop&q=60"
+    },
+    {
+      "quote": "Collaborate in study rooms and grow together.",
+      "author": "Study Rooms",
+      "role": "Join Now",
+      "company": "MedOneX",
+      "image": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&auto=format&fit=crop&q=60"
+    }
+  ],
+  "communitySubtitle": "Real stories from our vibrant community of learners."
+}

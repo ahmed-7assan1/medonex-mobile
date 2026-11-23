@@ -1,7 +1,9 @@
+import{useStudentDimensions as useWindowDimensions}from'@/lib/student-viewport';
 import React, { useMemo, useState } from 'react';
 import {
-  View, Text, Pressable, ScrollView, TextInput, StyleSheet, useWindowDimensions,
+  View, Text, Pressable, ScrollView, TextInput, StyleSheet, Image,Alert,Linking,ActivityIndicator,
 } from 'react-native';
+import { Sheet } from '@/components/Sheet';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -13,7 +15,12 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme/ThemeContext';
 import { TABLET_BREAKPOINT, SCROLL_BOTTOM_PAD } from '@/theme/tokens';
 import { FIXTURE_ATLAS_SYSTEMS, FIXTURE_ATLAS_STRUCTURES, type FixtureAtlasStructure } from '@/lib/fixtures';
+import {useAtlas,type AtlasStructure} from '@/lib/resources';
+import{useAtlasPersonal}from'@/lib/atlas';
+import {ResourceState} from '@/components/ResourceState';
+import {isFixtureMode} from '@/lib/fixtures';
 import { FadeEdges } from '@/components/FadeEdges';
+import{ZoomableAtlasImage}from'@/components/ZoomableAtlasImage';
 
 const ICONS: Record<string, any> = {
   bone: Bone, dumbbell: Dumbbell, brain: Brain, wind: Wind, utensils: Utensils, heart: Heart, activity: Activity,
@@ -37,26 +44,35 @@ const CYAN = '#22D3EE';
 export default function AtlasScreen() {
   const { t } = useTranslation();
   const { fonts } = useTheme();
-  const { width } = useWindowDimensions();
-  const isTablet = width >= TABLET_BREAKPOINT;
+  const {viewportWidth, width } = useWindowDimensions();
+  const isTablet = viewportWidth >= TABLET_BREAKPOINT;
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
   const [activeSystem, setActiveSystem] = useState<string | null>(null);
-  const [selected, setSelected] = useState<FixtureAtlasStructure | null>(null);
+  const [selected, setSelected] = useState<AtlasStructure | null>(null);
   const [search, setSearch] = useState('');
-  const [bookmarked, setBookmarked] = useState(false);
+  const[guestPersonal,setGuestPersonal]=useState<Record<string,{bookmarked?:boolean;note?:string}>>({});
+  const personal=useAtlasPersonal(selected?.id,selected?.name);
+  const bookmarked=isFixtureMode()?!!guestPersonal[selected?.id||'']?.bookmarked:!!personal.data?.bookmarked;
+  const note=isFixtureMode()?guestPersonal[selected?.id||'']?.note||'':personal.data?.note||'';
+  const[action,setAction]=useState<'AI Anatomy Tutor'|'Quick Quiz'|null>(null);
 
-  const activeSystemData = FIXTURE_ATLAS_SYSTEMS.find((s) => s.systemId === activeSystem) ?? null;
+  const resource=useAtlas();const systems=resource.data?.systems??[];const structures=resource.data?.structures??[];
+  const readOnly=()=>Alert.alert('Read-only account feature','No changes were saved. Open the website to edit your Atlas notes and bookmarks.',[{text:'Cancel',style:'cancel'},{text:'Open website',onPress:()=>Linking.openURL('https://www.medonex.me/atlas')}]);
+  const actionModal=<Sheet visible={!!action} autoHeight onClose={()=>setAction(null)}><View style={{backgroundColor:CARD,padding:24,paddingBottom:insets.bottom+32,gap:18}}><Text style={{color:'#fff',fontSize:20,fontFamily:fonts.sansBold}}>{action}</Text><Text style={{color:'rgba(255,255,255,.65)',fontSize:14,lineHeight:22}}>This feature uses an AI provider on the website. This version does not send AI requests or use credits. No quiz questions or medical answers are fabricated.</Text><Pressable accessibilityRole="button" onPress={()=>Linking.openURL('https://www.medonex.me/atlas')} style={{backgroundColor:CYAN,padding:16,borderRadius:22,alignItems:'center'}}><Text style={{color:'#000'}}>Open website</Text></Pressable><Pressable accessibilityRole="button" onPress={()=>setAction(null)}><Text style={{color:'#fff',textAlign:'center'}}>Close</Text></Pressable></View></Sheet>;
+  const activeSystemData = systems.find((s) => s.systemId === activeSystem) ?? null;
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return FIXTURE_ATLAS_STRUCTURES.filter((d) => {
-      if (q) return d.name.toLowerCase().includes(q) || (d.clinical ?? '').toLowerCase().includes(q) || d.type.includes(q);
+    return structures.filter((d) => {
+      if(q)return(!activeSystem||d.systemId===activeSystem)&&[d.name,d.latin||'',d.desc||'',d.clinical||''].some(text=>text.toLowerCase().includes(q));
       return activeSystem ? d.systemId === activeSystem : true;
     });
-  }, [activeSystem, search]);
+  }, [activeSystem, search,structures]);
 
-  const cols = width >= 1100 ? 4 : width >= 768 ? 3 : width >= 480 ? 2 : 1;
+  if(!resource.data)return <ResourceState error={resource.error} onRetry={()=>resource.refetch()} title="Atlas"/>;
+
+  const cols = viewportWidth >= 1100 ? 4 : viewportWidth >= 768 ? 3 : width >= 480 ? 2 : 1;
   const cardW = (Math.min(width, 1280) - 48 - (cols - 1) * 16) / cols;
 
   const searchBar = (
@@ -77,6 +93,7 @@ export default function AtlasScreen() {
     </View>
   );
 
+  const systemDock=(activeSystem||selected)&&!search?<View style={{position:'absolute',bottom:insets.bottom+(isTablet?48:96),alignSelf:'center',width:'95%',maxWidth:672,zIndex:40,backgroundColor:'rgba(22,22,28,.94)',borderWidth:1,borderColor:'rgba(255,255,255,.1)',borderRadius:24,padding:8}}><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{gap:8,alignItems:'center'}}><Pressable accessibilityRole="button" accessibilityLabel="Atlas home" onPress={()=>{setActiveSystem(null);setSelected(null)}} style={{width:60,padding:8,alignItems:'center',gap:5}}><ArrowLeft size={20} color="#9ca3af"/><Text style={{fontSize:9,color:'#9ca3af',fontFamily:fonts.sansBold}}>HOME</Text></Pressable>{systems.map(sys=>{const Icon=ICONS[sys.iconName]||Activity;const active=activeSystem===sys.systemId&&!selected;return <Pressable key={sys.systemId} accessibilityRole="button" accessibilityLabel={sys.label+' system'} accessibilityState={{selected:active}} onPress={()=>{setActiveSystem(sys.systemId);setSelected(null)}} style={{minWidth:64,alignItems:'center',gap:5,padding:8,borderRadius:16,backgroundColor:active?'rgba(34,211,238,.1)':'transparent'}}><Icon size={20} color={active?CYAN:'#9ca3af'}/><Text style={{fontSize:9,color:active?CYAN:'#9ca3af',fontFamily:fonts.sansBold}}>{sys.label.toUpperCase()}</Text></Pressable>})}</ScrollView></View>:null;
   /* ── Detail view ── */
   if (selected) {
     const tc = TYPE_COLORS[selected.type] ?? TYPE_COLORS.organ;
@@ -91,7 +108,7 @@ export default function AtlasScreen() {
               </Pressable>
               <Pressable
                 accessibilityRole="button" accessibilityState={{ selected: bookmarked }}
-                onPress={() => setBookmarked((b) => !b)}
+                onPress={()=>isFixtureMode()?setGuestPersonal(old=>({...old,[selected.id]:{...old[selected.id],bookmarked:!bookmarked}})):readOnly()}
                 style={[styles.bookmarkBtn, bookmarked ? { backgroundColor: '#F59E0B1A', borderColor: '#F59E0B4D' } : { backgroundColor: 'rgba(255,255,255,0.05)', borderColor: LINE }]}
               >
                 <Star size={14} color={bookmarked ? '#FBBF24' : 'rgba(255,255,255,0.5)'} fill={bookmarked ? '#FBBF24' : 'transparent'} />
@@ -106,22 +123,23 @@ export default function AtlasScreen() {
               <View style={{ flex: isTablet ? 0.45 : 1, gap: 20 }}>
                 <View style={[styles.visual, { backgroundColor: CARD }]}>
                   <LinearGradient colors={['rgba(22,78,99,0.25)', 'rgba(0,0,0,0.4)', '#000']} style={StyleSheet.absoluteFill} />
-                  {(() => { const SysIcon = ICONS[FIXTURE_ATLAS_SYSTEMS.find((s) => s.systemId === selected.systemId)?.iconName ?? 'activity'] ?? Activity;
+                  {(() => { const SysIcon = ICONS[systems.find((s) => s.systemId === selected.systemId)?.iconName ?? 'activity'] ?? Activity;
                     return <SysIcon size={110} color={CYAN} style={{ opacity: 0.4 }} />; })()}
+                  {!!selected.imageUrl&&<ZoomableAtlasImage key={selected.id} uri={selected.imageUrl}/>}
                   <View style={styles.visualTag}>
                     <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 9.5, fontFamily: fonts.sansBold, letterSpacing: 2, textTransform: 'uppercase' }}>{t('atlas.visualization')}</Text>
                   </View>
                 </View>
 
                 <View style={{ flexDirection: 'row', gap: 12 }}>
-                  <View style={[styles.aiBtn, { borderColor: CYAN + '66', borderWidth: 1, backgroundColor: '#1A1A1F' }]}>
+                  <Pressable accessibilityRole="button" onPress={()=>setAction('AI Anatomy Tutor')} style={[styles.aiBtn, { borderColor: CYAN + '66', borderWidth: 1, backgroundColor: '#1A1A1F' }]}>
                     <BrainCircuit size={15} color={CYAN} />
                     <Text style={{ color: '#fff', fontSize: 13, fontFamily: fonts.sansBold }}>{t('atlas.askAI')}</Text>
-                  </View>
-                  <LinearGradient colors={['#14B8A6', '#059669']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.aiBtn}>
+                  </Pressable>
+                  <Pressable accessibilityRole="button" onPress={()=>setAction('Quick Quiz')} style={{flex:1}}><LinearGradient colors={['#14B8A6', '#059669']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.aiBtn}>
                     <Sparkles size={15} color="#fff" />
                     <Text style={{ color: '#fff', fontSize: 13, fontFamily: fonts.sansBold }}>{t('atlas.quickQuiz')}</Text>
-                  </LinearGradient>
+                  </LinearGradient></Pressable>
                 </View>
 
                 <View style={[styles.notesCard, { backgroundColor: CARD }]}>
@@ -130,11 +148,16 @@ export default function AtlasScreen() {
                     <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 9.5, fontFamily: fonts.sansBold, letterSpacing: 2, textTransform: 'uppercase' }}>{t('atlas.notes')}</Text>
                   </View>
                   <TextInput
-                    multiline
+                    multiline value={note} onChangeText={value=>setGuestPersonal(old=>({...old,[selected.id]:{...old[selected.id],note:value}}))}
+                    onFocus={()=>{if(!isFixtureMode())readOnly()}}
+                    editable={isFixtureMode()}
                     placeholder={t('atlas.notesPlaceholder')}
                     placeholderTextColor="rgba(255,255,255,0.2)"
                     style={styles.notesInput}
                   />
+                  {personal.isLoading&&<ActivityIndicator color={CYAN}/>}
+                  {!!personal.error&&<Pressable accessibilityRole="button" onPress={()=>personal.refetch()}><Text style={{color:'#FBBF24',fontSize:12}}>Your note and bookmark could not load. Tap to retry.</Text></Pressable>}
+                  <Pressable accessibilityRole="button" onPress={readOnly}><Text style={{color:CYAN,fontSize:12}}>{isFixtureMode()?'Local demo note, clears when you leave this page.':'Read-only note. Edit on website.'}</Text></Pressable>
                 </View>
               </View>
 
@@ -163,7 +186,7 @@ export default function AtlasScreen() {
                       </View>
                       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                         {selected.relations.map((r) => {
-                          const match = FIXTURE_ATLAS_STRUCTURES.find((s) => s.name.toLowerCase() === r.toLowerCase());
+                          const match = structures.find((s) => s.name.toLowerCase() === r.toLowerCase());
                           return (
                             <Pressable key={r} accessibilityRole="button" disabled={!match} onPress={() => match && setSelected(match)}
                               style={[styles.relChip, { borderColor: match ? CYAN + '55' : LINE, backgroundColor: match ? CYAN + '14' : 'rgba(255,255,255,0.03)' }]}>
@@ -185,10 +208,15 @@ export default function AtlasScreen() {
                     <Text style={{ color: 'rgba(255,255,255,0.85)', fontSize: 13.5, lineHeight: 21, fontFamily: fonts.sans }}>{selected.clinical}</Text>
                   </View>
                 )}
+                {!!selected.memo&&<View style={{borderRadius:24,borderWidth:1,borderColor:'rgba(99,102,241,.3)',backgroundColor:'rgba(99,102,241,.05)',padding:24,gap:12,marginTop:20}}><Text style={{fontSize:10,color:'#a5b4fc',fontFamily:fonts.sansBold,letterSpacing:2}}>MNEMONIC / MEMORY AID</Text><Text style={{color:'#e0e7ff',fontSize:18,lineHeight:26,fontStyle:'italic'}}>{selected.memo}</Text></View>}
+                <View style={{backgroundColor:CARD,borderColor:LINE,borderWidth:1,borderRadius:28,padding:24,gap:14,marginTop:20}}><Text style={{color:'rgba(255,255,255,.4)',fontSize:10,fontFamily:fonts.sansBold,letterSpacing:2}}>RELATED CURRICULUM LECTURES</Text>{personal.isLoading?<ActivityIndicator color={CYAN}/>:personal.error?<Pressable accessibilityRole="button" onPress={()=>personal.refetch()}><Text style={{color:'#FBBF24',fontSize:12}}>Related lectures could not load. Tap to retry.</Text></Pressable>:personal.data?.lectures.length?personal.data.lectures.map(video=><Pressable accessibilityRole="button" key={video.id} onPress={()=>{const moduleId=video.lecture.subject.moduleId;if(moduleId)router.push(`/modules/${moduleId}/lectures/${video.lecture.id}` as never);else if(/^https:\/\//.test(video.url))Linking.openURL(video.url)}} style={{padding:14,borderRadius:16,backgroundColor:'rgba(255,255,255,.02)',borderWidth:1,borderColor:LINE,gap:4}}><Text style={{color:'#fff',fontSize:14,fontFamily:fonts.sansBold}}>{video.title}</Text><Text style={{color:'rgba(255,255,255,.3)',fontSize:10}}>{video.lecture.title}</Text></Pressable>):<Text style={{color:'rgba(255,255,255,.3)',fontSize:12}}>No lectures currently tagged to this structure.</Text>}</View>
+
               </View>
             </View>
           </View>
         </ScrollView>
+        {systemDock}
+      {actionModal}
         {!isTablet && <FadeEdges bottom />}
       </View>
     );
@@ -232,7 +260,7 @@ export default function AtlasScreen() {
                   <ArrowLeft size={18} color="rgba(255,255,255,0.5)" />
                 </Pressable>
               )}
-              <View>
+              <View style={{flex:1}}>
                 <Text style={{ color: '#fff', fontSize: 26, fontFamily: fonts.sansBold, letterSpacing: -0.8 }}>
                   {search ? t('atlas.results') : `${activeSystemData?.label} System`}
                 </Text>
@@ -243,12 +271,13 @@ export default function AtlasScreen() {
             </View>
           )}
 
+          {activeSystem&&<Pressable accessibilityRole="button" onPress={()=>setAction('Quick Quiz')} style={{alignSelf:'flex-end',flexDirection:'row',gap:8,padding:12,borderRadius:20,borderWidth:1,borderColor:'#14B8A655',marginBottom:16}}><Sparkles size={15} color="#34D399"/><Text style={{color:'#34D399',fontFamily:fonts.sansBold}}>Quick Quiz</Text></Pressable>}
           {/* System cards (landing) */}
           {!activeSystem && !search && (
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16, marginTop: 20 }}>
-              {FIXTURE_ATLAS_SYSTEMS.map((sys) => {
+              {systems.map((sys) => {
                 const SysIcon = ICONS[sys.iconName] ?? Activity;
-                const count = FIXTURE_ATLAS_STRUCTURES.filter((d) => d.systemId === sys.systemId).length;
+                const count = structures.filter((d) => d.systemId === sys.systemId).length;
                 return (
                   <Pressable key={sys.systemId} accessibilityRole="button" onPress={() => setActiveSystem(sys.systemId)}
                     style={[styles.sysCard, { backgroundColor: CARD, width: cardW }]}>
@@ -313,6 +342,8 @@ export default function AtlasScreen() {
           )}
         </View>
       </ScrollView>
+      {systemDock}
+      {actionModal}
       {!isTablet && <FadeEdges bottom />}
     </View>
   );

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Alert } from 'react-native';
 import {
   Flag, Bookmark, BookmarkCheck, MessageSquareWarning, Share2,
   CheckCircle2, XCircle,
@@ -58,7 +58,7 @@ export function QuizQuestionHeader({
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ selected: !!active }}
-      onPress={onPress}
+      onPress={onPress||(()=>Alert.alert('Read-only practice','This review does not change your saved questions, flags, reports or community posts. Open the quiz on the website for account actions.'))}
       style={[styles.act, { backgroundColor: active ? activeBg : glassBg, borderColor: glassRing }]}
     >
       {icon}
@@ -96,88 +96,7 @@ export function QuizQuestionHeader({
   );
 }
 
-export function QuizQuestionContent({
-  question,
-  showResult,
-  selectedAnswer,
-  onAnswer,
-}: {
-  question: FixtureQuizQuestion;
-  showResult: boolean;
-  selectedAnswer?: string;
-  onAnswer?: (key: string) => void;
-}) {
-  const { colors, fonts } = useTheme();
-
-  return (
-    <View style={styles.content}>
-      <Text style={{ color: colors.foreground, fontSize: 15, lineHeight: 23, fontFamily: fonts.sansMedium }}>
-        {question.body}
-      </Text>
-
-      <View style={{ gap: 10 }}>
-        {question.choices.map((choice) => {
-          const isSelected = selectedAnswer === choice.key;
-          const isCorrect = showResult && choice.key === question.answer;
-          const isWrong = showResult && isSelected && choice.key !== question.answer;
-          const dim = showResult && !isCorrect && !isWrong;
-
-          let borderColor = colors.border;
-          let backgroundColor = 'transparent';
-          if (!showResult && isSelected) { borderColor = colors.primary; backgroundColor = colors.primary + '1A'; }
-          if (isCorrect) { borderColor = '#10B981'; backgroundColor = 'rgba(16,185,129,0.10)'; }
-          if (isWrong) { borderColor = '#F87171'; backgroundColor = 'rgba(239,68,68,0.10)'; }
-
-          let letterBorder = colors.mutedForeground + '40';
-          let letterBg = 'transparent';
-          let letterFg = colors.mutedForeground;
-          if (!showResult && isSelected) { letterBorder = colors.primary; letterBg = colors.primary; letterFg = colors.primaryForeground; }
-          if (isCorrect) { letterBorder = '#10B981'; letterBg = '#10B981'; letterFg = '#FFFFFF'; }
-          if (isWrong) { letterBorder = '#EF4444'; letterBg = '#EF4444'; letterFg = '#FFFFFF'; }
-
-          return (
-            <Pressable
-              key={choice.key}
-              accessibilityRole="button"
-              accessibilityState={{ selected: isSelected, disabled: showResult }}
-              disabled={showResult}
-              onPress={() => onAnswer?.(choice.key)}
-              style={[
-                styles.choice,
-                { borderColor, backgroundColor },
-                !showResult && isSelected && { borderWidth: 1.5 },
-                dim && { opacity: 0.55 },
-              ]}
-            >
-              <View style={[styles.letter, { borderColor: letterBorder, backgroundColor: letterBg }]}>
-                <Text style={{ color: letterFg, fontSize: 12, fontFamily: fonts.sansBold }}>{choice.key}</Text>
-              </View>
-              <Text style={[
-                styles.choiceText,
-                { color: colors.foreground, fontFamily: (isSelected || isCorrect) ? fonts.sansSemiBold : fonts.sans },
-              ]}>
-                {choice.text}
-              </Text>
-              {isCorrect && <CheckCircle2 size={20} color="#10B981" />}
-              {isWrong && <XCircle size={20} color="#EF4444" />}
-            </Pressable>
-          );
-        })}
-      </View>
-
-      {showResult && !!question.explanation?.trim() && (
-        <View style={[styles.explain, { borderColor: colors.border, backgroundColor: colors.muted + '40' }]}>
-          <Text style={{ color: colors.mutedForeground, fontSize: 11, fontFamily: fonts.sansBold, letterSpacing: 0.8, textTransform: 'uppercase' }}>
-            Explanation
-          </Text>
-          <Text style={{ color: colors.foreground, fontSize: 14, lineHeight: 21, fontFamily: fonts.sans, marginTop: 8 }}>
-            {question.explanation}
-          </Text>
-        </View>
-      )}
-    </View>
-  );
-}
+export {QuizQuestionContent}from'./WebsiteQuestionContent';
 
 const styles = StyleSheet.create({
   head: {

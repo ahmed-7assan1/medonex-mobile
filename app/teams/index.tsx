@@ -1,6 +1,7 @@
+import{useStudentDimensions as useWindowDimensions}from'@/lib/student-viewport';
 import React, { useState } from 'react';
 import {
-  View, Text, Pressable, ScrollView, StyleSheet, TextInput, useWindowDimensions,
+  View, Text, Pressable, ScrollView, StyleSheet, TextInput, Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,6 +12,8 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme/ThemeContext';
 import { FadeEdges } from '@/components/FadeEdges';
 import { TABLET_BREAKPOINT, SCROLL_BOTTOM_PAD } from '@/theme/tokens';
+import {useTeams} from '@/lib/teams';
+import {ResourceState} from '@/components/ResourceState';
 import { FIXTURE_TEAMS } from '@/lib/fixtures';
 
 /** /teams — pixel match of the site's TeamsDirectory: search field, team
@@ -22,15 +25,18 @@ export default function TeamsScreen() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { width } = useWindowDimensions();
-  const isTablet = width >= TABLET_BREAKPOINT;
+  const {viewportWidth, width } = useWindowDimensions();
+  const isTablet = viewportWidth >= TABLET_BREAKPOINT;
 
   const [query, setQuery] = useState('');
-  const filtered = FIXTURE_TEAMS.filter(
+  const resource=useTeams();
+  const filtered = (resource.data??[]).filter(
     (team) =>
       team.name.toLowerCase().includes(query.toLowerCase()) ||
       team.faculty.toLowerCase().includes(query.toLowerCase()),
   );
+
+  if(!resource.data)return <ResourceState error={resource.error} onRetry={()=>resource.refetch()} title={t('teams.title')}/>;
 
   const initials = (name: string) =>
     name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase();
@@ -91,6 +97,7 @@ export default function TeamsScreen() {
             >
               {/* Banner */}
               <View style={[styles.banner, { backgroundColor: colors.muted + '66' }]}>
+                {!!team.coverUrl&&<Image source={{uri:team.coverUrl}} style={StyleSheet.absoluteFill}/>}
                 <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.primary + '1A' }]} />
                 <View style={[styles.badge, { backgroundColor: st.surface, borderColor: st.border }]}>
                   <ShieldCheck size={12} color={colors.primary} />
@@ -101,7 +108,7 @@ export default function TeamsScreen() {
               {/* Body */}
               <View style={styles.cardBody}>
                 <View style={[styles.avatar, { backgroundColor: colors.primary + '1A', borderColor: st.surface }]}>
-                  <Text style={{ color: colors.primary, fontSize: 28, fontFamily: fonts.display }}>{initials(team.name)}</Text>
+                  <Text style={{ color: colors.primary, fontSize: 28, fontFamily: fonts.display }}>{initials(team.name)}</Text>{!!team.imageUrl&&<Image source={{uri:team.imageUrl}} style={StyleSheet.absoluteFill}/>}
                 </View>
                 <Text style={{ color: st.text, fontSize: 18, fontFamily: fonts.sansBold, marginBottom: 8 }}>{team.name}</Text>
                 <Text numberOfLines={3} style={{ color: st.muted, fontSize: 14, fontFamily: fonts.sansMedium, lineHeight: 20, flex: 1 }}>

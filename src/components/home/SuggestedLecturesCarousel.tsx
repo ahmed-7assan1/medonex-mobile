@@ -1,5 +1,6 @@
+import{useStudentDimensions as useWindowDimensions}from'@/lib/student-viewport';
 import React from 'react';
-import { View, Text, Pressable, Image, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, Pressable, Image, ScrollView, StyleSheet, } from 'react-native';
 import { BookOpen } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -23,6 +24,7 @@ export function SuggestedLecturesCarousel({ lectures }: { lectures: SuggestedLec
   const { st, fonts } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
+  const {viewportWidth, width } = useWindowDimensions();
   if (lectures.length === 0) return null;
 
   return (
@@ -37,11 +39,12 @@ export function SuggestedLecturesCarousel({ lectures }: { lectures: SuggestedLec
         contentContainerStyle={{ gap: 12, paddingHorizontal: 16, paddingBottom: 4 }}
       >
         {lectures.map((l) => (
-          <Pressable
+          <Pressable accessibilityRole="button"
             key={l.lectureId}
             onPress={() => router.push(`/modules/${l.moduleId}/lectures/${l.lectureId}` as never)}
             style={({ pressed }) => [
               styles.card,
+              { width: Math.min(280, (width - 32) * 0.72) },
               { backgroundColor: st.surface, borderColor: st.border },
               pressed && { backgroundColor: st.surfacePressed, transform: [{ scale: 0.985 }] },
             ]}

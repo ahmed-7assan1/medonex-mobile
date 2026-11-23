@@ -22,7 +22,7 @@ export function SettingsOverlay({
   if (isTablet) {
     return (
       <View style={styles.backdrop} pointerEvents="auto">
-        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel="Close" />
+        <Pressable accessibilityRole="button" style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel="Close" />
         <View style={[styles.dialog, { backgroundColor: st.surface, borderColor: st.border, maxHeight: '82%' }]}>
           <View style={styles.dialogHead}>
             <Text style={{ flex: 1, color: st.text, fontSize: 17, fontFamily: fonts.sansBold }}>{title}</Text>

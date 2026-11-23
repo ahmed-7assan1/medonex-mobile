@@ -10,11 +10,8 @@ WebBrowser.maybeCompleteAuthSession();
 /** Proposed backend exchange (pending Ahmed's OK): POST /api/mobile/auth/google
  *  { idToken } -> { token, user }. Until it ships, the exchange 404s and the
  *  hook surfaces `endpoint-missing`. */
-export class ExchangeError extends Error {
-  constructor(public code: 'endpoint-missing' | 'config-missing' | 'failed', message: string) {
-    super(message);
-  }
-}
+import { ExchangeError } from './google-exchange';
+export { ExchangeError } from './google-exchange';
 
 interface Extra {
   googleWebClientId?: string;

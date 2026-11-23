@@ -1,30 +1,6 @@
-import i18n from 'i18next';
-import { initReactI18next } from 'react-i18next';
-import { I18nManager } from 'react-native';
-import * as Localization from 'expo-localization';
-import en from './en.json';
-import ar from './ar.json';
-
-/** English is the base language (owner decision, 22 Nov 2026);
- *  Arabic is available from Settings. RTL flips the whole layout. */
-const device = Localization.getLocales()[0]?.languageCode;
-
-void i18n.use(initReactI18next).init({
-  resources: { en: { translation: en }, ar: { translation: ar } },
-  lng: 'en',
-  fallbackLng: 'en',
-  interpolation: { escapeValue: false },
-});
-
-export function applyDirection(lang: 'en' | 'ar') {
-  const rtl = lang === 'ar';
-  if (I18nManager.isRTL !== rtl) {
-    I18nManager.allowRTL(rtl);
-    I18nManager.forceRTL(rtl);
-    // A direction change needs an app reload (expo-updates reloadAsync).
-  }
-  void i18n.changeLanguage(lang);
-}
-
-export { i18n };
-export const deviceLanguage = device;
+import i18n from'i18next';import{initReactI18next}from'react-i18next';import{Alert,I18nManager,Platform}from'react-native';import*as Localization from'expo-localization';import*as SecureStore from'expo-secure-store';import*as Updates from'expo-updates';import en from'./en.json';import ar from'./ar.json';
+const key='medonex-app-language';const initialization=i18n.use(initReactI18next).init({resources:{en:{translation:en},ar:{translation:ar}},lng:'en',fallbackLng:'en',interpolation:{escapeValue:false}});
+function direction(lang:'en'|'ar'){const rtl=lang==='ar';if(Platform.OS==='web'){if(typeof document!=='undefined'){document.documentElement.dir=rtl?'rtl':'ltr';document.documentElement.lang=lang}}else{I18nManager.allowRTL(rtl);I18nManager.forceRTL(rtl)}}
+void(async()=>{await initialization;try{const lang=Platform.OS==='web'?localStorage.getItem(key):await SecureStore.getItemAsync(key);if(lang==='en'||lang==='ar'){direction(lang);await i18n.changeLanguage(lang)}}catch{}})();
+export async function applyDirection(lang:'en'|'ar'){const restart=Platform.OS!=='web'&&I18nManager.isRTL!==(lang==='ar');try{if(Platform.OS==='web')localStorage.setItem(key,lang);else await SecureStore.setItemAsync(key,lang)}catch{}direction(lang);await i18n.changeLanguage(lang);if(restart){if(Updates.isEnabled){try{await Updates.reloadAsync();return}catch{}}Alert.alert(lang==='ar'?'إعادة فتح التطبيق':'Reopen the app',lang==='ar'?'اقفل التطبيق وافتحه تاني عشان اتجاه الواجهة يتطبق بالكامل.':'Close and reopen the app to apply the full layout direction.')}}
+export{i18n};export const deviceLanguage=Localization.getLocales()[0]?.languageCode;

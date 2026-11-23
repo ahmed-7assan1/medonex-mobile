@@ -1,0 +1,167 @@
+{
+  "DESKTOP_FEATURES": [
+    {
+      "icon": "Layers",
+      "tone": "blue",
+      "title": "Flip cards & active recall",
+      "body": "Lecture flashcards with flip, progress dots, and “Got it / Study again” so each session feels like a focused review—not endless scrolling.",
+      "href": "/modules",
+      "cta": "Open modules",
+      "guestOk": true
+    },
+    {
+      "icon": "ClipboardList",
+      "tone": "violet",
+      "title": "Quizzes & past papers",
+      "body": "Timed papers, MCQs linked to your curriculum, optional secure exam mode, and full review with explanations after you submit.",
+      "href": "/past-papers",
+      "cta": "Browse quizzes",
+      "guestOk": false
+    },
+    {
+      "icon": "Sparkles",
+      "tone": "amber",
+      "title": "Dr. Q — AI tutor",
+      "body": "Ask clinical and basic-science questions, attach files, and keep threads for deep dives—clearly labeled as a study aid, not a clinician.",
+      "href": "/ai-chat",
+      "cta": "Chat with Dr. Q",
+      "guestOk": false
+    },
+    {
+      "icon": "Zap",
+      "tone": "emerald",
+      "title": "AI explanations on questions",
+      "body": "Where enabled, get instant AI breakdowns of stems and answer choices so you learn the “why,” not just the letter.",
+      "href": "/dashboard-app",
+      "cta": "Go to dashboard",
+      "guestOk": false
+    },
+    {
+      "icon": "Trophy",
+      "tone": "rose",
+      "title": "Points, ranks & leaderboard",
+      "body": "Earn points from activity, level through ranks from Newbie to Elite, and compare with peers globally or within your semester.",
+      "href": "/leaderboard",
+      "cta": "View leaderboard",
+      "guestOk": true
+    },
+    {
+      "icon": "BookOpen",
+      "tone": "cyan",
+      "title": "Organized curriculum",
+      "body": "University → semester → module → subject → lecture. One tree for videos, notes, attachments, flashcards, and question banks.",
+      "href": "/modules",
+      "cta": "Explore lectures",
+      "guestOk": true
+    },
+    {
+      "icon": "Zap",
+      "tone": "blue",
+      "title": "Study Space",
+      "body": "Taskat, daily focus, sketching, and a PDF-friendly workflow—your on-site focus desk next to the rest of MedQs.",
+      "href": "/taskat",
+      "cta": "Open Taskat",
+      "guestOk": false
+    },
+    {
+      "icon": "MessageSquare",
+      "tone": "violet",
+      "title": "Forums & study groups",
+      "body": "Global and semester forums, post saves, comments, and private groups so you are not studying in a silo.",
+      "href": "/community",
+      "cta": "Join the forum",
+      "guestOk": true
+    },
+    {
+      "icon": "Target",
+      "tone": "emerald",
+      "title": "Question bank per lecture",
+      "body": "Practice MCQs tied to the same lectures as your flashcards—difficulty labels help you prioritize weak areas.",
+      "href": "/modules",
+      "cta": "Start from modules",
+      "guestOk": true
+    }
+  ],
+  "GROUPS": [
+    {
+      "caption": "Learn",
+      "rows": [
+        {
+          "icon": "Layers",
+          "title": "Flip cards & active recall",
+          "body": "Lecture flashcards with flip and progress dots.",
+          "href": "/modules"
+        },
+        {
+          "icon": "BookOpen",
+          "title": "Organized curriculum",
+          "body": "University → module → lecture, all in one tree.",
+          "href": "/modules"
+        },
+        {
+          "icon": "Target",
+          "title": "Question bank per lecture",
+          "body": "MCQs tied to the same lectures as your cards.",
+          "href": "/modules"
+        }
+      ]
+    },
+    {
+      "caption": "Practice",
+      "rows": [
+        {
+          "icon": "ClipboardList",
+          "title": "Quizzes & past papers",
+          "body": "Timed papers with full review after you submit.",
+          "href": "/past-papers"
+        },
+        {
+          "icon": "Trophy",
+          "title": "Points, ranks & leaderboard",
+          "body": "Level through ranks and compare with peers.",
+          "href": "/leaderboard"
+        },
+        {
+          "icon": "MessageSquare",
+          "title": "Forums & study groups",
+          "body": "Global and semester forums, posts and comments.",
+          "href": "/community"
+        }
+      ]
+    },
+    {
+      "caption": "AI tools",
+      "rows": [
+        {
+          "icon": "Sparkles",
+          "title": "Dr. Q — AI tutor",
+          "body": "Ask clinical questions and keep threads. A study aid, not a clinician.",
+          "href": "/ai-chat"
+        },
+        {
+          "icon": "Zap",
+          "title": "AI explanations on questions",
+          "body": "Instant breakdowns of stems and answer choices.",
+          "href": "/dashboard-app"
+        }
+      ]
+    },
+    {
+      "caption": "Files",
+      "rows": [
+        {
+          "icon": "Upload",
+          "title": "AI: notes → flashcards",
+          "body": "Paste your notes, get a deck to review and copy.",
+          "href": "/study-tools/generate"
+        },
+        {
+          "icon": "Sparkles",
+          "title": "Open Dr. Q",
+          "body": "Attach PDFs and images for Q&A.",
+          "href": "/ai-chat"
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,7 @@
-import React, { useMemo } from 'react';
-import { View, Text, ScrollView, RefreshControl, StyleSheet, useWindowDimensions } from 'react-native';
+import{useStudentDimensions as useWindowDimensions}from'@/lib/student-viewport';
+import { ResourceState } from '@/components/ResourceState';
+import React, { useMemo, useState } from 'react';
+import { View, Text, ScrollView, RefreshControl, StyleSheet, } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -11,6 +13,7 @@ import { AchievementsStrip } from '@/components/home/AchievementsStrip';
 import { ContinueLearningCarousel, type LastLecture } from '@/components/home/ContinueLearningCarousel';
 import { SuggestedLecturesCarousel, type SuggestedLecture } from '@/components/home/SuggestedLecturesCarousel';
 import { MyMedSpaceSection } from '@/components/home/MyMedSpaceSection';
+import { NotificationsSheet } from '@/components/NotificationsSheet';
 import { TabletHome } from '@/components/home/TabletHome';
 
 /** Home — pixel match of the site's phone dashboard (DashboardMobileView):
@@ -20,10 +23,11 @@ export default function HomeScreen() {
   const { st } = useTheme();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
-  const isTablet = width >= TABLET_BREAKPOINT;
+  const {viewportWidth, width } = useWindowDimensions();
+  const isTablet = viewportWidth >= TABLET_BREAKPOINT;
   const router = useRouter();
   const home = useHome();
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   const data = home.data;
   const lastLecture: LastLecture | null = useMemo(() => {
@@ -35,18 +39,20 @@ export default function HomeScreen() {
       lectureTitle: a.lecture.title,
       subjectName: a.lecture.subject?.name ?? null,
       channelName: a.lecture.subject?.module?.name ?? null,
-      coverImageUrl: null,
+      coverImageUrl: a.lecture.coverImageUrl ?? null,
     };
   }, [data]);
 
-  const suggested: SuggestedLecture[] = useMemo(() => [], []);
+  const suggested: SuggestedLecture[] = data?.suggestedLectures ?? [];
 
   const goal = useMemo(() => {
     const tasks = data?.todayTasks ?? [];
-    const done = tasks.filter((x) => x.completed ?? x.isDone ?? x.done).length;
-    const target = tasks.length;
+    const done = data?.todayItemCount ?? tasks.filter((x) => x.completed ?? x.isDone ?? x.done).length;
+    const target = data?.dailyTarget ?? 50;
     return { done, target, pct: target > 0 ? (done / target) * 100 : 0 };
   }, [data]);
+
+  if(!data) return <ResourceState error={home.error} onRetry={()=>home.refetch()} title="Home"/>;
 
   if (isTablet) {
     return <TabletHome />;
@@ -66,7 +72,7 @@ export default function HomeScreen() {
           userImage={data?.user?.image ?? null}
           unread={data?.unreadNotifs ?? 0}
           onOpenAI={() => router.push('/ai-chat' as never)}
-          onOpenNotifications={() => router.push('/notifications' as never)}
+          onOpenNotifications={() => setNotificationsOpen(true)}
         />
         <View style={styles.sections}>
           <AchievementsStrip
@@ -75,13 +81,14 @@ export default function HomeScreen() {
             goalPct={goal.pct}
             streak={data?.stats?.streak ?? 0}
             rankLabel={data?.stats?.rank?.label ?? '—'}
-            rankPct={null}
+            rankPct={data?.progressToNext ?? 0}
           />
           <ContinueLearningCarousel lastLecture={lastLecture} />
           <SuggestedLecturesCarousel lectures={suggested} />
           <MyMedSpaceSection />
         </View>
       </ScrollView>
+      <NotificationsSheet open={notificationsOpen} onClose={() => setNotificationsOpen(false)} />
     </View>
   );
 }

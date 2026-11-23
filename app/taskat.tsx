@@ -1,6 +1,7 @@
+import{useStudentDimensions as useWindowDimensions}from'@/lib/student-viewport';
 import React, { useMemo, useState } from 'react';
 import {
-  View, Text, Pressable, ScrollView, StyleSheet, TextInput, useWindowDimensions,
+  View, Text, Pressable, ScrollView, StyleSheet, TextInput, Alert,
 } from 'react-native';
 import Svg, { Circle as SvgCircle } from 'react-native-svg';
 import { useRouter } from 'expo-router';
@@ -14,6 +15,9 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme/ThemeContext';
 import { FadeEdges } from '@/components/FadeEdges';
 import { TABLET_BREAKPOINT, SCROLL_BOTTOM_PAD } from '@/theme/tokens';
+import {useTasks,useStudyPlan} from '@/lib/study-plan';
+import {ResourceState} from '@/components/ResourceState';
+import {isFixtureMode} from '@/lib/fixtures';
 import { FIXTURE_MODULE_BUNDLE, FIXTURE_TASKS, FIXTURE_COMPLETIONS, type FixtureTask } from '@/lib/fixtures';
 
 /** /taskat — pixel match of the site's TaskatClient + DailyFocus +
@@ -33,26 +37,31 @@ export default function TaskatScreen() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { width } = useWindowDimensions();
-  const isTablet = width >= TABLET_BREAKPOINT;
+  const {viewportWidth, width } = useWindowDimensions();
+  const isTablet = viewportWidth >= TABLET_BREAKPOINT;
 
   const [tab, setTab] = useState<'daily' | 'checklist'>('daily');
-  const [tasks, setTasks] = useState<FixtureTask[]>(FIXTURE_TASKS);
+  const [localTasks, setTasks] = useState<FixtureTask[]>(FIXTURE_TASKS);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isAdding, setIsAdding] = useState(false);
   const [taskType, setTaskType] = useState<'general' | 'lecture'>('general');
   const [newTitle, setNewTitle] = useState('');
   const [newTime, setNewTime] = useState('');
   const [newPriority, setNewPriority] = useState<'HIGH' | 'MEDIUM' | 'LOW'>('MEDIUM');
-  const [completions, setCompletions] = useState<Record<string, boolean>>(FIXTURE_COMPLETIONS);
+  const [localCompletions, setCompletions] = useState<Record<string, boolean>>(FIXTURE_COMPLETIONS);
   const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>({});
   const [expandedSubjects, setExpandedSubjects] = useState<Record<string, boolean>>({});
 
+  const resource=useTasks(selectedDate);const plan=useStudyPlan();
+  const tasks=isFixtureMode()?localTasks:resource.data??[];
+  const completions=isFixtureMode()?localCompletions:plan.data?.completions??{};
+  const readOnly=()=>Alert.alert('Read-only preview','Manage tasks on the website. No changes have been saved.');
   const done = tasks.filter((tk) => tk.completed).length;
   const progress = tasks.length ? (done / tasks.length) * 100 : 0;
   const isDayFinished = tasks.length > 0 && done === tasks.length;
 
-  const curriculum = FIXTURE_MODULE_BUNDLE.module.subjects;
+  const modules=plan.data?.modules??[];
+  const curriculum = modules.flatMap(m=>m.subjects);
   const allLectures = useMemo(() => curriculum.flatMap((s) => s.lectures), [curriculum]);
 
   const days = useMemo(() => {
@@ -70,6 +79,7 @@ export default function TaskatScreen() {
     a.getDate() === b.getDate() && a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear();
 
   const addTask = () => {
+    if(!isFixtureMode()){readOnly();return}
     const title = taskType === 'general'
       ? newTitle.trim()
       : `Study: ${allLectures[0]?.title ?? 'Lecture'}`;
@@ -89,8 +99,10 @@ export default function TaskatScreen() {
   };
 
   const toggleTask = (id: string) =>
-    setTasks((ts) => ts.map((tk) => (tk.id === id ? { ...tk, completed: !tk.completed } : tk)));
-  const deleteTask = (id: string) => setTasks((ts) => ts.filter((tk) => tk.id !== id));
+    !isFixtureMode()?readOnly():setTasks((ts) => ts.map((tk) => (tk.id === id ? { ...tk, completed: !tk.completed } : tk)));
+  const deleteTask = (id: string) => !isFixtureMode()?readOnly():setTasks((ts) => ts.filter((tk) => tk.id !== id));
+
+  if(!resource.data||!plan.data)return <ResourceState error={resource.error||plan.error} onRetry={()=>{resource.refetch();plan.refetch()}} title="Taskat"/>;
 
   const ringR = 16;
   const ringC = 2 * Math.PI * ringR;
@@ -395,11 +407,11 @@ export default function TaskatScreen() {
         ) : (
           /* Tracker (curriculum checklist) */
           <View style={{ gap: 24 }}>
-            <View style={[styles.moduleCard, { backgroundColor: st.surface, borderColor: st.border }]}>
+            {modules.map(module=><View key={module.id} style={[styles.moduleCard, { backgroundColor: st.surface, borderColor: st.border }]}>
               <Pressable
                 accessibilityRole="button"
-                accessibilityState={{ expanded: !!expandedModules['demo'] }}
-                onPress={() => setExpandedModules((p) => ({ ...p, demo: !p.demo }))}
+                accessibilityState={{ expanded: !!expandedModules[module.id] }}
+                onPress={() => setExpandedModules((p) => ({ ...p, [module.id]: !p[module.id] }))}
                 style={styles.moduleHead}
               >
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
@@ -407,9 +419,9 @@ export default function TaskatScreen() {
                     <FolderOpen size={24} color={colors.primary} />
                   </View>
                   <View>
-                    <Text style={{ color: st.text, fontSize: 16, fontFamily: fonts.sansBold }}>{FIXTURE_MODULE_BUNDLE.module.name}</Text>
+                    <Text style={{ color: st.text, fontSize: 16, fontFamily: fonts.sansBold }}>{module.name}</Text>
                     <Text style={{ color: st.muted, fontSize: 10, fontFamily: fonts.sansBold, letterSpacing: 1.4, textTransform: 'uppercase', marginTop: 4 }}>
-                      {t('taskat.majorSubjects', { n: curriculum.length })}
+                      {t('taskat.majorSubjects', { n: module.subjects.length })}
                     </Text>
                   </View>
                 </View>
@@ -417,14 +429,14 @@ export default function TaskatScreen() {
                   <ChevronDown
                     size={16}
                     color={st.muted}
-                    style={{ transform: [{ rotate: expandedModules['demo'] ? '180deg' : '0deg' }] }}
+                    style={{ transform: [{ rotate: expandedModules[module.id] ? '180deg' : '0deg' }] }}
                   />
                 </View>
               </Pressable>
 
-              {!!expandedModules['demo'] && (
+              {!!expandedModules[module.id] && (
                 <View style={[styles.moduleBody, { borderTopColor: st.border, backgroundColor: colors.muted + '33' }]}>
-                  {curriculum.map((subject) => {
+                  {module.subjects.map((subject) => {
                     const total = subject.lectures.length;
                     const completed = subject.lectures.filter((l) => completions[l.id]).length;
                     const prog = total ? (completed / total) * 100 : 0;
@@ -478,7 +490,7 @@ export default function TaskatScreen() {
                                   key={lecture.id}
                                   accessibilityRole="checkbox"
                                   accessibilityState={{ checked: doneL }}
-                                  onPress={() => setCompletions((p) => ({ ...p, [lecture.id]: !p[lecture.id] }))}
+                                  onPress={() => !isFixtureMode()?readOnly():setCompletions((p) => ({ ...p, [lecture.id]: !p[lecture.id] }))}
                                   style={styles.lectureRow}
                                 >
                                   {doneL
@@ -503,22 +515,9 @@ export default function TaskatScreen() {
                   })}
                 </View>
               )}
-            </View>
+            </View>)}
 
-            {/* Individual courses header (standalone subjects) */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 8 }}>
-              <GraduationCap size={16} color={colors.primary} />
-              <Text style={{ color: st.muted, fontSize: 11, fontFamily: fonts.sansBold, letterSpacing: 2, textTransform: 'uppercase' }}>
-                {t('taskat.individualCourses')}
-              </Text>
-            </View>
-            <View style={[styles.moduleCard, { backgroundColor: st.surface, borderColor: st.border }]}>
-              <View style={{ padding: 16 }}>
-                <Text style={{ color: st.muted, fontSize: 13, fontFamily: fonts.sansMedium, textAlign: 'center' }}>
-                  {t('taskat.noStandalone')}
-                </Text>
-              </View>
-            </View>
+
           </View>
         )}
       </ScrollView>

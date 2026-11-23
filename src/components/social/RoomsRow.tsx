@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, Pressable, ScrollView, StyleSheet,Alert,Linking,Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Plus, Home, Users } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
@@ -21,7 +21,7 @@ function RoomCircle({ room, idx, highlight = false }: { room: RoomSummary; idx: 
   const router = useRouter();
   const size = highlight ? 56 : 52;
   return (
-    <Pressable onPress={() => router.push(`/rooms/${room.id}` as never)} style={styles.circleWrap}>
+    <Pressable accessibilityRole="button" onPress={() => router.push(`/rooms/${room.id}` as never)} style={styles.circleWrap}>
       <View
         style={[
           styles.circle,
@@ -45,6 +45,7 @@ function RoomCircle({ room, idx, highlight = false }: { room: RoomSummary; idx: 
             )}
           </View>
         </LinearGradient>
+        {room.image&&/^https:\/\//.test(room.image)&&<Image source={{uri:room.image}} style={StyleSheet.absoluteFill} resizeMode="cover"/>}
       </View>
       <Text numberOfLines={1} style={[styles.roomName, { color: colors.mutedForeground, fontFamily: fonts.sansBold }]}>
         {room.name.toUpperCase()}
@@ -82,7 +83,7 @@ export function RoomsRow() {
       {myRoom ? (
         <RoomCircle room={myRoom} idx={0} highlight />
       ) : (
-        <Pressable style={styles.circleWrap} onPress={() => { /* create room sheet — later phase */ }}>
+        <Pressable accessibilityRole="button" style={styles.circleWrap} onPress={()=>Alert.alert('Create a room on the website','Room creation is read-only in this version. No room was created.',[{text:'Cancel',style:'cancel'},{text:'Open website',onPress:()=>Linking.openURL('https://www.medonex.me/social')}])}>
           <View style={[styles.circle, styles.createCircle, { borderColor: colors.primary + '4D', backgroundColor: colors.card }]}>
             <Plus size={20} color={colors.primary} />
           </View>

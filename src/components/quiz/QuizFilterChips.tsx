@@ -18,7 +18,7 @@ export function QuizFilterChips({ active, counts, onChange }: { active: QuizFilt
       {FILTERS.map((f) => {
         const isActive = active === f.key;
         return (
-          <Pressable
+          <Pressable accessibilityRole="button"
             key={f.key}
             onPress={() => onChange(f.key)}
             style={[

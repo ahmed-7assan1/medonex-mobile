@@ -1,0 +1,4 @@
+import{useQuery}from'@tanstack/react-query';import{api,apiV1}from'./api';import{useLiveEnabled}from'./query-mode';
+export type SettingsProfile={id:string;name:string;nickname?:string;handle?:string;bio?:string;image?:string;university?:{name:string}|null;faculty?:{name:string}|null;semester?:{name:string}|null;phone?:string;phoneVisible:boolean;hideRank:boolean;isPrivate:boolean;telegramVerified:boolean};
+export function useSettingsProfile(enabled:boolean){return useQuery({queryKey:['account-settings-profile'],queryFn:()=>api.get<{user:SettingsProfile}>('/profile'),enabled:useLiveEnabled()&&enabled,retry:1})}
+export function useNotificationMute(enabled:boolean){return useQuery({queryKey:['notification-mute'],queryFn:()=>apiV1.get<{muteAll:boolean;muteForum:boolean}>('/notifications/mute'),enabled:useLiveEnabled()&&enabled,retry:1})}

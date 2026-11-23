@@ -1,5 +1,11 @@
-import React, { useMemo, useState } from 'react';
-import { View, Text, Pressable, FlatList, RefreshControl, StyleSheet } from 'react-native';
+import {useLocalSearchParams,useRouter} from 'expo-router';
+import{useStudentDimensions}from'@/lib/student-viewport';
+import{DesktopSocial}from'@/components/social/DesktopSocial';
+import {CommentsSheet} from '@/components/social/CommentsSheet';
+import { ResourceState } from '@/components/ResourceState';
+import { MobilePageHeader } from '@/components/MobilePageHeader';
+import React, { useEffect,useMemo, useState } from 'react';
+import { View, Text, Pressable, FlatList, RefreshControl, StyleSheet,Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SquarePen, Users } from 'lucide-react-native';
 import { GlassFab } from '@/components/GlassFab';
@@ -15,19 +21,28 @@ import { SCROLL_BOTTOM_PAD } from '@/theme/tokens';
 /** OneX Community phone feed — forum tabs + rooms row + flat post rows,
  *  replicating community-mobile/CommunityFeed. Guests get the sign-in
  *  state (the site redirects guests to /login). */
-export default function SocialScreen() {
+export default function SocialScreen(){const{viewportWidth}=useStudentDimensions();return viewportWidth>=768?<DesktopSocial/>:<SocialPhone/>}
+function SocialPhone() {
   const { st, colors, fonts, isDark } = useTheme();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
+  const router=useRouter();
+  const params=useLocalSearchParams<{post?:string}>();const [deepPost,setDeepPost]=useState<string|null>(null);
+  useEffect(()=>{if(params.post)setDeepPost(params.post)},[params.post]);
   const forums = useForums();
   const [activeForum, setActiveForum] = useState<string | null>(null);
-  const feed = useCommunityFeed();
+  const selectedForum=forums.data?.find(f=>f.id===activeForum)||forums.data?.[0];
+  const selectedType=selectedForum?.type.toLowerCase()||'global';
+  const feed = useCommunityFeed(selectedType==='private'?'global':selectedType);
 
-  const posts = useMemo(() => feed.data?.items ?? [], [feed.data]);
+  const posts = useMemo(() => selectedType==='private'?[]:feed.data?.items ?? [], [feed.data,selectedType]);
   const isGuest = forums.data === null || feed.data === null;
+
+  if(!forums.data||!feed.data)return <ResourceState error={forums.error||feed.error} onRetry={()=>{forums.refetch();feed.refetch()}} title="Community"/>;
 
   return (
     <View style={[styles.root, { backgroundColor: st.bg, paddingTop: insets.top }]}>
+      <MobilePageHeader title={i18n.language === 'ar' ? 'المجتمع' : 'Community'} />
       {forums.data && forums.data.length > 0 && (
         <ForumTabs forums={forums.data} activeId={activeForum ?? forums.data[0].id} onChange={setActiveForum} />
       )}
@@ -52,7 +67,7 @@ export default function SocialScreen() {
               <Users size={28} color={colors.primary} />
             </View>
             <Text style={{ color: st.text, fontSize: 15, fontWeight: '700', fontFamily: fonts.sansBold }}>
-              {isGuest ? t('social.signInTitle') : t('social.emptyTitle')}
+              {selectedType==='private'?'Private forum not available in this version':isGuest ? t('social.signInTitle') : t('social.emptyTitle')}
             </Text>
             <Text style={{ color: st.muted, fontSize: 12, marginTop: 4, textAlign: 'center' }}>
               {isGuest ? t('social.signInDesc') : t('social.emptyDesc')}
@@ -64,10 +79,11 @@ export default function SocialScreen() {
       {/* Create-post FAB — the site's new glass button style,
           pinned above the capsule (76px capsule + 12px gap + safe area). */}
       <View pointerEvents="box-none" style={[styles.fabWrap, { bottom: insets.bottom + 76 + 12 }]}>
-        <GlassFab label="Create post" onPress={() => { /* composer sheet — later phase */ }}>
+        <GlassFab label="Create post" onPress={()=>router.push('/posts/new')}>
           <SquarePen size={18} color={isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)'} />
         </GlassFab>
       </View>
+      <CommentsSheet postId={deepPost} onClose={()=>setDeepPost(null)}/>
     </View>
   );
 }

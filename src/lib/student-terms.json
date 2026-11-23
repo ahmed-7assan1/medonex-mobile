@@ -1,0 +1,42 @@
+[
+  {
+    "title": "Accepting these terms",
+    "body": "MedOneX (medonex.me) is a free, non-profit medical education platform for medical students. By creating an account or using the platform you agree to these Terms of Use and to our Privacy Policy. If you do not agree, please do not use the platform."
+  },
+  {
+    "title": "Educational use",
+    "body": "MedOneX is intended for learning and assessment practice. Content and AI-generated explanations may contain errors; always verify critical information with official course materials and your doctors or faculty."
+  },
+  {
+    "title": "Not medical advice",
+    "body": "Nothing on this site constitutes professional medical advice, diagnosis, or treatment. Clinical decisions must follow your training program and supervising physicians only."
+  },
+  {
+    "title": "Your account",
+    "body": "You are responsible for the activity on your account and for keeping your sign-in credentials confidential. Please provide accurate profile information (such as your university and semester) so we can show you the right content. MedOneX is intended for university students and is not directed at children under 13."
+  },
+  {
+    "title": "Connected AI apps",
+    "body": "You can connect your MedOneX account to third-party AI assistants (for example Google’s Gemini app through Google’s Connected Apps Platform, or ChatGPT) through our MCP server. You choose whether to connect, you approve the requested permissions on MedOneX itself, and student connections are read-only: a connected app can read your semester content and progress but cannot change or delete your data. Anything a connected app reads is also governed by that app’s own terms and privacy policy, and you can end the connection at any time by removing the connector in the AI app."
+  },
+  {
+    "title": "Acceptable conduct",
+    "body": "Harassment, cheating, sharing of exam materials where prohibited, scraping or bulk-downloading the content, or misuse of accounts may result in suspension or other action by your institution or operators."
+  },
+  {
+    "title": "Content and intellectual property",
+    "body": "The lectures, questions, flashcards and other materials on MedOneX are provided for your personal, non-commercial study. You may not republish, sell, or redistribute them without permission. You keep ownership of the notes and posts you create."
+  },
+  {
+    "title": "Availability",
+    "body": "We strive for reliability but do not guarantee uninterrupted access. Scheduled maintenance or third-party outages may affect the service. MedOneX is provided free of charge, “as is”, without warranties of any kind to the extent permitted by law."
+  },
+  {
+    "title": "Limitation of liability",
+    "body": "To the extent permitted by law, MedOneX and its operators are not liable for indirect or consequential damages, or for any loss resulting from reliance on the platform’s content, including AI-generated explanations."
+  },
+  {
+    "title": "Changes and contact",
+    "body": "We may update these terms as the platform evolves; the current version is always published at /terms and continued use after a change means you accept the updated terms. Questions: support@medonex.me."
+  }
+]

@@ -1,0 +1,1 @@
+import React from'react';import{Redirect,useLocalSearchParams}from'expo-router';export default function PublicProfileAlias(){const{userId}=useLocalSearchParams<{userId:string}>();return <Redirect href={{pathname:'/profile/[userId]',params:{userId:userId||''}}}/> }
