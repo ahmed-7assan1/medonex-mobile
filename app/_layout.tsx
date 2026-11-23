@@ -19,6 +19,7 @@ import { ApiError } from '@/lib/api';
 import{WebAlertHost}from'@/components/WebAlertHost';
 import '@/i18n';
 import{DesktopStudentChrome}from'@/components/DesktopStudentChrome';
+import{usePrefetchPrimaryTabs}from'@/lib/prefetch';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -108,4 +109,4 @@ function RootLayoutInner() {
   );
 }
 
-function ProtectedStack(){const{bootstrapped,token,isGuest}=useAuth();const segments=useSegments();const router=useRouter();const navigation=useRootNavigationState();const section=String(segments[0]||'');const publicRoute=['(auth)','terms','about','founders'].includes(section);useEffect(()=>{if(bootstrapped&&navigation?.key&&!token&&!isGuest&&!publicRoute)router.replace('/(auth)/login')},[bootstrapped,token,isGuest,publicRoute,navigation?.key]);return <Stack screenOptions={{headerShown:false}}><Stack.Screen name="index"/><Stack.Screen name="(auth)/login"/><Stack.Screen name="(tabs)"/></Stack>}
+function ProtectedStack(){usePrefetchPrimaryTabs();const{bootstrapped,token,isGuest}=useAuth();const segments=useSegments();const router=useRouter();const navigation=useRootNavigationState();const section=String(segments[0]||'');const publicRoute=['(auth)','terms','about','founders'].includes(section);useEffect(()=>{if(bootstrapped&&navigation?.key&&!token&&!isGuest&&!publicRoute)router.replace('/(auth)/login')},[bootstrapped,token,isGuest,publicRoute,navigation?.key]);return <Stack screenOptions={{headerShown:false}}><Stack.Screen name="index"/><Stack.Screen name="(auth)/login"/><Stack.Screen name="(tabs)"/></Stack>}
