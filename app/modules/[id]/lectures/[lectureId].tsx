@@ -95,7 +95,7 @@ export default function LectureScreen() {
   const title=lectureTitleCase(lecture.title),arabicTitle=/[\u0600-\u06ff\u0750-\u077f]/.test(title);
   const share=()=>{if(!isFixtureMode())void Share.share({message:`${lecture.title}\nhttps://www.medonex.me/modules/${moduleId}/lectures/${lecture.id}`}).catch(()=>Alert.alert('Share unavailable','The share sheet could not open.'));else Alert.alert('Guest preview','This sample cannot be shared.')};
   const openSignIn=()=>router.push({pathname:'/(auth)/login',params:{upgrade:'1',next:lectureSignInReturn(`/modules/${moduleId}/lectures/${lecture.id}`)}});
-  const ai=()=>isGuest?Alert.alert('Sign in to use lecture AI','Continue with your account to use lecture AI.',[{text:'Cancel',style:'cancel'},{text:'Sign in',onPress:openSignIn}]):Alert.alert('Lecture AI','Lecture AI is not connected in this version. No request was sent and no credits were used.');
+  const ai=()=>isGuest?Alert.alert('Sign in to use lecture AI','Continue with your account to use lecture AI.',[{text:'Cancel',style:'cancel'},{text:'Sign in',onPress:openSignIn}]):router.push({pathname:'/ai-chat',params:{lectureId:lecture.id}});
   const counts: Record<TabId, number | undefined> = {
     overview: undefined,
     videos: lecture.videos.length,

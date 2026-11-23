@@ -15,13 +15,15 @@ interface FetchOptions extends RequestInit {
   timeoutMs?: number;
 }
 
-async function authHeaders(custom?: HeadersInit): Promise<Headers> {
+export async function authHeaders(custom?: HeadersInit, expectedOwner?: string): Promise<Headers> {
   const headers = new Headers({ 'Content-Type': 'application/json', Accept: 'application/json', ...(custom as object) });
   try {
     const record=Platform.OS==='web'?globalThis.localStorage?.getItem('authSessionV2'):await SecureStore.getItemAsync('authSessionV2');
+    if(expectedOwner&&(!record||JSON.parse(record)?.user?.id!==expectedOwner))throw new Error('Account changed. Open this file again.');
     const token=record?JSON.parse(record)?.token:(Platform.OS === 'web' ? globalThis.localStorage?.getItem('sessionToken') : await SecureStore.getItemAsync('sessionToken'));
     if (token) headers.set('Authorization', `Bearer ${token}`);
-  } catch {
+  } catch (error) {
+    if(expectedOwner)throw error;
     // SecureStore unavailable (web preview) — proceed unauthenticated.
   }
   return headers;

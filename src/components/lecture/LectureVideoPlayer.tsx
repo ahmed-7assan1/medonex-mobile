@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Linking, Platform, Pressable, Text, View } from "react-native";
 import { Asset } from "expo-asset";
+import * as FileSystem from "expo-file-system/legacy";
+import { LECTURE_PLAYER_ORIGIN, nativeLecturePlayerDocument } from "@/lib/lecture-player-document";
 import * as Crypto from "expo-crypto";
 import { WebView } from "react-native-webview";
 import { useTranslation } from "react-i18next";
@@ -24,6 +26,7 @@ export function LectureVideoPlayer({
     { i18n } = useTranslation();
   const [scope] = useState(() => Crypto.randomUUID()),
     [uri, setUri] = useState(""),
+    [html, setHtml] = useState(""),
     [ready, setReady] = useState(false),
     [failed, setFailed] = useState(false),
     [reload, setReload] = useState(0);
@@ -47,13 +50,14 @@ export function LectureVideoPlayer({
       const asset = Asset.fromModule(
         require("../../../assets/lecture-video-player.html")
       );
-      if (Platform.OS !== "web") await asset.downloadAsync();
-      if (active)
-        setUri(
-          (Platform.OS === "web" ? asset.uri : asset.localUri || asset.uri) +
-            "#scope=" +
-            encodeURIComponent(scope)
-        );
+      if (Platform.OS === "web") {
+        if (active) setUri(asset.uri + "#scope=" + encodeURIComponent(scope));
+      } else {
+        await asset.downloadAsync();
+        if (!asset.localUri) throw Error("Packaged player unavailable");
+        const text = await FileSystem.readAsStringAsync(asset.localUri);
+        if (active) setHtml(nativeLecturePlayerDocument(text, scope));
+      }
     })().catch(() => {
       if (active) setFailed(true);
     });
@@ -127,7 +131,7 @@ export function LectureVideoPlayer({
       testID="lecture-video-player"
       style={{ width: "100%", height: Math.max(1, height) }}
     >
-      {uri &&
+      {(Platform.OS === "web" ? uri : html) &&
         (Platform.OS === "web" ? (
           React.createElement("iframe", {
             key: reload,
@@ -150,14 +154,17 @@ export function LectureVideoPlayer({
           <WebView
             key={reload}
             ref={native}
-            source={{ uri }}
+            source={{ html, baseUrl: LECTURE_PLAYER_ORIGIN + "/" }}
             style={{
               flex: 1,
               backgroundColor: "transparent",
               opacity: ready ? 1 : 0,
             }}
             originWhitelist={["*"]}
-            allowFileAccess
+            allowFileAccess={false}
+            allowFileAccessFromFileURLs={false}
+            allowUniversalAccessFromFileURLs={false}
+            domStorageEnabled={false}
             allowsFullscreenVideo
             allowsInlineMediaPlayback
             mediaPlaybackRequiresUserAction
@@ -175,7 +182,7 @@ export function LectureVideoPlayer({
             }}
             onShouldStartLoadWithRequest={(request) => {
               if (
-                request.url.startsWith("file://") ||
+                request.url === LECTURE_PLAYER_ORIGIN + "/" ||
                 request.url.startsWith("about:blank")
               )
                 return true;

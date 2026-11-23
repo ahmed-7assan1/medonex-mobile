@@ -61,7 +61,9 @@ const crypto = {
   digestStringAsync: async (_, scope) => "hash-" + scope,
   randomUUID: () => "qa-run",
 };
+const delivery = {lectureFileDelivery:async id=>({url:'https://www.medonex.me/api/v1/download-proxy?fileId='+id,headers:{Authorization:'Bearer test-token'}})};
 const offline = moduleAt("src/lib/offline-downloads.ts", {
+  "./lecture-file-delivery":delivery,
   "react-native": RN,
   "expo-file-system/legacy": FS,
   "expo-crypto": crypto,
@@ -72,6 +74,7 @@ const offline = moduleAt("src/lib/offline-downloads.ts", {
   "./offline-merge": moduleAt("src/lib/offline-merge.ts", {}),
 });
 const pdf = moduleAt("src/lib/pdf-source.ts", {
+  "./lecture-file-delivery":delivery,
   "react-native": RN,
   "expo-file-system/legacy": FS,
   "expo-crypto": crypto,

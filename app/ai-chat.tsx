@@ -1,7 +1,11 @@
+import {useNativeAIChat} from '@/lib/use-native-ai-chat';
+import {useLocalSearchParams} from 'expo-router';
+import {useLecture} from '@/lib/lecture';
+import {AIProviderKeys} from '@/components/settings/AIProviderKeys';
 import{useStudentDimensions as useWindowDimensions}from'@/lib/student-viewport';
 import React, { useState } from 'react';
 import {
-  View, Text, Pressable, TextInput, FlatList, StyleSheet, KeyboardAvoidingView,
+  View, Text, Pressable, TextInput, FlatList, StyleSheet, KeyboardAvoidingView, ScrollView,
   Platform, Alert, Linking, Modal,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -51,23 +55,27 @@ export default function AIChatScreen() {
   const isTablet = viewportWidth >= TABLET_BREAKPOINT;
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const [draft, setDraft] = useState('');
+  const {lectureId}=useLocalSearchParams<{lectureId?:string}>();
+  const lecture=useLecture(lectureId||'');
+  const context=lectureId&&lecture.data?'Lecture: '+lecture.data.title+'\nNotes:\n'+(lecture.data.notesMarkdown||'No lecture notes available.') : '';
+  const chat=useNativeAIChat(context,lectureId||'main');
+  const {draft,setDraft,messages}=chat;
+  const [settings,setSettings]=useState(false);
   const [webSearch, setWebSearch] = useState(true);
 
   const [sidebar,setSidebar]=useState(false);
   const ar=i18n.language==='ar';
   const openWebsite=()=>Linking.openURL('https://www.medonex.me/ai-chat');
-  const unavailable=()=>Alert.alert(ar?'محادثة الذكاء الاصطناعي':'AI Chat',ar?'المحادثة في النسخة دي للعرض فقط. افتح الموقع لاستخدام إعداداتك ومحادثاتك، من غير ردود تجريبية أو استهلاك رصيد من التطبيق.':'AI chat is read-only in this version. Open the website to use your settings and chats. This app does not send AI requests or use credits.',[{text:ar?'إلغاء':'Cancel',style:'cancel'},{text:ar?'فتح الموقع':'Open website',onPress:openWebsite}]);
-  const messages: {id:string;role:string;text:string}[] = [];
-  const isEmpty = true;
+  const unavailable=()=>Alert.alert(ar?'غير متاح':'Not supported',ar?'المرفقات والبحث والصوت مش متاحين في النسخة دي.':'Attachments, web search and voice are not supported in this native version.');
+  const isEmpty=messages.length===0;
 
   const MOBILE_PROMPTS = [
-    { icon: BookOpen, text: 'Summarize my last lecture in 3 bullet points' },
+    { icon: BookOpen, text: 'Help me summarize the lecture notes I provide' },
     { icon: MessageSquareQuote, text: 'Generate 3 MCQs on cardiology' },
     { icon: StickyNote, text: 'Explain diabetes pathophysiology simply' },
   ];
   const DESKTOP_PROMPTS = [
-    { icon: BookOpen, label: 'Summarize my last lecture' },
+    { icon: BookOpen, label: 'Help me summarize my notes' },
     { icon: Brain, label: 'Quiz me' },
     { icon: MessageSquareQuote, label: 'Explain a concept' },
     { icon: Zap, label: 'Build a study plan' },
@@ -92,15 +100,15 @@ export default function AIChatScreen() {
         <Pressable accessibilityRole="button" accessibilityLabel="Add to chat" onPress={unavailable} style={styles.roundIcon}>
           <Plus size={16} color="#111" />
         </Pressable>
-        <Pressable accessibilityRole="button" onPress={unavailable} style={styles.modelPill}>
+        <Pressable accessibilityRole="button" onPress={()=>setSettings(true)} style={styles.modelPill}>
           <Text numberOfLines={1} style={{ color: '#111', fontSize: 14, fontFamily: fonts.sans }}>AI settings</Text>
         </Pressable>
         <View style={{ flex: 1 }} />
         <Pressable
-          accessibilityRole="button" accessibilityLabel={draft.trim() ? t('drq.send') : 'Voice input'}
-          style={styles.sendBtn} onPress={unavailable}
+          accessibilityRole="button" accessibilityLabel={chat.busy?'Stop AI request':t('drq.send')}
+          style={styles.sendBtn} onPress={chat.busy?chat.cancel:()=>{if(!lectureId||lecture.data)void chat.send();else Alert.alert('Lecture AI','Wait for lecture notes to load.')}}
         >
-          {draft.trim() ? <ArrowUp size={16} color="#fff" /> : <Mic size={16} color="#fff" />}
+          {chat.busy?<Text style={{color:'#fff'}}>■</Text>:<ArrowUp size={16} color="#fff" />}
         </Pressable>
       </View>
     </View>
@@ -108,7 +116,8 @@ export default function AIChatScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: BG }}>
-      <Modal visible={sidebar} transparent animationType="fade" onRequestClose={()=>setSidebar(false)}><View style={{flex:1,backgroundColor:'rgba(0,0,0,.25)',flexDirection:'row'}}><Pressable accessibilityRole="button" accessibilityLabel="Close sidebar" style={StyleSheet.absoluteFill} onPress={()=>setSidebar(false)}/><View style={{width:290,backgroundColor:BG,padding:20,paddingTop:insets.top+20,gap:20}}><Text style={{fontSize:20,fontFamily:fonts.sansBold}}>MedOneX</Text><Pressable accessibilityRole="button" onPress={()=>{setDraft('');setSidebar(false)}}><Text style={{fontSize:16}}>{ar?'محادثة جديدة':'New chat'}</Text></Pressable><Text style={{fontSize:13,color:'#777'}}>{ar?'مفيش محادثات محفوظة على الجهاز ده. محادثات الموقع مش بتتزامن مع التطبيق في النسخة دي.':'No chats saved on this device. Website chats are not synced in this version.'}</Text><View style={{flex:1}}/><Pressable accessibilityRole="button" onPress={()=>{setSidebar(false);openWebsite()}}><Text style={{fontSize:15}}>{ar?'فتح المحادثات على الموقع':'Open chats on website'}</Text></Pressable><Pressable accessibilityRole="button" onPress={()=>{setSidebar(false);router.back()}}><Text style={{fontSize:15}}>{ar?'رجوع':'Back'}</Text></Pressable></View></View></Modal>
+      <Modal visible={sidebar} transparent animationType="fade" onRequestClose={()=>setSidebar(false)}><View style={{flex:1,backgroundColor:'rgba(0,0,0,.25)',flexDirection:'row'}}><Pressable accessibilityRole="button" accessibilityLabel="Close sidebar" style={StyleSheet.absoluteFill} onPress={()=>setSidebar(false)}/><View style={{width:290,backgroundColor:BG,padding:20,paddingTop:insets.top+20,gap:20}}><Text style={{fontSize:20,fontFamily:fonts.sansBold}}>MedOneX</Text><Pressable accessibilityRole="button" onPress={()=>{chat.clear();setSidebar(false)}}><Text style={{fontSize:16}}>{ar?'محادثة جديدة':'New chat'}</Text></Pressable><Text style={{fontSize:13,color:'#777'}}>{ar?'مفيش محادثات محفوظة على الجهاز ده. محادثات الموقع مش بتتزامن مع التطبيق في النسخة دي.':'No chats saved on this device. Website chats are not synced in this version.'}</Text><View style={{flex:1}}/><Pressable accessibilityRole="button" onPress={()=>{setSidebar(false);openWebsite()}}><Text style={{fontSize:15}}>{ar?'فتح المحادثات على الموقع':'Open chats on website'}</Text></Pressable><Pressable accessibilityRole="button" onPress={()=>{setSidebar(false);router.back()}}><Text style={{fontSize:15}}>{ar?'رجوع':'Back'}</Text></Pressable></View></View></Modal>
+      <Modal visible={settings} animationType="slide" onRequestClose={()=>setSettings(false)}><View style={{flex:1,paddingTop:insets.top+12,backgroundColor:BG}}><Pressable accessibilityRole="button" onPress={()=>setSettings(false)} style={{padding:16}}><Text>Close AI settings</Text></Pressable><ScrollView contentContainerStyle={{padding:20,paddingBottom:insets.bottom+30}}><AIProviderKeys/></ScrollView></View></Modal>
       {/* Top fade (site: chat-top-fade-light) */}
       <LinearGradient
         pointerEvents="none"
@@ -172,6 +181,10 @@ export default function AIChatScreen() {
 
         {/* Composer block */}
         <View style={{ paddingHorizontal: isTablet ? 24 : 10, paddingBottom: insets.bottom + 14, gap: 10 }}>
+          <Text style={{fontSize:11,color:'#666',fontFamily:fonts.sans,textAlign:'center'}}>{lectureId?(lecture.data?'Lecture AI: title + notes only. No PDF/video contents.':'Loading lecture notes...'):'Direct BYOK. This chat cannot read your lectures or website history.'} Your provider may charge. Chat is not saved after leaving.</Text>
+          {!!chat.error&&<Text style={{color:'#b91c1c',fontSize:13}}>{chat.error}</Text>}
+          {chat.busy&&<Text style={{color:'#666',fontSize:12}}>Waiting for your provider... Tap ■ to stop.</Text>}
+          {!!chat.source&&<Text style={{color:'#666',fontSize:10}}>{chat.source}</Text>}
           {isEmpty && !isTablet && (
             <View style={{ gap: 6, alignSelf: 'center', width: '100%', maxWidth: 320 }}>
               {MOBILE_PROMPTS.map((p) => (

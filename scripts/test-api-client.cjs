@@ -23,9 +23,10 @@ function moduleAt(name, deps) {
   );
   return m.exports;
 }
+let session=null;
 const api = moduleAt("src/lib/api.ts", {
   "react-native": { Platform: { OS: "android" } },
-  "expo-secure-store": { getItemAsync: async () => null },
+  "expo-secure-store": { getItemAsync: async key => key==='authSessionV2'?session:null },
   "expo-constants": { default: { expoConfig: null } },
   "./fixtures": { isGuestMode: () => false },
 });
@@ -42,6 +43,10 @@ function fakeResponse(status, contentType, body) {
 }
 
 (async () => {
+  session=JSON.stringify({token:'key',user:{id:'A'}});
+  assert.equal((await api.authHeaders(undefined,'A')).get('Authorization'),'Bearer key');
+  await assert.rejects(api.authHeaders(undefined,'B'),/Account changed/);
+  session=null;
   // Normal JSON payloads pass through.
   fakeResponse(200, "application/json", '{"modules":[]}');
   assert.deepEqual(await apiFetch("/study-plan"), { modules: [] });

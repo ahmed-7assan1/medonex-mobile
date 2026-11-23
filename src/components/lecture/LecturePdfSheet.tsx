@@ -139,7 +139,8 @@ export function LecturePdfSheet({
           controller.signal,
           (n) => {
             if (alive) setDownloadProgress(n);
-          }
+          },
+          file.id
         );
       if (alive) setSource(opened);
       else await opened.release();

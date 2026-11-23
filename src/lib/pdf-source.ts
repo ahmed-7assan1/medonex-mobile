@@ -1,6 +1,7 @@
 import { Platform } from "react-native";
 import * as FS from "expo-file-system/legacy";
 import * as Crypto from "expo-crypto";
+import {lectureFileDelivery} from "./lecture-file-delivery";
 import { downloadUrl } from "./offline-downloads";
 export const PDF_CHUNK_BYTES = 192 * 1024,
   MAX_PDF_BYTES = 100 * 1024 * 1024;
@@ -25,12 +26,14 @@ export async function loadPdfSource(
   raw: string,
   scope: string,
   signal: AbortSignal,
-  onProgress?: (n: number) => void
+  onProgress?: (n: number) => void,
+  fileId?: string
 ): Promise<PdfSource> {
-  const url = downloadUrl(raw);
+  const delivery=fileId?await lectureFileDelivery(fileId,scope):null;
+  const url = delivery?.url || downloadUrl(raw);
   if (signal.aborted) throw Error("Preview cancelled.");
   if (Platform.OS === "web") {
-    const response = await fetch(url, { signal, credentials: "omit" });
+    const response = await fetch(url, { signal, credentials: "omit", headers:delivery?.headers });
     if (!response.ok) throw Error("This file could not be downloaded.");
     const type = response.headers.get("content-type") || "";
     if (/html|json/i.test(type))
@@ -92,7 +95,7 @@ export async function loadPdfSource(
   await FS.makeDirectoryAsync(dir, { intermediates: true });
   const file = dir + "selected.pdf";
   let tooLarge = false;
-  const task = FS.createDownloadResumable(url, file, {}, (s) => {
+  const task = FS.createDownloadResumable(url, file, {headers:delivery?.headers}, (s) => {
     if (
       s.totalBytesWritten > MAX_PDF_BYTES ||
       s.totalBytesExpectedToWrite > MAX_PDF_BYTES

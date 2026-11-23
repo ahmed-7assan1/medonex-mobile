@@ -31,10 +31,11 @@ function SocialPhone() {
   useEffect(()=>{if(params.post)setDeepPost(params.post)},[params.post]);
   const forums = useForums();
   const [activeForum, setActiveForum] = useState<string | null>(null);
-  const selectedType=forums.data?.find(f=>f.id===activeForum)?.type?.toLowerCase()||'global';
-  const feed = useCommunityFeed(selectedType);
+  const selectedForum=forums.data?.find(f=>f.id===activeForum)||forums.data?.[0];
+  const selectedType=selectedForum?.type.toLowerCase()||'global';
+  const feed = useCommunityFeed(selectedType==='private'?'global':selectedType);
 
-  const posts = useMemo(() => feed.data?.items ?? [], [feed.data]);
+  const posts = useMemo(() => selectedType==='private'?[]:feed.data?.items ?? [], [feed.data,selectedType]);
   const isGuest = forums.data === null || feed.data === null;
 
   if(!forums.data||!feed.data)return <ResourceState error={forums.error||feed.error} onRetry={()=>{forums.refetch();feed.refetch()}} title="Community"/>;
@@ -66,7 +67,7 @@ function SocialPhone() {
               <Users size={28} color={colors.primary} />
             </View>
             <Text style={{ color: st.text, fontSize: 15, fontWeight: '700', fontFamily: fonts.sansBold }}>
-              {isGuest ? t('social.signInTitle') : t('social.emptyTitle')}
+              {selectedType==='private'?'Private forum not available in this version':isGuest ? t('social.signInTitle') : t('social.emptyTitle')}
             </Text>
             <Text style={{ color: st.muted, fontSize: 12, marginTop: 4, textAlign: 'center' }}>
               {isGuest ? t('social.signInDesc') : t('social.emptyDesc')}
