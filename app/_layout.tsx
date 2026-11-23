@@ -20,6 +20,8 @@ import{WebAlertHost}from'@/components/WebAlertHost';
 import '@/i18n';
 import{DesktopStudentChrome}from'@/components/DesktopStudentChrome';
 import{usePrefetchPrimaryTabs}from'@/lib/prefetch';
+import{useUpdateGate}from'@/lib/update-gate';
+import{UpdateGate}from'@/components/UpdateGate';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -100,13 +102,23 @@ function RootLayoutInner() {
         <ThemeProvider>
           <AuthProvider>
             <StatusBar style="auto" />
-            <StudentOverlayProvider><LectureAudioProvider><LectureSpotifyProvider><DesktopStudentChrome><ProtectedStack/></DesktopStudentChrome></LectureSpotifyProvider></LectureAudioProvider></StudentOverlayProvider>
+            <GatedApp><StudentOverlayProvider><LectureAudioProvider><LectureSpotifyProvider><DesktopStudentChrome><ProtectedStack/></DesktopStudentChrome></LectureSpotifyProvider></LectureAudioProvider></StudentOverlayProvider></GatedApp>
             <WebAlertHost/>
           </AuthProvider>
         </ThemeProvider>
       </QueryClientProvider>
     </SafeAreaProvider>
   );
+}
+
+// The forced-update gate replaces the whole app tree while the running
+// build is below the manifest's minimum supported version. "checking" falls
+// through to the app so launch never waits on the manifest network fetch;
+// a previously stored requirement flips the gate on within a frame.
+function GatedApp({children}:{children:React.ReactNode}){
+  const gate=useUpdateGate();
+  if(gate.status==='required')return <UpdateGate manifest={gate.manifest} current={gate.current} recheck={gate.recheck}/>;
+  return <>{children}</>;
 }
 
 function ProtectedStack(){usePrefetchPrimaryTabs();const{bootstrapped,token,isGuest}=useAuth();const segments=useSegments();const router=useRouter();const navigation=useRootNavigationState();const section=String(segments[0]||'');const publicRoute=['(auth)','terms','about','founders'].includes(section);useEffect(()=>{if(bootstrapped&&navigation?.key&&!token&&!isGuest&&!publicRoute)router.replace('/(auth)/login')},[bootstrapped,token,isGuest,publicRoute,navigation?.key]);return <Stack screenOptions={{headerShown:false}}><Stack.Screen name="index"/><Stack.Screen name="(auth)/login"/><Stack.Screen name="(tabs)"/></Stack>}

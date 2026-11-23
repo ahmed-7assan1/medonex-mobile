@@ -1,0 +1,20 @@
+{
+  "latestVersion": "1.0.8",
+  "minSupportedVersion": "1.0.8",
+  "apkUrl": "",
+  "sizeBytes": 0,
+  "changelog": {
+    "en": [
+      "Fixes a crash when opening lecture flashcards",
+      "Comments now match the site: floating send capsule and smooth sheet animations",
+      "Faster navigation: Home and Modules open instantly after sign-in",
+      "Built-in updater: the app now keeps itself up to date"
+    ],
+    "ar": [
+      "إصلاح تهنيج الفلاش كاردز في المحاضرات",
+      "التعليقات بقت زي الموقع: كبسولة إرسال عائمة وأنيميشن ناعم للشيتات",
+      "تنقل أسرع: الرئيسية والمواد بتفتح فورًا بعد تسجيل الدخول",
+      "تحديث مدمج: التطبيق بقى بيحدّث نفسه"
+    ]
+  }
+}
