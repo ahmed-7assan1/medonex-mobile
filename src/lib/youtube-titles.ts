@@ -1,0 +1,3 @@
+const cache=new Map<string,string>();
+/** Public provider metadata only. No application token, cookies or account data. */
+export async function savedYouTubeTitle(id:string,signal?:AbortSignal){if(!/^[A-Za-z0-9_-]{11}$/.test(id))return'Video';const hit=cache.get(id);if(hit)return hit;try{const response=await fetch('https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v='+id+'&format=json',{credentials:'omit',referrerPolicy:'no-referrer',signal});if(!response.ok)return'Video';const data=await response.json(),title=typeof data.title==='string'&&data.title.trim()?data.title.slice(0,1000):'Video';cache.set(id,title);return title}catch{return'Video'}}

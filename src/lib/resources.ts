@@ -1,0 +1,11 @@
+import {useQuery,useInfiniteQuery} from '@tanstack/react-query';
+import {apiV1} from './api';
+import {useLiveEnabled} from './query-mode';
+import {isFixtureMode,FIXTURE_PLATFORM_TEAM,FIXTURE_ATLAS_SYSTEMS,FIXTURE_ATLAS_STRUCTURES,FIXTURE_EPISODES,type FixtureAtlasSystem,type FixtureAtlasStructure} from './fixtures';
+import {timeAgo} from '@/components/social/format';
+export type PlatformMember={id:string;name:string;role:string;description:string;imageUrl?:string|null};
+export function useFounders(){const query=useQuery({queryKey:['founders'],queryFn:()=>apiV1.get<PlatformMember[]>('/founders'),enabled:useLiveEnabled(),retry:1});return {...query,data:(isFixtureMode()?FIXTURE_PLATFORM_TEAM:query.data) as PlatformMember[]|undefined}}
+export type AtlasStructure=FixtureAtlasStructure&{imageUrl?:string;modelUrl?:string;memo?:string};
+export function useAtlas(){const query=useQuery({queryKey:['atlas'],queryFn:async()=>{const systems=await apiV1.get<(FixtureAtlasSystem&{structures:AtlasStructure[]})[]>('/atlas');return {systems:systems.map(s=>({...s,iconName:s.iconName.toLowerCase()})),structures:systems.flatMap(s=>(s.structures??[]).map(struct=>({...struct,relations:Array.isArray(struct.relations)?struct.relations.filter(r=>typeof r==='string'):[]}))) }},enabled:useLiveEnabled(),retry:1});return {...query,data:isFixtureMode()?{systems:FIXTURE_ATLAS_SYSTEMS,structures:FIXTURE_ATLAS_STRUCTURES}:query.data}}
+export type Episode={id:string;title:string;show:string;duration:string;date:string;plays:string;url?:string;image?:string};
+export function usePodcasts(){const query=useInfiniteQuery({queryKey:['podcasts'],queryFn:({pageParam})=>apiV1.get<{items:any[];total:number;hasMore:boolean}>(`/podcasts?page=${pageParam}&limit=50`),initialPageParam:1,getNextPageParam:(page,pages)=>page.hasMore?pages.length+1:undefined,enabled:useLiveEnabled(),retry:1});const episodes:Episode[]|undefined=isFixtureMode()?FIXTURE_EPISODES:query.data?.pages.flatMap(page=>page.items.map(r=>({id:r.id,title:r.title,show:r.artist||r.lecture?.subject?.name||'',duration:'',plays:'',date:timeAgo(r.createdAt),url:r.url,image:r.image})));return {...query,episodes,total:isFixtureMode()?FIXTURE_EPISODES.length:query.data?.pages[0]?.total??0}}

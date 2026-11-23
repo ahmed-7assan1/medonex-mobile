@@ -1,3 +1,4 @@
+import { useLiveEnabled } from './query-mode';
 import { useQuery } from '@tanstack/react-query';
 import { apiV1, ApiError } from './api';
 import { FIXTURE_PAST_PAPERS, isFixtureMode } from './fixtures';
@@ -34,16 +35,11 @@ export function usePastPapers() {
     queryKey: ['past-papers'],
     queryFn: async () => {
       if (isFixtureMode()) return FIXTURE_PAST_PAPERS;
-      try {
-        return await apiV1.get<PastPapersResponse>('/past-papers/cards');
-      } catch (e) {
-        if (e instanceof ApiError && e.status === 401) return null; // guest
-        throw e;
-      }
+      return apiV1.get<PastPapersResponse>('/past-papers/cards');
     },
     staleTime: 5 * 60 * 1000,
-    enabled: !isFixtureMode(),
+    enabled: useLiveEnabled(),
   });
   // Pages phase: show fixture content when the backend is unreachable.
-  return { ...q, data: isFixtureMode() ? FIXTURE_PAST_PAPERS : q.data ?? (q.isError ? FIXTURE_PAST_PAPERS : q.data) };
+  return { ...q, data: isFixtureMode() ? FIXTURE_PAST_PAPERS : q.data };
 }

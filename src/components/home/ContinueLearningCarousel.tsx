@@ -1,5 +1,6 @@
+import{useStudentDimensions as useWindowDimensions}from'@/lib/student-viewport';
 import React, { useRef, useState } from 'react';
-import { View, Text, Pressable, Image, ScrollView, StyleSheet, useWindowDimensions, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
+import { View, Text, Pressable, Image, ScrollView, StyleSheet, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
 import { BookOpen, ClipboardList, Play, Sparkles } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -38,7 +39,7 @@ export function ContinueLearningCarousel({ lastLecture }: { lastLecture: LastLec
   const { st, fonts } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
-  const { width } = useWindowDimensions();
+  const {viewportWidth, width } = useWindowDimensions();
   const [idx, setIdx] = useState(0);
   const cardWidth = useRef(width - 32);
   cardWidth.current = width - 32;

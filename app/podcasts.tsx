@@ -1,154 +1,32 @@
-import React, { useState } from 'react';
-import { View, Text, Pressable, ScrollView, TextInput, StyleSheet, useWindowDimensions } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Headphones, Play, Search, ArrowLeft, Clock, TrendingUp, CalendarClock } from 'lucide-react-native';
-import { useTranslation } from 'react-i18next';
-import { useTheme } from '@/theme/ThemeContext';
-import { TABLET_BREAKPOINT, SCROLL_BOTTOM_PAD } from '@/theme/tokens';
-import { FIXTURE_EPISODES } from '@/lib/fixtures';
-import { FadeEdges } from '@/components/FadeEdges';
-
-/** /podcasts — pixel match of the site's PodcastsClient: hero with badge +
- *  display title + glass chips, featured latest-episode card with a big play
- *  button, search bar, episode grid. */
-export default function PodcastsScreen() {
-  const { t } = useTranslation();
-  const { colors, fonts, st } = useTheme();
-  const { width } = useWindowDimensions();
-  const isTablet = width >= TABLET_BREAKPOINT;
-  const insets = useSafeAreaInsets();
-  const router = useRouter();
-  const [q, setQ] = useState('');
-
-  const episodes = FIXTURE_EPISODES.filter((e) => !q || e.title.toLowerCase().includes(q.toLowerCase()) || e.show.toLowerCase().includes(q.toLowerCase()));
-  const latest = FIXTURE_EPISODES[0];
-  const cols = width >= 1024 ? 3 : width >= 600 ? 2 : 1;
-  const cardW = (Math.min(width, 1080) - 32 - (cols - 1) * 14) / cols;
-
-  const chip = (icon: React.ReactNode, label: string) => (
-    <View key={label} style={[styles.glassChip, { borderColor: st.border, backgroundColor: st.surface }]}>
-      {icon}
-      <Text style={{ color: st.muted, fontSize: 10, fontFamily: fonts.sansBold, letterSpacing: 1.2, textTransform: 'uppercase' }}>{label}</Text>
-    </View>
-  );
-
-  return (
-    <View style={{ flex: 1, backgroundColor: st.bg }}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + SCROLL_BOTTOM_PAD }}>
-        <View style={{ width: '100%', maxWidth: 1080, alignSelf: 'center', paddingHorizontal: 16 }}>
-          <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => router.back()}
-            style={[styles.backBtn, { top: insets.top + 12, backgroundColor: st.surface, borderColor: st.border }]}>
-            <ArrowLeft size={18} color={st.muted} />
-          </Pressable>
-
-          {/* Hero */}
-          <View style={{ paddingTop: insets.top + 64, flexDirection: isTablet ? 'row' : 'column', gap: 28, alignItems: isTablet ? 'flex-end' : 'stretch' }}>
-            <View style={{ flex: 1 }}>
-              <View style={[styles.badge, { backgroundColor: colors.primary + '14', borderColor: colors.primary + '2E' }]}>
-                <Headphones size={13} color={colors.primary} />
-                <Text style={{ color: colors.primary, fontSize: 10, fontFamily: fonts.sansBold, letterSpacing: 1.8, textTransform: 'uppercase' }}>{t('podcasts.badge')}</Text>
-              </View>
-              <Text style={{ color: st.text, fontSize: isTablet ? 54 : 40, fontFamily: fonts.display, letterSpacing: -1.2, lineHeight: isTablet ? 56 : 44, marginTop: 16 }}>
-                {t('podcasts.title')}
-              </Text>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 18 }}>
-                {chip(<Headphones size={11} color={st.muted} />, t('podcasts.chipEpisodes', { count: FIXTURE_EPISODES.length }))}
-                {chip(<Clock size={11} color={st.muted} />, t('podcasts.chipHours', { count: 6 }))}
-                {chip(<CalendarClock size={11} color={st.muted} />, t('podcasts.chipWeekly'))}
-              </View>
-            </View>
-
-            {/* Featured latest episode */}
-            <View style={[styles.featured, { backgroundColor: st.surface, borderColor: st.border, width: isTablet ? 300 : '100%' }]}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.primary }} />
-                <Text style={{ color: st.muted, fontSize: 10, fontFamily: fonts.sansBold, letterSpacing: 1.4, textTransform: 'uppercase' }}>{t('podcasts.latest')}</Text>
-              </View>
-              <View style={[styles.featuredArt, { backgroundColor: colors.primary + '1F' }]}>
-                <View style={[styles.bigPlay, { backgroundColor: st.surface, borderColor: st.border }]}>
-                  <Play size={24} color={colors.primary} fill={colors.primary} style={{ marginLeft: 3 }} />
-                </View>
-              </View>
-              <Text style={{ color: st.text, fontSize: 16, fontFamily: fonts.sansBold }} numberOfLines={1}>{latest.title}</Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 6 }}>
-                <Text style={{ color: st.muted, fontSize: 11.5, fontFamily: fonts.sans }}>{latest.show}</Text>
-                <View style={[styles.miniChip, { borderColor: st.border }]}>
-                  <Text style={{ color: st.muted, fontSize: 9, fontFamily: fonts.sansBold }}>{latest.duration}</Text>
-                </View>
-              </View>
-            </View>
-          </View>
-
-          {/* Search */}
-          <View style={[styles.search, { backgroundColor: st.surface, borderColor: st.border }]}>
-            <Search size={17} color={st.muted} style={{ marginLeft: 14 }} />
-            <TextInput
-              value={q} onChangeText={setQ}
-              placeholder={t('podcasts.search')}
-              placeholderTextColor={st.muted + '99'}
-              style={{ flex: 1, color: st.text, fontSize: 14.5, fontFamily: fonts.sans, paddingHorizontal: 10, height: 46 }}
-            />
-          </View>
-
-          {/* Grid */}
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 14, marginTop: 18 }}>
-            {episodes.map((e) => (
-              <Pressable key={e.id} accessibilityRole="button" style={[styles.epCard, { backgroundColor: st.surface, borderColor: st.border, width: cardW }]}>
-                <View style={[styles.epArt, { backgroundColor: colors.primary + '12' }]}>
-                  <View style={[styles.epPlay, { backgroundColor: colors.primary }]}>
-                    <Play size={15} color={colors.primaryForeground} fill={colors.primaryForeground} style={{ marginLeft: 2 }} />
-                  </View>
-                </View>
-                <Text numberOfLines={2} style={{ color: st.text, fontSize: 15, fontFamily: fonts.sansBold, lineHeight: 20 }}>{e.title}</Text>
-                <Text style={{ color: st.muted, fontSize: 12, fontFamily: fonts.sans, marginTop: 4 }}>{e.show}</Text>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: st.border }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                    <Clock size={11} color={st.muted} />
-                    <Text style={{ color: st.muted, fontSize: 10.5, fontFamily: fonts.sans }}>{e.duration}</Text>
-                  </View>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                    <TrendingUp size={11} color={st.muted} />
-                    <Text style={{ color: st.muted, fontSize: 10.5, fontFamily: fonts.sans }}>{e.plays}</Text>
-                  </View>
-                  <View style={{ flex: 1 }} />
-                  <Text style={{ color: st.muted, fontSize: 10.5, fontFamily: fonts.sans }}>{e.date}</Text>
-                </View>
-              </Pressable>
-            ))}
-          </View>
-        </View>
-      </ScrollView>
-      {!isTablet && <FadeEdges bottom />}
-    </View>
-  );
+import{useStudentDimensions as useWindowDimensions}from'@/lib/student-viewport';
+import React,{useState} from 'react';
+import {View,Text,Pressable,ScrollView,TextInput,Image,Alert} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useTranslation} from 'react-i18next';
+import {Headphones,Play,Search,X,Clock,LayoutGrid,List,Sparkles} from 'lucide-react-native';
+import {useTheme} from '@/theme/ThemeContext';
+import {SCROLL_BOTTOM_PAD} from '@/theme/tokens';
+import {MobilePageHeader} from '@/components/MobilePageHeader';
+import {ResourceState} from '@/components/ResourceState';
+import {FadeEdges} from '@/components/FadeEdges';
+import {MediaSheet} from '@/components/MediaSheet';
+import {usePodcasts,type Episode} from '@/lib/resources';
+import {isFixtureMode} from '@/lib/fixtures';
+const CATEGORIES=['Anatomy','Physiology','Biochemistry','Pathology','Pharma','Micro'];
+export default function PodcastsScreen(){
+ const {st,fonts,colors}=useTheme();const {i18n}=useTranslation();const ar=i18n.language==='ar';const {viewportWidth,width}=useWindowDimensions();const tablet=viewportWidth>=768;const insets=useSafeAreaInsets();const resource=usePodcasts();const [query,setQuery]=useState('');const [mode,setMode]=useState<'grid'|'list'>('grid');const [active,setActive]=useState<Episode|null>(null);
+ if(!resource.episodes)return <ResourceState title={ar?'البودكاست':'Podcasts'} error={resource.error} onRetry={()=>resource.refetch()}/>;
+ const episodes=resource.episodes;const filtered=episodes.filter(e=>`${e.title} ${e.show}`.toLowerCase().includes(query.trim().toLowerCase()));const cols=viewportWidth>=1280?5:viewportWidth>=1024?4:tablet?3:2;const contentW=Math.min(width,1280)-32;const cardW=(contentW-(cols-1)*20)/cols;
+ const play=(e:Episode)=>{if(isFixtureMode()||!e.url){Alert.alert(ar?'معاينة الضيف':'Guest preview',ar?'الصوت التجريبي مش ملف حقيقي.':'Sample tracks are previews, not real audio files.');return}setActive(e)};
+ const art=(e:Episode,size:number)=><View style={{width:size,height:size,borderRadius:12,overflow:'hidden',backgroundColor:colors.muted,borderWidth:1,borderColor:st.border,alignItems:'center',justifyContent:'center'}}>{e.image?<Image source={{uri:e.image}} style={{width:'100%',height:'100%'}}/>:<><Text numberOfLines={2} style={{color:st.text,fontSize:Math.max(16,size/7),fontFamily:fonts.sansBold,textAlign:'center',padding:10}}>{e.show.slice(0,2).toUpperCase()}</Text><Headphones size={Math.min(32,size/3)} color={st.muted}/></>}</View>;
+ const card=(e:Episode,size:number)=><Pressable key={e.id} accessibilityRole="button" accessibilityLabel={`${ar?'تشغيل':'Play'} ${e.title}`} onPress={()=>play(e)} style={{width:size}}>{art(e,size)}<Text numberOfLines={1} style={{marginTop:8,color:st.text,fontSize:14,fontFamily:fonts.sansBold}}>{e.title}</Text><Text numberOfLines={1} style={{marginTop:3,color:st.muted,fontSize:12}}>{e.show}</Text><View style={{flexDirection:'row',alignItems:'center',gap:4,marginTop:12}}><Clock size={12} color={st.muted}/><Text style={{color:st.muted,fontSize:10,fontFamily:fonts.sansBold}}>{ar?'صوت':'AUDIO'}</Text></View></Pressable>;
+ return <View style={{flex:1,backgroundColor:st.bg,paddingTop:insets.top}}><MobilePageHeader title={ar?'البودكاست':'Podcasts'}/><ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} contentContainerStyle={{width:'100%',maxWidth:1280,alignSelf:'center',paddingHorizontal:16,paddingTop:tablet?40:16,paddingBottom:insets.bottom+SCROLL_BOTTOM_PAD}}>
+ {tablet&&<View style={{paddingVertical:40,marginBottom:32}}><View style={{flexDirection:'row',gap:8,alignItems:'center'}}><Headphones size={16} color={colors.primary}/><Text style={{color:st.muted,fontSize:11,fontFamily:fonts.sansBold,letterSpacing:2}}>MEDONEX AUDIO HUB</Text></View><Text style={{fontSize:60,lineHeight:64,color:st.text,fontFamily:fonts.display,marginTop:16}}>{ar?'مكتبة الصوت الطبية':'Medical Audio.\nAnywhere.'}</Text><Text style={{fontSize:14,color:st.muted,marginTop:18}}>{resource.total} {ar?'محاضرة صوتية':'audio lectures'}</Text></View>}
+ <View style={{flexDirection:tablet?'row':'column',gap:16,alignItems:tablet?'center':'stretch',marginBottom:20}}><View style={{height:48,borderRadius:tablet?24:16,borderWidth:1,borderColor:st.border,backgroundColor:st.surface,flexDirection:'row',gap:10,alignItems:'center',paddingHorizontal:16,width:tablet?440:'100%'}}><Search size={16} color={st.muted}/><TextInput accessibilityLabel={ar?'ابحث في الصوتيات':'Search audio lectures'} value={query} onChangeText={setQuery} placeholder={ar?'ابحث عن محاضرات ومواد ومواضيع...':'Search lectures, subjects, topics...'} placeholderTextColor={st.muted} style={{flex:1,minWidth:0,color:st.text,fontSize:14,height:46,textAlign:ar?'right':'left'}}/>{!!query&&<Pressable accessibilityRole="button" accessibilityLabel="Clear search" onPress={()=>setQuery('')} style={{padding:6}}><X size={14} color={st.muted}/></Pressable>}</View><View style={{flexDirection:'row',alignSelf:'flex-end',marginLeft:'auto',padding:4,borderRadius:22,backgroundColor:st.surface,borderWidth:1,borderColor:st.border}}>{(['grid','list'] as const).map(m=><Pressable key={m} accessibilityRole="button" accessibilityLabel={m==='grid'?'Grid view':'List view'} accessibilityState={{selected:mode===m}} onPress={()=>setMode(m)} style={{width:42,height:32,borderRadius:18,alignItems:'center',justifyContent:'center',backgroundColor:mode===m?st.text:'transparent'}}>{m==='grid'?<LayoutGrid size={16} color={mode===m?st.bg:st.muted}/>:<List size={16} color={mode===m?st.bg:st.muted}/>}</Pressable>)}</View></View>
+ <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{gap:8,paddingBottom:2,marginBottom:28}}>{CATEGORIES.map(c=><Pressable key={c} accessibilityRole="button" accessibilityState={{selected:query===c}} onPress={()=>setQuery(query===c?'':c)} style={{height:36,paddingHorizontal:16,borderRadius:18,backgroundColor:query===c?st.text:st.surface,borderWidth:1,borderColor:st.border,justifyContent:'center'}}><Text style={{fontSize:11,fontFamily:fonts.sansBold,color:query===c?st.bg:st.muted}}>{c}</Text></Pressable>)}</ScrollView>
+ {!query&&episodes.length>0&&<View style={{marginBottom:32}}><View style={{flexDirection:'row',gap:10,alignItems:'center',marginBottom:24}}><Sparkles size={16} color={colors.primary}/><Text style={{color:st.muted,fontSize:tablet?20:11,fontFamily:fonts.sansBold,letterSpacing:tablet?0:2}}>{ar?'أحدث الإصدارات':tablet?'Latest Releases':'LATEST RELEASES'}</Text></View><View style={{flexDirection:'row',flexWrap:'wrap',gap:20}}>{episodes.slice(0,4).map(e=>card(e,(contentW-20*(tablet?3:1))/(tablet?4:2)))}</View></View>}
+ <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center',marginBottom:24}}><Text style={{flex:1,color:st.muted,fontSize:tablet?20:11,fontFamily:fonts.sansBold,letterSpacing:tablet?0:2}}>{query?(ar?`نتائج "${query}"`:`Results for "${query}"`):(ar?'كل المحاضرات الصوتية':tablet?'All Audio Lectures':'ALL AUDIO LECTURES')}</Text><Text style={{fontSize:12,color:st.muted}}>{filtered.length} {ar?'ملف':'tracks'}</Text></View>
+ {filtered.length===0?<View style={{paddingVertical:72,borderRadius:16,borderWidth:1,borderColor:st.border,backgroundColor:st.surface,alignItems:'center',gap:16}}><Headphones size={32} color={st.muted}/><Text style={{color:st.text,fontSize:14,fontFamily:fonts.sansBold}}>{ar?'مفيش محاضرات صوتية':'No audio lectures found'}</Text><Text style={{color:st.muted,fontSize:12}}>{ar?'جرّب مادة أو موضوع تاني.':'Try a different subject or topic.'}</Text></View>:<View style={{flexDirection:mode==='grid'?'row':'column',flexWrap:'wrap',gap:mode==='grid'?20:6}}>{filtered.map((e,i)=>mode==='grid'?card(e,cardW):<Pressable key={e.id} accessibilityRole="button" onPress={()=>play(e)} style={{width:'100%',padding:8,flexDirection:'row',alignItems:'center',gap:16,borderRadius:16}}>{art(e,48)}<View style={{flex:1,minWidth:0}}><Text numberOfLines={1} style={{fontSize:14,color:st.text,fontFamily:fonts.sansBold}}>{e.title}</Text><Text numberOfLines={1} style={{fontSize:12,color:st.muted,marginTop:4}}>{e.show}</Text></View><Play size={18} color={st.muted}/></Pressable>)}</View>}
+ {resource.hasNextPage?<Pressable accessibilityRole="button" onPress={()=>resource.fetchNextPage()} style={{alignSelf:'center',padding:18,marginTop:24}}><Text style={{color:st.text}}>{resource.isFetchingNextPage?(ar?'جاري التحميل...':'Loading...'):(ar?'تحميل المزيد':'Load more')}</Text></Pressable>:filtered.length>0&&<Text style={{fontSize:10,color:st.muted,opacity:.5,textAlign:'center',letterSpacing:3,marginTop:40}}>{ar?'نهاية المكتبة الصوتية':'END OF AUDIO LIBRARY'}</Text>}
+ </ScrollView>{!tablet&&<FadeEdges top={false} bottom/>}<MediaSheet media={active?.url?{title:active.title,url:active.url}:null} onClose={()=>setActive(null)}/></View>;
 }
-
-const styles = StyleSheet.create({
-  backBtn: {
-    position: 'absolute', left: 16, zIndex: 10,
-    width: 40, height: 40, borderRadius: 20, borderWidth: 1, alignItems: 'center', justifyContent: 'center',
-  },
-  badge: {
-    flexDirection: 'row', alignItems: 'center', gap: 7, alignSelf: 'flex-start',
-    borderRadius: 14, borderWidth: 1, paddingHorizontal: 12, paddingVertical: 6,
-  },
-  glassChip: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    borderRadius: 13, borderWidth: 1, paddingHorizontal: 11, paddingVertical: 6,
-  },
-  featured: { borderRadius: 24, borderWidth: 1, padding: 18 },
-  featuredArt: { aspectRatio: 1, borderRadius: 18, alignItems: 'center', justifyContent: 'center', marginBottom: 14 },
-  bigPlay: {
-    width: 64, height: 64, borderRadius: 32, borderWidth: 1,
-    alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 3,
-  },
-  miniChip: { borderRadius: 9, borderWidth: 1, paddingHorizontal: 8, paddingVertical: 3 },
-  search: {
-    flexDirection: 'row', alignItems: 'center', borderRadius: 16, borderWidth: 1, marginTop: 26,
-  },
-  epCard: { borderRadius: 20, borderWidth: 1, padding: 14 },
-  epArt: { aspectRatio: 16 / 9, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
-  epPlay: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
-});

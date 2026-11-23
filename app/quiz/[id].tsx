@@ -1,7 +1,8 @@
+import{useStudentDimensions as useWindowDimensions}from'@/lib/student-viewport';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View, Text, Pressable, ScrollView, StyleSheet, Modal, TextInput,
-  useWindowDimensions, PanResponder, Animated, KeyboardAvoidingView, Platform,
+  Linking, PanResponder, Animated, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -16,7 +17,9 @@ import { TABLET_BREAKPOINT, SCROLL_BOTTOM_PAD } from '@/theme/tokens';
 import { GLASS_OPACITY, PERF_TIER } from '@/theme/perf';
 import { fixtureQuiz, type FixtureQuizQuestion } from '@/lib/fixtures';
 import { QuizQuestionHeader, QuizQuestionContent } from '@/components/quiz/QuizQuestion';
-import { setQuizResult } from '@/lib/quiz-store';
+import {ResourceState} from '@/components/ResourceState';
+import {useQuizData,type QuizData} from '@/lib/quiz-player';
+import { setQuizResult, getQuizResult } from '@/lib/quiz-store';
 
 /** /quiz/[id] — pixel match of the site's QuizClient (quiz/QuizClient.tsx):
  *  glass top bar (exit, tutor/exam toggle, session clock, submit pill),
@@ -24,16 +27,26 @@ import { setQuizResult } from '@/lib/quiz-store';
  *  nav with prev / progress-ring navigator / next, jump-to-question sheet
  *  (bottom sheet on phone, centered modal on tablet), exit & submit
  *  confirmations and a report sheet. Fixture data until the wiring phase. */
-export default function QuizPlayerScreen() {
+export default function QuizResourceScreen(){
+ const {id:rawId,lectureId,missed}=useLocalSearchParams<{id?:string;lectureId?:string;missed?:string}>();const id=lectureId||rawId||'';const source=lectureId?'lecture':'paper';const resource=useQuizData(id,source);const {st,fonts}=useTheme();const router=useRouter();const {i18n}=useTranslation();const ar=i18n.language==='ar';
+ if(!resource.data)return <ResourceState error={resource.error} onRetry={()=>resource.refetch()} title="Quiz"/>;
+ if(resource.data.websiteOnly)return <View style={{flex:1,backgroundColor:st.bg,padding:28,justifyContent:'center',alignItems:'center',gap:20}}><Text style={{color:st.text,fontSize:20,fontFamily:fonts.sansBold,textAlign:'center'}}>{resource.data.title}</Text><Text style={{color:st.muted,fontSize:14,lineHeight:22,textAlign:'center'}}>{ar?'الاختبار ده محتاج تصحيح آمن أو أسئلة مقالية. افتحه على الموقع عشان ما نعرضش تصحيح غير صحيح.':'This quiz uses secure grading or a question format that must be taken on the website. Open it there for correct grading.'}</Text><Pressable accessibilityRole="button" onPress={()=>Linking.openURL(`https://www.medonex.me/quiz/${source==='lecture'?'lecture/':''}${id}`)} style={{backgroundColor:st.text,padding:16,borderRadius:24}}><Text style={{color:st.bg}}>{ar?'فتح على الموقع':'Open on website'}</Text></Pressable><Pressable accessibilityRole="button" onPress={()=>router.back()}><Text style={{color:st.muted}}>{ar?'رجوع':'Back'}</Text></Pressable></View>;
+ if(!resource.data.questions.length)return <ResourceState notFound onRetry={()=>resource.refetch()} title="Quiz"/>;
+ const previous=missed==='1'?getQuizResult():null;
+ const missedIds=new Set(previous&&previous.paperId===id&&(previous.source||'paper')===source?previous.items.filter(item=>!item.isCorrect).map(item=>item.question.id):[]);
+ const quiz=missed==='1'?{...resource.data,questions:resource.data.questions.filter(q=>missedIds.has(q.id))}:resource.data;
+ if(!quiz.questions.length)return <ResourceState notFound onRetry={()=>router.back()} title="No missed questions stored on this device" message="There are no missed questions from this practice result to retry."/>;
+ return <QuizPlayerScreen key={`${source}/${id}/${missed||'all'}`} quiz={quiz}/>;
+}
+function QuizPlayerScreen({quiz}:{quiz:QuizData}) {
   const { id, missed } = useLocalSearchParams<{ id: string; missed?: string }>();
   const { colors, fonts, isDark } = useTheme();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { width } = useWindowDimensions();
-  const isTablet = width >= TABLET_BREAKPOINT;
+  const {viewportWidth, width } = useWindowDimensions();
+  const isTablet = viewportWidth >= TABLET_BREAKPOINT;
 
-  const quiz = useMemo(() => fixtureQuiz(id ?? 'demo'), [id]);
   const [questions] = useState<FixtureQuizQuestion[]>(quiz.questions);
 
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -68,12 +81,14 @@ export default function QuizPlayerScreen() {
     animateTo(dir);
   };
 
+  const currentIndexRef=useRef(currentIndex);currentIndexRef.current=currentIndex;
   const pan = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_e, g) => Math.abs(g.dx) > 60 && Math.abs(g.dx) > Math.abs(g.dy) * 2,
       onPanResponderRelease: (_e, g) => {
-        if (g.dx < -60 && currentIndex < questions.length - 1) navigateTo(currentIndex + 1, 1);
-        else if (g.dx > 60 && currentIndex > 0) navigateTo(currentIndex - 1, -1);
+        const index=currentIndexRef.current;
+        if (g.dx < -60 && index < questions.length - 1) navigateTo(index + 1, 1);
+        else if (g.dx > 60 && index > 0) navigateTo(index - 1, -1);
       },
     }),
   ).current;
@@ -105,6 +120,8 @@ export default function QuizPlayerScreen() {
     const correct = items.filter((i) => i.isCorrect).length;
     setQuizResult({
       paperId: quiz.id,
+      source:quiz.source,
+      localOnly:true,
       title: quiz.title,
       score: Math.round((correct / questions.length) * 100),
       correct,
@@ -211,11 +228,12 @@ export default function QuizPlayerScreen() {
         </View>
       </View>
 
+      <Text style={{position:'absolute',top:insets.top+59,left:16,right:16,zIndex:6,color:colors.mutedForeground,fontSize:10,textAlign:'center'}}>{i18n.language==='ar'?'تدريب على الجهاز فقط. الإجابات والعلامات مش بتتحفظ في حسابك.':'Local practice only. Answers, flags and bookmarks are not saved to your account.'}</Text>
       {/* Question */}
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{
-          paddingTop: insets.top + 64,
+          paddingTop: insets.top + 88,
           paddingBottom: insets.bottom + SCROLL_BOTTOM_PAD,
           paddingHorizontal: 16,
           maxWidth: 896,
@@ -291,7 +309,7 @@ export default function QuizPlayerScreen() {
 
       {/* Jump to question: bottom sheet on phone, centered modal on tablet */}
       <Modal visible={navigatorOpen} transparent animationType={PERF_TIER === 'low' ? 'none' : 'slide'} onRequestClose={() => setNavigatorOpen(false)}>
-        <Pressable style={styles.backdrop} onPress={() => setNavigatorOpen(false)}>
+        <Pressable accessibilityRole="button" style={styles.backdrop} onPress={() => setNavigatorOpen(false)}>
           <Pressable
             onPress={(e) => e.stopPropagation()}
             style={[
@@ -342,7 +360,7 @@ export default function QuizPlayerScreen() {
       {/* Report question sheet */}
       <Modal visible={reportOpen} transparent animationType={PERF_TIER === 'low' ? 'none' : 'slide'} onRequestClose={() => setReportOpen(false)}>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-          <Pressable style={styles.backdrop} onPress={() => setReportOpen(false)}>
+          <Pressable accessibilityRole="button" style={styles.backdrop} onPress={() => setReportOpen(false)}>
             <Pressable
               onPress={(e) => e.stopPropagation()}
               style={[
@@ -382,11 +400,11 @@ export default function QuizPlayerScreen() {
                 </Pressable>
                 <Pressable
                   accessibilityRole="button"
-                  onPress={() => { setReportSent(true); setReportOpen(false); setReportNote(''); }}
+                  onPress={() => { Linking.openURL(`https://www.medonex.me/quiz/${quiz.source==='lecture'?'lecture/':''}${quiz.id}`); }}
                   style={[styles.footBtn, { backgroundColor: colors.primary, borderRadius: 12, paddingHorizontal: 20 }]}
                 >
                   <Text style={{ color: colors.primaryForeground, fontSize: 12, fontFamily: fonts.sansBold, letterSpacing: 1.2, textTransform: 'uppercase' }}>
-                    {reportSent ? t('quiz.reportThanks') : t('quiz.submitReport')}
+                    {t('quiz.openWebsiteToReport','Open website to report')}
                   </Text>
                 </Pressable>
               </View>
@@ -410,7 +428,7 @@ function ConfirmSheet({
   const { t } = useTranslation();
   return (
     <Modal visible={visible} transparent animationType={PERF_TIER === 'low' ? 'none' : 'fade'} onRequestClose={onClose}>
-      <Pressable style={[styles.backdrop, isTablet && { justifyContent: 'center' }]} onPress={onClose}>
+      <Pressable accessibilityRole="button" style={[styles.backdrop, isTablet && { justifyContent: 'center' }]} onPress={onClose}>
         <Pressable
           onPress={(e) => e.stopPropagation()}
           style={[

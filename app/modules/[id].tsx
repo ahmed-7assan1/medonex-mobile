@@ -1,7 +1,9 @@
+import{useStudentDimensions as useWindowDimensions}from'@/lib/student-viewport';
+import { ResourceState } from '@/components/ResourceState';
 import React, { useMemo, useState } from 'react';
 import {
   View, Text, Pressable, ScrollView, TextInput, StyleSheet,
-  useWindowDimensions, RefreshControl,
+  RefreshControl,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -62,15 +64,15 @@ export default function ModuleDetailScreen() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { width } = useWindowDimensions();
-  const isTablet = width >= TABLET_BREAKPOINT;
+  const {viewportWidth, width } = useWindowDimensions();
+  const isTablet = viewportWidth >= TABLET_BREAKPOINT;
   const bundle = useModuleBundle(id ?? '');
   const [query, setQuery] = useState('');
 
   // Pages phase: fixtures stand in for live data until wiring (Ahmed, 22 Nov).
   const isNotFound = false;
   const failed = bundle.error instanceof ApiError;
-  const data = bundle.data ?? (failed ? FIXTURE_MODULE_BUNDLE : undefined);
+  const data = bundle.data;
   const mod = data?.module;
 
   const correctCounts = useMemo(() => {
@@ -109,7 +111,7 @@ export default function ModuleDetailScreen() {
 
   const header = (
     <View style={styles.titleRow}>
-      <Pressable
+      <Pressable accessibilityRole="button"
         onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)/modules' as never))}
         hitSlop={12}
         style={[styles.backBtn, { backgroundColor: st.surface, borderColor: st.border }]}
@@ -122,6 +124,8 @@ export default function ModuleDetailScreen() {
       </Text>
     </View>
   );
+
+  if(!mod)return <ResourceState error={bundle.error} onRetry={()=>bundle.refetch()} title={t('tabs.modules')}/>;
 
   let body: React.ReactNode = null;
 
@@ -185,7 +189,7 @@ export default function ModuleDetailScreen() {
               const IconComp = getSubjectIcon(s.name, s.icon);
               const tone = progressTone(s.progress, st);
               return (
-                <Pressable
+                <Pressable accessibilityRole="button"
                   key={s.id}
                   onPress={() => router.push(`/modules/${mod.id}/subjects/${s.id}` as never)}
                   style={({ pressed }) => [
@@ -303,7 +307,7 @@ export default function ModuleDetailScreen() {
             autoCorrect={false}
           />
           {query.length > 0 && (
-            <Pressable onPress={() => setQuery('')} hitSlop={8} style={styles.clearBtn}>
+            <Pressable accessibilityRole="button" onPress={() => setQuery('')} hitSlop={8} style={styles.clearBtn}>
               <X size={16} color={st.muted} />
             </Pressable>
           )}
@@ -333,7 +337,7 @@ export default function ModuleDetailScreen() {
               const SubjectIcon = getSubjectIcon(subject.name, subject.icon);
               const tone = progressTone(subject.progress, st);
               return (
-                <Pressable
+                <Pressable accessibilityRole="button"
                   key={subject.id}
                   onPress={() => router.push(`/modules/${mod.id}/subjects/${subject.id}` as never)}
                   style={({ pressed }) => [

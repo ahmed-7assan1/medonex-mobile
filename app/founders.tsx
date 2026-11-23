@@ -1,5 +1,6 @@
+import{useStudentDimensions as useWindowDimensions}from'@/lib/student-viewport';
 import React from 'react';
-import { View, Text, Pressable, ScrollView, StyleSheet, useWindowDimensions } from 'react-native';
+import { View, Text, Pressable, ScrollView, StyleSheet, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,6 +8,9 @@ import { ShieldCheck, ArrowLeft, Star, Award, Heart } from 'lucide-react-native'
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme/ThemeContext';
 import { TABLET_BREAKPOINT, SCROLL_BOTTOM_PAD } from '@/theme/tokens';
+import {useFounders} from '@/lib/resources';
+import {ResourceState} from '@/components/ResourceState';
+import {MobilePageHeader} from '@/components/MobilePageHeader';
 import { FIXTURE_PLATFORM_TEAM } from '@/lib/fixtures';
 import { FadeEdges } from '@/components/FadeEdges';
 
@@ -16,16 +20,18 @@ import { FadeEdges } from '@/components/FadeEdges';
 export default function FoundersScreen() {
   const { t } = useTranslation();
   const { colors, fonts, st } = useTheme();
-  const { width } = useWindowDimensions();
-  const isTablet = width >= TABLET_BREAKPOINT;
+  const {viewportWidth, width } = useWindowDimensions();
+  const isTablet = viewportWidth >= TABLET_BREAKPOINT;
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
+  const resource=useFounders();
+  if(!resource.data)return <ResourceState error={resource.error} onRetry={()=>resource.refetch()} title={t('founders.titlePre')}/>;
   return (
-    <View style={{ flex: 1, backgroundColor: st.bg }}>
+    <View style={{ flex: 1, backgroundColor: st.bg,paddingTop:isTablet?0:insets.top }}>{!isTablet&&<MobilePageHeader title={t('more.founders','Founders')}/>}
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + SCROLL_BOTTOM_PAD }}>
         {/* Hero */}
-        <View style={{ height: isTablet ? 340 : 260, justifyContent: 'center' }}>
+        {isTablet&&<View style={{ height: 340, justifyContent: 'center' }}>
           <LinearGradient colors={[colors.primary + '33', st.bg]} style={StyleSheet.absoluteFill} />
           <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => router.back()}
             style={[styles.backBtn, { top: insets.top + 14, backgroundColor: st.surface + '99', borderColor: st.border }]}>
@@ -45,12 +51,13 @@ export default function FoundersScreen() {
           </View>
         </View>
 
+        }
         {/* Member cards */}
         <View style={{ width: '100%', maxWidth: 1080, alignSelf: 'center', paddingHorizontal: 20, flexDirection: 'row', flexWrap: 'wrap', gap: 24, justifyContent: 'center', marginTop: 8 }}>
-          {FIXTURE_PLATFORM_TEAM.map((m) => (
+          {resource.data.map((m) => (
             <View key={m.id} style={[styles.memberCard, { backgroundColor: st.surface, borderColor: st.border, width: isTablet ? 320 : '100%' }]}>
               <View style={[styles.memberAvatar, { backgroundColor: st.bg, borderColor: st.border }]}>
-                <Text style={{ color: colors.primary, fontSize: 36, fontFamily: fonts.display }}>{m.name.split(' ').map((w) => w[0]).slice(0, 2).join('')}</Text>
+                <Text style={{ color: colors.primary, fontSize: 36, fontFamily: fonts.display }}>{m.name.split(' ').map((w) => w[0]).slice(0, 2).join('')}</Text>{!!m.imageUrl&&<Image source={{uri:m.imageUrl}} style={{position:'absolute',width:'100%',height:'100%'}}/>}
               </View>
               <Text style={{ color: st.text, fontSize: 22, fontFamily: fonts.sansBold }}>{m.name}</Text>
               <View style={[styles.rolePill, { backgroundColor: st.bg, borderColor: st.border }]}>

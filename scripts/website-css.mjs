@@ -1,0 +1,3 @@
+import fs from'node:fs';import os from'node:os';import path from'node:path';import{execFileSync}from'node:child_process';
+/** Every renderer can rebuild in a fresh checkout without another build's /tmp files. */
+export function websiteCSS(website){const dir=fs.mkdtempSync(path.join(os.tmpdir(),'medonex-css-'));try{const output=path.join(dir,'site.css');execFileSync(path.join(website,'node_modules/.bin/tailwindcss'),['-c',path.join(website,'tailwind.config.ts'),'-i',path.join(website,'src/styles/globals.css'),'-o',output,'--minify'],{cwd:website,stdio:'inherit'});return fs.readFileSync(output,'utf8')}finally{fs.rmSync(dir,{recursive:true,force:true})}}

@@ -1,6 +1,7 @@
+import{useStudentDimensions as useWindowDimensions}from'@/lib/student-viewport';
 import React, { useState } from 'react';
 import {
-  View, Text, Pressable, ScrollView, TextInput, StyleSheet, Image, useWindowDimensions,
+  View, Text, Pressable, ScrollView, TextInput, StyleSheet, Image, Alert,Linking,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,6 +15,7 @@ import { useTheme } from '@/theme/ThemeContext';
 import { FadeEdges } from '@/components/FadeEdges';
 import { SettingsOverlay } from '@/components/settings/SettingsOverlay';
 import { SettingsOverlayBody } from '@/components/settings/SettingsOverlayBody';
+import {useQueryClient}from'@tanstack/react-query';
 import { useAuth } from '@/lib/auth';
 import { SCROLL_BOTTOM_PAD } from '@/theme/tokens';
 
@@ -36,6 +38,7 @@ const GROUPS: RowItem[][] = [
 ];
 
 const OVERLAY_TITLES: Record<string, string> = {
+  subscription:'Manage Subscription',
   identity: 'Profile & Identity',
   branding: 'Avatar & Brand',
   academic: 'University Context',
@@ -75,9 +78,12 @@ export default function SettingsScreen() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { user } = useAuth();
-  const { width } = useWindowDimensions();
-  const isTablet = width >= 768;
+  const { user,isGuest } = useAuth();
+  const queryClient=useQueryClient();
+  const readOnly=()=>Alert.alert('Read-only account settings','No account changes were made. Open the website to edit your settings.',[{text:'Cancel',style:'cancel'},{text:'Open website',onPress:()=>Linking.openURL('https://www.medonex.me/settings')}]);
+  const clearCache=()=>Alert.alert('Clear cached page data?','Your sign-in, drawings and downloaded files will be kept.',[{text:'Cancel',style:'cancel'},{text:'Clear cache',style:'destructive',onPress:()=>{queryClient.clear();router.replace('/modules')}}]);
+  const {viewportWidth, width } = useWindowDimensions();
+  const isTablet = viewportWidth >= 768;
 
   const [overlay, setOverlay] = useState<string | null>(() => {
     try { if (typeof localStorage !== 'undefined') return localStorage.getItem('previewSettingsOverlay'); } catch { /* noop */ }
@@ -94,14 +100,7 @@ export default function SettingsScreen() {
   const email = user?.email || '';
   const initial = (name || 'S').charAt(0).toUpperCase();
 
-  const submitPassword = () => {
-    if (!pwCurrent || !pwNew || !pwConfirm) return setPwMsg('empty');
-    if (pwNew.length < 6) return setPwMsg('short');
-    if (pwNew !== pwConfirm) return setPwMsg('mismatch');
-    // Google-only accounts have no password to change; the site's flow is
-    // Supabase email/password. Wire to a mobile endpoint in a later phase.
-    return setPwMsg('google');
-  };
+  const submitPassword = readOnly;
 
   const pwField = (
     value: string, setValue: (v: string) => void, placeholder: string,
@@ -109,7 +108,7 @@ export default function SettingsScreen() {
   ) => (
     <View key={key} style={[styles.pwFieldWrap, { backgroundColor: st.bg, borderColor: st.border }]}>
       <TextInput
-        value={value}
+        value={value} editable={false}
         onChangeText={(v) => { setValue(v); setPwMsg(null); }}
         placeholder={placeholder}
         placeholderTextColor={st.muted}
@@ -117,7 +116,7 @@ export default function SettingsScreen() {
         autoCapitalize="none"
         style={[styles.pwInput, { color: st.text, fontFamily: fonts.sans }]}
       />
-      <Pressable onPress={toggle} hitSlop={8}>
+      <Pressable accessibilityRole="button" onPress={toggle} hitSlop={8}>
         {show ? <EyeOff size={16} color={st.muted} /> : <Eye size={16} color={st.muted} />}
       </Pressable>
     </View>
@@ -128,7 +127,7 @@ export default function SettingsScreen() {
       <View style={[styles.root, { backgroundColor: st.bg, paddingTop: insets.top + 8 }]}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.desktopScroll}>
           <View style={styles.titleRow}>
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)/more' as never))}
               hitSlop={12}
               style={[styles.backBtn, { backgroundColor: st.surface, borderColor: st.border }]}
@@ -165,7 +164,7 @@ export default function SettingsScreen() {
       >
         {/* Route title */}
         <View style={styles.titleRow}>
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)/more' as never))}
             hitSlop={12}
             style={[styles.backBtn, { backgroundColor: st.surface, borderColor: st.border }]}
@@ -194,10 +193,10 @@ export default function SettingsScreen() {
                 )}
               </View>
               <View style={styles.premiumPill}>
-                <Text style={{ color: '#F59E0B', fontSize: 13, fontWeight: '500' }}>Premium</Text>
+                <Text style={{ color: '#F59E0B', fontSize: 13, fontWeight: '500' }}>{isGuest?'Guest':'Account'}</Text>
               </View>
             </View>
-            <Pressable style={[styles.manageBtn, { backgroundColor: st.pillFill }]}>
+            <Pressable accessibilityRole="button" onPress={()=>setOverlay('subscription')} style={[styles.manageBtn, { backgroundColor: st.pillFill }]}>
               <Text style={{ color: st.pillText, fontSize: 16, fontWeight: '500' }}>{t('settings.manageSubscription')}</Text>
             </Pressable>
           </View>
@@ -210,6 +209,8 @@ export default function SettingsScreen() {
                 return (
                   <Pressable
                     key={item.id}
+                    accessibilityRole="button"
+                    accessibilityLabel={item.title}
                     onPress={() => setOverlay(item.id)}
                     style={({ pressed }) => [
                       styles.tile,
@@ -254,7 +255,7 @@ export default function SettingsScreen() {
                   </View>
                 )}
 
-                <Pressable onPress={submitPassword} style={[styles.updateBtn, { backgroundColor: st.pillFill }]}>
+                <Pressable accessibilityRole="button" onPress={submitPassword} style={[styles.updateBtn, { backgroundColor: st.pillFill }]}>
                   <Text style={{ color: st.pillText, fontSize: 16, fontWeight: '500' }}>{t('settings.updatePassword')}</Text>
                 </Pressable>
               </View>
@@ -263,7 +264,7 @@ export default function SettingsScreen() {
 
           {/* AI keys + Clear cache */}
           <View style={{ gap: 2 }}>
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={() => setOverlay('ai-keys')}
               style={({ pressed }) => [
                 styles.tile,
@@ -274,7 +275,7 @@ export default function SettingsScreen() {
               <Key size={22} color={st.text} strokeWidth={1.75} />
               <Text style={{ flex: 1, color: st.text, fontSize: 17, fontFamily: fonts.sans }}>{t('settings.aiKeys')}</Text>
             </Pressable>
-            <Pressable
+            <Pressable accessibilityRole="button" onPress={clearCache}
               style={({ pressed }) => [
                 styles.tile,
                 { borderTopLeftRadius: 4, borderTopRightRadius: 4, borderBottomLeftRadius: 16, borderBottomRightRadius: 16, backgroundColor: st.surface },

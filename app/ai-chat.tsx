@@ -1,7 +1,8 @@
+import{useStudentDimensions as useWindowDimensions}from'@/lib/student-viewport';
 import React, { useState } from 'react';
 import {
   View, Text, Pressable, TextInput, FlatList, StyleSheet, KeyboardAvoidingView,
-  Platform, useWindowDimensions,
+  Platform, Alert, Linking, Modal,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
@@ -12,7 +13,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme/ThemeContext';
 import { TABLET_BREAKPOINT } from '@/theme/tokens';
-import { FIXTURE_DRQ_MESSAGES } from '@/lib/fixtures';
+import {isFixtureMode} from '@/lib/fixtures';
 
 /** /ai-chat — literal copy of the site's real AI chat page (MedOneXChat):
  *  light #FCFCFC surface, soft top/bottom fade gradients, floating round
@@ -44,24 +45,21 @@ function renderRich(text: string, base: object, fonts: any) {
 }
 
 export default function AIChatScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { fonts } = useTheme();
-  const { width } = useWindowDimensions();
-  const isTablet = width >= TABLET_BREAKPOINT;
+  const {viewportWidth, width } = useWindowDimensions();
+  const isTablet = viewportWidth >= TABLET_BREAKPOINT;
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [draft, setDraft] = useState('');
   const [webSearch, setWebSearch] = useState(true);
 
-  // Fixture: seed with the sample conversation; web preview can force the
-  // empty state via localStorage.previewEmptyChat=1 (screenshot pipeline).
-  const [forceEmpty] = useState(() => {
-    try {
-      return Platform.OS === 'web' && typeof localStorage !== 'undefined' && localStorage.getItem('previewEmptyChat') === '1';
-    } catch { return false; }
-  });
-  const messages = forceEmpty ? [] : FIXTURE_DRQ_MESSAGES;
-  const isEmpty = messages.length === 0;
+  const [sidebar,setSidebar]=useState(false);
+  const ar=i18n.language==='ar';
+  const openWebsite=()=>Linking.openURL('https://www.medonex.me/ai-chat');
+  const unavailable=()=>Alert.alert(ar?'محادثة الذكاء الاصطناعي':'AI Chat',ar?'المحادثة في النسخة دي للعرض فقط. افتح الموقع لاستخدام إعداداتك ومحادثاتك، من غير ردود تجريبية أو استهلاك رصيد من التطبيق.':'AI chat is read-only in this version. Open the website to use your settings and chats. This app does not send AI requests or use credits.',[{text:ar?'إلغاء':'Cancel',style:'cancel'},{text:ar?'فتح الموقع':'Open website',onPress:openWebsite}]);
+  const messages: {id:string;role:string;text:string}[] = [];
+  const isEmpty = true;
 
   const MOBILE_PROMPTS = [
     { icon: BookOpen, text: 'Summarize my last lecture in 3 bullet points' },
@@ -91,16 +89,16 @@ export default function AIChatScreen() {
       />
       {/* Row 2: [+] [model pill] … [mic/send] (site: flex gap-2 px-2 pb-2) */}
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 8, paddingBottom: 8 }}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Add to chat" style={styles.roundIcon}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Add to chat" onPress={unavailable} style={styles.roundIcon}>
           <Plus size={16} color="#111" />
         </Pressable>
-        <Pressable accessibilityRole="button" style={styles.modelPill}>
-          <Text numberOfLines={1} style={{ color: '#111', fontSize: 14, fontFamily: fonts.sans }}>Gemini 2.5 Flash</Text>
+        <Pressable accessibilityRole="button" onPress={unavailable} style={styles.modelPill}>
+          <Text numberOfLines={1} style={{ color: '#111', fontSize: 14, fontFamily: fonts.sans }}>AI settings</Text>
         </Pressable>
         <View style={{ flex: 1 }} />
         <Pressable
           accessibilityRole="button" accessibilityLabel={draft.trim() ? t('drq.send') : 'Voice input'}
-          style={styles.sendBtn}
+          style={styles.sendBtn} onPress={unavailable}
         >
           {draft.trim() ? <ArrowUp size={16} color="#fff" /> : <Mic size={16} color="#fff" />}
         </Pressable>
@@ -110,6 +108,7 @@ export default function AIChatScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: BG }}>
+      <Modal visible={sidebar} transparent animationType="fade" onRequestClose={()=>setSidebar(false)}><View style={{flex:1,backgroundColor:'rgba(0,0,0,.25)',flexDirection:'row'}}><Pressable accessibilityRole="button" accessibilityLabel="Close sidebar" style={StyleSheet.absoluteFill} onPress={()=>setSidebar(false)}/><View style={{width:290,backgroundColor:BG,padding:20,paddingTop:insets.top+20,gap:20}}><Text style={{fontSize:20,fontFamily:fonts.sansBold}}>MedOneX</Text><Pressable accessibilityRole="button" onPress={()=>{setDraft('');setSidebar(false)}}><Text style={{fontSize:16}}>{ar?'محادثة جديدة':'New chat'}</Text></Pressable><Text style={{fontSize:13,color:'#777'}}>{ar?'مفيش محادثات محفوظة على الجهاز ده. محادثات الموقع مش بتتزامن مع التطبيق في النسخة دي.':'No chats saved on this device. Website chats are not synced in this version.'}</Text><View style={{flex:1}}/><Pressable accessibilityRole="button" onPress={()=>{setSidebar(false);openWebsite()}}><Text style={{fontSize:15}}>{ar?'فتح المحادثات على الموقع':'Open chats on website'}</Text></Pressable><Pressable accessibilityRole="button" onPress={()=>{setSidebar(false);router.back()}}><Text style={{fontSize:15}}>{ar?'رجوع':'Back'}</Text></Pressable></View></View></Modal>
       {/* Top fade (site: chat-top-fade-light) */}
       <LinearGradient
         pointerEvents="none"
@@ -118,7 +117,7 @@ export default function AIChatScreen() {
       />
       {/* Floating sidebar button */}
       <Pressable
-        accessibilityRole="button" accessibilityLabel="Open sidebar" onPress={() => router.back()}
+        accessibilityRole="button" accessibilityLabel="Open sidebar" onPress={() => setSidebar(true)}
         style={[styles.sidebarBtn, { top: insets.top + 16, backgroundColor: CARD, borderColor: LINE }]}
       >
         <Menu size={20} color="#111" />
@@ -176,7 +175,7 @@ export default function AIChatScreen() {
           {isEmpty && !isTablet && (
             <View style={{ gap: 6, alignSelf: 'center', width: '100%', maxWidth: 320 }}>
               {MOBILE_PROMPTS.map((p) => (
-                <Pressable key={p.text} accessibilityRole="button" style={styles.promptPill}>
+                <Pressable key={p.text} accessibilityRole="button" onPress={()=>setDraft(p.text)} style={styles.promptPill}>
                   <p.icon size={14} color="#111" />
                   <Text numberOfLines={1} style={{ flex: 1, color: '#374151', fontSize: 12, fontFamily: fonts.sans }}>{p.text}</Text>
                 </Pressable>
@@ -187,7 +186,7 @@ export default function AIChatScreen() {
           {isEmpty && isTablet && (
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8 }}>
               {DESKTOP_PROMPTS.map((p) => (
-                <Pressable key={p.label} accessibilityRole="button" style={styles.desktopPill}>
+                <Pressable key={p.label} accessibilityRole="button" onPress={()=>setDraft(p.label)} style={styles.desktopPill}>
                   <p.icon size={14} color="#6B7280" />
                   <Text style={{ color: '#4B5563', fontSize: 13, fontFamily: fonts.sans }}>{p.label}</Text>
                 </Pressable>

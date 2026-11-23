@@ -1,0 +1,5 @@
+import*as FS from'expo-file-system/legacy';
+/** Write the complete replacement before touching the previous file. A backup
+ * survives platforms that remove a destination before moving a new file. */
+export async function writeJsonFile(path:string,value:unknown){const temporary=path+'.next';try{await FS.writeAsStringAsync(temporary,JSON.stringify(value));if((await FS.getInfoAsync(path)).exists){let valid=false;try{JSON.parse(await FS.readAsStringAsync(path));valid=true}catch{}if(valid)await FS.copyAsync({from:path,to:path+'.backup'})}await FS.moveAsync({from:temporary,to:path})}catch(error){await FS.deleteAsync(temporary,{idempotent:true}).catch(()=>{});throw error}}
+export async function readJsonFile(path:string):Promise<unknown|null>{let found=false;for(const candidate of[path,path+'.backup']){if(!(await FS.getInfoAsync(candidate)).exists)continue;found=true;try{return JSON.parse(await FS.readAsStringAsync(candidate))}catch{}}if(found)throw Error('The local file could not be read.');return null}

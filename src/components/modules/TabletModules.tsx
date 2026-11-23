@@ -37,7 +37,7 @@ export function TabletModules({ data }: { data: ModulesCatalogResponse | undefin
         {(view?.sortedByLectures ?? []).map((m, i) => {
           const accent = ACCENTS[i % ACCENTS.length];
           return (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={m.id}
               onPress={() => router.push(`/modules/${m.id}` as never)}
               style={({ pressed }) => [

@@ -1,9 +1,11 @@
-import { fixtureQuiz, type FixtureQuizQuestion } from './fixtures';
+import { fixtureQuiz, isFixtureMode, type FixtureQuizQuestion } from './fixtures';
 
 /** In-memory handoff between the quiz player and the results screen in the
  *  pages phase (no backend yet). The wiring phase replaces this with the
  *  attempt APIs (/api/v1/quiz-attempts). */
+export type EssayReview={feedback:string;scorePercent:number;stagesMet:number;stagesTotal:number;stageNotes:string[]};
 export interface QuizResultItem {
+  essayReview?:EssayReview|null;
   question: FixtureQuizQuestion;
   chosen?: string;
   isCorrect: boolean;
@@ -11,7 +13,12 @@ export interface QuizResultItem {
 
 export interface QuizResult {
   paperId: string;
+  source?:'paper'|'lecture';
+  localOnly?:boolean;
   title: string;
+  createdAt?:string;
+  focusLossCount?:number;
+  attemptId?:string;
   score: number;
   correct: number;
   total: number;
@@ -21,6 +28,7 @@ export interface QuizResult {
 
 let lastResult: QuizResult | null = null;
 
+export function clearQuizResult(){lastResult=null;}
 export function setQuizResult(r: QuizResult) { lastResult = r; }
 
 /** Web-preview seed (same pattern as the preview session token): lets the
@@ -28,6 +36,7 @@ export function setQuizResult(r: QuizResult) { lastResult = r; }
  *  triggers on native (no localStorage). */
 function previewSeed(): QuizResult | null {
   try {
+    if(!isFixtureMode())return null;
     if (typeof localStorage === 'undefined') return null;
     if (localStorage.getItem('previewQuizResult') !== '1') return null;
     const quiz = fixtureQuiz('demo');
@@ -41,6 +50,7 @@ function previewSeed(): QuizResult | null {
     }));
     const correct = items.filter((i) => i.isCorrect).length;
     return {
+      localOnly: true,
       paperId: quiz.id,
       title: quiz.title,
       score: Math.round((correct / quiz.questions.length) * 100),

@@ -1,9 +1,13 @@
+import{useStudentDimensions as useWindowDimensions}from'@/lib/student-viewport';
+import { ResourceState } from '@/components/ResourceState';
 import { MobilePageHeader } from '@/components/MobilePageHeader';
-import React from 'react';
-import { View, Text, Pressable, ScrollView, RefreshControl, StyleSheet, useWindowDimensions } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { BackHandler } from 'react-native';
+import { SavedItemsView } from '@/components/modules/SavedItemsView';
+import { View, Text, Pressable, ScrollView, RefreshControl, StyleSheet, } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Search } from 'lucide-react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme/ThemeContext';
 import { TABLET_BREAKPOINT, SCROLL_BOTTOM_PAD } from '@/theme/tokens';
@@ -20,11 +24,24 @@ export default function ModulesScreen() {
   const { colors, fonts } = useTheme();
   const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
-  const isTablet = width >= TABLET_BREAKPOINT;
+  const {viewportWidth, width } = useWindowDimensions();
+  const isTablet = viewportWidth >= TABLET_BREAKPOINT;
   const router = useRouter();
   const catalog = useModulesCatalog();
   const view = catalog.data?.view;
+  const params=useLocalSearchParams<{view?:string}>();
+  const [savedView,setSavedView]=useState(params.view==='saved');
+  const scroll=useRef<ScrollView>(null);
+  useEffect(()=>{if(params.view==='saved')setSavedView(true)},[params.view]);
+  const closeSaved=()=>{setSavedView(false);router.setParams({view:'modules'})};
+  useEffect(()=>{if(!savedView)return;const sub=BackHandler.addEventListener('hardwareBackPress',()=>{closeSaved();return true});return()=>sub.remove()},[savedView]);
+
+  if(!catalog.data) return <ResourceState error={catalog.error} onRetry={()=>catalog.refetch()} title="Library"/>;
+
+  if(savedView) return <View style={[styles.root,{backgroundColor:colors.background,paddingTop:insets.top}]}>
+    <MobilePageHeader title={i18n.language==='ar'?'المحفوظات':'Saved'}/>
+    <ScrollView contentContainerStyle={{width:'100%',maxWidth:1000,alignSelf:'center',paddingHorizontal:16,paddingBottom:insets.bottom+SCROLL_BOTTOM_PAD}}><SavedItemsView modules={view?.sortedByLectures||[]} onBack={closeSaved}/></ScrollView>
+  </View>;
 
   if (isTablet) {
     return <TabletModules data={catalog.data} />;
@@ -34,6 +51,7 @@ export default function ModulesScreen() {
     <View style={[styles.root, { backgroundColor: colors.background, paddingTop: insets.top }]}>
       <MobilePageHeader title={i18n.language === 'ar' ? 'المكتبة' : 'Library'} />
       <ScrollView
+        ref={scroll}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + SCROLL_BOTTOM_PAD }}
         refreshControl={
@@ -58,7 +76,7 @@ export default function ModulesScreen() {
         />
 
         <View style={{ marginTop: 16 }}>
-          <QuickActionsCard continueHref={catalog.data?.continueHref ?? null} />
+          <QuickActionsCard continueHref={catalog.data?.continueHref ?? null} onSaved={()=>setSavedView(true)} onContinueFallback={()=>scroll.current?.scrollTo({y:320,animated:true})} />
         </View>
 
         {(view?.sortedByLectures?.length ?? 0) > 0 && (

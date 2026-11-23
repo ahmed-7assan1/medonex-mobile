@@ -3,6 +3,8 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from '
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 import { setGuestMode } from './fixtures';
+import {clearQuizResult}from'./quiz-store';
+import {useStudyStore}from'./local-study-store';
 
 export interface AuthUser {
   id: string;
@@ -35,13 +37,14 @@ const GUEST_USER: AuthUser = { id: 'guest', name: null, email: '' };
 const TOKEN_KEY = 'sessionToken'; // api.ts reads the same key
 const USER_KEY = 'authUser';
 const GUEST_KEY = 'guestMode';
+const SESSION_KEY='authSessionV2';
 
 async function secureGet(key: string): Promise<string | null> {
   try {
     if (Platform.OS === 'web') return globalThis.localStorage?.getItem(key) ?? null;
     return await SecureStore.getItemAsync(key);
   } catch {
-    return null;
+    throw new Error('The saved session could not be read from this device.');
   }
 }
 
@@ -49,14 +52,14 @@ async function secureSet(key: string, value: string): Promise<void> {
   try {
     if (Platform.OS === 'web') { globalThis.localStorage?.setItem(key, value); return; }
     await SecureStore.setItemAsync(key, value);
-  } catch { /* ignore */ }
+  } catch { throw new Error('The session could not be saved securely on this device.'); }
 }
 
 async function secureDelete(key: string): Promise<void> {
   try {
     if (Platform.OS === 'web') { globalThis.localStorage?.removeItem(key); return; }
     await SecureStore.deleteItemAsync(key);
-  } catch { /* ignore */ }
+  } catch { throw new Error('The saved session could not be removed from this device.'); }
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -68,12 +71,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     (async () => {
-      const [t, u, g] = await Promise.all([secureGet(TOKEN_KEY), secureGet(USER_KEY), secureGet(GUEST_KEY)]);
-      if (t) setToken(t);
-      if (u) { try { setUser(JSON.parse(u)); } catch { /* ignore */ } }
-      if (!t && g === '1') { setIsGuest(true); setGuestMode(true); }
+      let [t,u,g,record]=await Promise.all([secureGet(TOKEN_KEY),secureGet(USER_KEY),secureGet(GUEST_KEY),secureGet(SESSION_KEY)]);if(record){try{const session=JSON.parse(record);t=typeof session.token==='string'?session.token:null;u=JSON.stringify(session.user)}catch{t=null;u=null}}
+      let restored:AuthUser|null=null;try{const value=u?JSON.parse(u):null;if(value&&typeof value.id==='string'&&value.id&&typeof value.email==='string')restored=value}catch{}
+      if(t&&restored){useStudyStore.getState().setScope(restored.id);setToken(t);setUser(restored);setGuestMode(false)}
+      else if(!t&&g==='1'){useStudyStore.getState().setScope('guest');setUser(GUEST_USER);setIsGuest(true);setGuestMode(true)}
+      else{useStudyStore.getState().setScope('guest');setGuestMode(false)}
       setBootstrapped(true);
-    })();
+    })().catch(()=>{setGuestMode(false);setBootstrapped(true)});
   }, []);
 
   const value = useMemo<AuthState>(
@@ -83,31 +87,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       bootstrapped,
       isGuest,
       signIn: async (t, u) => {
+        await secureSet(SESSION_KEY,JSON.stringify({token:t,user:u}));
         await queryClient.cancelQueries();
         queryClient.clear();
+        clearQuizResult();
+        useStudyStore.getState().setScope(u.id);
         setToken(t);
         setUser(u);
         setIsGuest(false);
         setGuestMode(false);
-        await Promise.all([secureSet(TOKEN_KEY, t), secureSet(USER_KEY, JSON.stringify(u)), secureDelete(GUEST_KEY)]);
+        await secureDelete(GUEST_KEY).catch(()=>{});
       },
       signInAsGuest: async () => {
+        await Promise.all([secureDelete(SESSION_KEY),secureDelete(TOKEN_KEY),secureDelete(USER_KEY)]);
+        await secureSet(GUEST_KEY,'1');
         await queryClient.cancelQueries();
         queryClient.clear();
+        clearQuizResult();
+        useStudyStore.getState().setScope('guest');
         setToken(null);
         setUser(GUEST_USER);
         setIsGuest(true);
         setGuestMode(true);
-        await Promise.all([secureDelete(TOKEN_KEY), secureDelete(USER_KEY), secureSet(GUEST_KEY, '1')]);
+
       },
       signOut: async () => {
+        await Promise.all([secureDelete(SESSION_KEY),secureDelete(TOKEN_KEY),secureDelete(USER_KEY),secureDelete(GUEST_KEY)]);
         await queryClient.cancelQueries();
         queryClient.clear();
+        clearQuizResult();
+        useStudyStore.getState().setScope('guest');
         setToken(null);
         setUser(null);
         setIsGuest(false);
         setGuestMode(false);
-        await Promise.all([secureDelete(TOKEN_KEY), secureDelete(USER_KEY), secureDelete(GUEST_KEY)]);
+
       },
     }),
     [token, user, bootstrapped, isGuest],

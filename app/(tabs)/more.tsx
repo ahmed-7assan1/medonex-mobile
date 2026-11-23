@@ -30,7 +30,7 @@ export default function MoreScreen() {
         {ITEMS.map((it) => {
           const Icon = it.icon;
           return (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={it.href}
               onPress={() => router.push(it.href as never)}
               style={({ pressed }) => [
@@ -44,7 +44,7 @@ export default function MoreScreen() {
             </Pressable>
           );
         })}
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={async () => { await signOut(); router.replace('/(auth)/login'); }}
           style={({ pressed }) => [
             styles.tile,

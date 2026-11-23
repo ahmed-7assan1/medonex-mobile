@@ -22,7 +22,7 @@ export function ForumTabs({ forums, activeId, onChange }: { forums: Forum[]; act
       {forums.map((forum) => {
         const isActive = forum.id === activeId;
         return (
-          <Pressable
+          <Pressable accessibilityRole="button"
             key={forum.id}
             onPress={() => onChange(forum.id)}
             style={[styles.tab, isActive && { backgroundColor: colors.muted }]}

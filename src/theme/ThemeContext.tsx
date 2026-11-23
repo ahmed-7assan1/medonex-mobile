@@ -1,28 +1,5 @@
-import React, { createContext, useContext, useMemo } from 'react';
-import { useColorScheme } from 'react-native';
-import { light, dark, radii, fonts, stLight, stDark, ThemeColors, StColors } from './tokens';
-
-interface Theme {
-  colors: ThemeColors;
-  st: StColors;
-  radii: typeof radii;
-  fonts: typeof fonts;
-  isDark: boolean;
-}
-
-const ThemeContext = createContext<Theme | null>(null);
-
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const scheme = useColorScheme();
-  const value = useMemo<Theme>(() => {
-    const isDark = scheme !== 'light';
-    return { colors: isDark ? dark : light, st: isDark ? stDark : stLight, radii, fonts, isDark };
-  }, [scheme]);
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
-}
-
-export function useTheme(): Theme {
-  const t = useContext(ThemeContext);
-  if (!t) throw new Error('useTheme must be used within ThemeProvider');
-  return t;
-}
+import React,{createContext,useContext,useEffect,useMemo,useState}from'react';import{Platform,useColorScheme}from'react-native';import*as SecureStore from'expo-secure-store';import{light,dark,radii,fonts,stLight,stDark,ThemeColors,StColors}from'./tokens';
+export type ThemeChoice='system'|'light'|'dark';interface Theme{colors:ThemeColors;st:StColors;radii:typeof radii;fonts:typeof fonts;isDark:boolean;themeChoice:ThemeChoice;setThemeChoice:(choice:ThemeChoice)=>void}
+const ThemeContext=createContext<Theme|null>(null);const key='medonex-app-theme';
+export function ThemeProvider({children}:{children:React.ReactNode}){const scheme=useColorScheme();const[themeChoice,setChoice]=useState<ThemeChoice>('system');useEffect(()=>{(async()=>{try{const value=Platform.OS==='web'?localStorage.getItem(key):await SecureStore.getItemAsync(key);if(value==='light'||value==='dark'||value==='system')setChoice(value)}catch{}})()},[]);const setThemeChoice=(choice:ThemeChoice)=>{setChoice(choice);if(Platform.OS==='web'){try{localStorage.setItem(key,choice)}catch{}}else SecureStore.setItemAsync(key,choice).catch(()=>{})};const value=useMemo<Theme>(()=>{const isDark=themeChoice==='system'?scheme!=='light':themeChoice==='dark';return{colors:isDark?dark:light,st:isDark?stDark:stLight,radii,fonts,isDark,themeChoice,setThemeChoice}},[scheme,themeChoice]);return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>}
+export function useTheme(){const theme=useContext(ThemeContext);if(!theme)throw Error('useTheme requires ThemeProvider');return theme}

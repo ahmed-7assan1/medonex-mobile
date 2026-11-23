@@ -18,7 +18,8 @@ interface FetchOptions extends RequestInit {
 async function authHeaders(custom?: HeadersInit): Promise<Headers> {
   const headers = new Headers({ 'Content-Type': 'application/json', Accept: 'application/json', ...(custom as object) });
   try {
-    const token = Platform.OS === 'web' ? globalThis.localStorage?.getItem('sessionToken') : await SecureStore.getItemAsync('sessionToken');
+    const record=Platform.OS==='web'?globalThis.localStorage?.getItem('authSessionV2'):await SecureStore.getItemAsync('authSessionV2');
+    const token=record?JSON.parse(record)?.token:(Platform.OS === 'web' ? globalThis.localStorage?.getItem('sessionToken') : await SecureStore.getItemAsync('sessionToken'));
     if (token) headers.set('Authorization', `Bearer ${token}`);
   } catch {
     // SecureStore unavailable (web preview) — proceed unauthenticated.
@@ -41,6 +42,24 @@ export async function apiFetch<T>(path: string, options: FetchOptions = {}): Pro
     const body = isJson ? await res.json() : await res.text();
     if (!res.ok) throw new ApiError(res.status, body);
     return body as T;
+  } catch (err) {
+    clearTimeout(timer);
+    throw err;
+  }
+}
+
+/** Read-only GET against an absolute website API path (e.g. /api/v1/admin/...),
+    used by the local admin console bridge. Never sends a body. */
+export async function apiGetAbsolute(path: string, timeoutMs = 12000): Promise<{ status: number; body: string }> {
+  if (isGuestMode()) return { status: 403, body: JSON.stringify({ error: 'Guest preview is local-only' }) };
+  const url = `${BASE}${path.startsWith('/') ? path : `/${path}`}`;
+  const headers = await authHeaders();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, { method: 'GET', headers, signal: controller.signal });
+    clearTimeout(timer);
+    return { status: res.status, body: await res.text() };
   } catch (err) {
     clearTimeout(timer);
     throw err;

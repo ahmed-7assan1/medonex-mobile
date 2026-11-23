@@ -1,98 +1,46 @@
-import React from 'react';
-import { View, Text, Pressable, ScrollView, StyleSheet, useWindowDimensions } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ArrowLeft, FileText, FileImage, FileVideo, Trash2, Download } from 'lucide-react-native';
-import { useTranslation } from 'react-i18next';
-import { useTheme } from '@/theme/ThemeContext';
-import { TABLET_BREAKPOINT, SCROLL_BOTTOM_PAD } from '@/theme/tokens';
-import { FIXTURE_DOWNLOADS } from '@/lib/fixtures';
-import { FadeEdges } from '@/components/FadeEdges';
+import{useStudentDimensions as useWindowDimensions}from'@/lib/student-viewport';
+import React,{useState} from 'react';
+import {View,Text,TextInput,Pressable,ScrollView,Modal,Alert} from 'react-native';
+import {useRouter} from 'expo-router';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {FileText,FileImage,FileVideo,FileCode,Trash2,Download,Search,X,BookOpen,Clock} from 'lucide-react-native';
+import {useTranslation} from 'react-i18next';
+import {useTheme} from '@/theme/ThemeContext';
+import {SCROLL_BOTTOM_PAD} from '@/theme/tokens';
+import {isFixtureMode} from '@/lib/fixtures';
+import {FIXTURE_DOWNLOADS} from '@/lib/fixtures';
+import {useStudyStore} from '@/lib/local-study-store';
+import {MobilePageHeader} from '@/components/MobilePageHeader';
+import{useOfflineDownloads,removeOfflineFile,openOfflineFile,clearOfflineFiles,type OfflineFile}from'@/lib/offline-downloads';
+import {FadeEdges} from '@/components/FadeEdges';
 
-const GROUP_ICONS: Record<string, any> = { PDF: FileText, IMAGE: FileImage, LECTURE: FileVideo, OTHER: FileText };
-
-/** /downloads — pixel match of the site's DownloadsClient: iOS-style grouped
- *  file rows (rounded-16 groups) with type icons, size + date, delete. */
-export default function DownloadsScreen() {
-  const { t } = useTranslation();
-  const { fonts, st } = useTheme();
-  const { width } = useWindowDimensions();
-  const isTablet = width >= TABLET_BREAKPOINT;
-  const insets = useSafeAreaInsets();
-  const router = useRouter();
-
-  const groups: { key: string; label: string }[] = [
-    { key: 'PDF', label: t('downloads.pdf') },
-    { key: 'IMAGE', label: t('downloads.image') },
-    { key: 'LECTURE', label: t('downloads.lecture') },
-  ];
-
-  return (
-    <View style={{ flex: 1, backgroundColor: st.bg }}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + SCROLL_BOTTOM_PAD }}>
-        <View style={{ width: '100%', maxWidth: 760, alignSelf: 'center', paddingHorizontal: isTablet ? 24 : 0 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: isTablet ? 0 : 16, paddingTop: insets.top + 14, paddingBottom: 18 }}>
-            <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => router.back()}
-              style={[styles.backBtn, { backgroundColor: st.surface, borderColor: st.border }]}>
-              <ArrowLeft size={18} color={st.muted} />
-            </Pressable>
-            <View style={{ flex: 1 }}>
-              <Text style={{ color: st.text, fontSize: 24, fontFamily: fonts.sansBold, letterSpacing: -0.5 }}>{t('downloads.title')}</Text>
-              <Text style={{ color: st.muted, fontSize: 12.5, fontFamily: fonts.sans, marginTop: 2 }}>{t('downloads.subtitle')}</Text>
-            </View>
-            <View style={[styles.countChip, { backgroundColor: st.surface, borderColor: st.border }]}>
-              <Download size={12} color={st.muted} />
-              <Text style={{ color: st.muted, fontSize: 11, fontFamily: fonts.sansBold }}>{FIXTURE_DOWNLOADS.length}</Text>
-            </View>
-          </View>
-
-          {groups.map((g) => {
-            const items = FIXTURE_DOWNLOADS.filter((d) => d.group === g.key);
-            if (!items.length) return null;
-            return (
-              <View key={g.key} style={{ marginBottom: 22, paddingHorizontal: isTablet ? 0 : 12 }}>
-                <Text style={{ color: st.muted, fontSize: 11, fontFamily: fonts.sansBold, letterSpacing: 1.4, textTransform: 'uppercase', marginBottom: 8, marginLeft: 8 }}>{g.label}</Text>
-                <View>
-                  {items.map((d, i) => {
-                    const Icon = GROUP_ICONS[d.group] ?? FileText;
-                    const n = items.length;
-                    const rad = {
-                      borderTopLeftRadius: i === 0 ? 16 : 4, borderTopRightRadius: i === 0 ? 16 : 4,
-                      borderBottomLeftRadius: i === n - 1 ? 16 : 4, borderBottomRightRadius: i === n - 1 ? 16 : 4,
-                    };
-                    return (
-                      <Pressable key={d.id} accessibilityRole="button"
-                        style={[styles.row, rad, { backgroundColor: st.surface, marginBottom: 2 }, isTablet && { borderRadius: 16, borderWidth: 1, borderColor: st.border, marginBottom: 10 }]}>
-                        <View style={[styles.fileIcon, { backgroundColor: st.bg }]}>
-                          <Icon size={19} color={st.muted} />
-                        </View>
-                        <View style={{ flex: 1 }}>
-                          <Text numberOfLines={1} style={{ color: st.text, fontSize: 14.5, fontFamily: fonts.sansBold }}>{d.name}</Text>
-                          <Text style={{ color: st.muted, fontSize: 11.5, fontFamily: fonts.sans, marginTop: 2 }}>{d.size} · {d.date}</Text>
-                        </View>
-                        <Pressable accessibilityRole="button" accessibilityLabel="Delete" hitSlop={8} style={{ padding: 8 }}>
-                          <Trash2 size={17} color={st.muted} />
-                        </Pressable>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              </View>
-            );
-          })}
-        </View>
-      </ScrollView>
-      {!isTablet && <FadeEdges bottom />}
-    </View>
-  );
+const GROUPS=[{key:'PDF',en:'PDF Files',ar:'ملفات PDF',icon:FileText},{key:'IMAGE',en:'Images',ar:'الصور',icon:FileImage},{key:'LECTURE',en:'Lecture Files',ar:'ملفات المحاضرات',icon:FileVideo},{key:'OTHER',en:'Other Files',ar:'ملفات أخرى',icon:FileCode}];
+type SampleFile=typeof FIXTURE_DOWNLOADS[number]|OfflineFile;
+export default function DownloadsScreen(){
+ const {i18n}=useTranslation();const ar=i18n.language==='ar';const {fonts,st}=useTheme();const {viewportWidth,width}=useWindowDimensions();const tablet=viewportWidth>=768;const insets=useSafeAreaInsets();const router=useRouter();
+ const removed=useStudyStore(s=>s.removedDownloadIds);const remove=useStudyStore(s=>s.removeDownload);const clear=useStudyStore(s=>s.clearDownloads);
+ const offline=useOfflineDownloads();
+ const failed=(error:unknown)=>Alert.alert('Offline files',error instanceof Error?error.message:'This file could not be opened.');
+ const open=(file:SampleFile)=>{if('storageId'in file)openOfflineFile(offline.scope,file).catch(failed);else setPreview(file)};
+ const removeFile=(file:SampleFile)=>{if(!('storageId'in file)){remove(file.id);return}Alert.alert('Remove offline copy?','The original lecture file will not be deleted.',[{text:'Cancel',style:'cancel'},{text:'Remove',style:'destructive',onPress:()=>{removeOfflineFile(offline.scope,file).then(()=>offline.refresh()).catch(failed)}}])};
+ const clearAll=()=>{if(isFixtureMode()){clear(FIXTURE_DOWNLOADS.map(d=>d.id));return}Alert.alert('Clear all offline copies?','This removes saved files from this account on this device, not the originals.',[{text:'Cancel',style:'cancel'},{text:'Clear all',style:'destructive',onPress:()=>{clearOfflineFiles(offline.scope).then(()=>offline.refresh()).catch(failed)}}])};
+ const [tab,setTab]=useState('ALL');const [query,setQuery]=useState('');const [preview,setPreview]=useState<SampleFile|null>(null);
+ const records=(isFixtureMode()?FIXTURE_DOWNLOADS:offline.data||[]).filter(d=>!isFixtureMode()||!removed.includes(d.id));const filtered=records.filter(d=>(tab==='ALL'||d.group===tab)&&d.name.toLowerCase().includes(query.trim().toLowerCase()));
+ const pillText=st.bg;const pillFill=st.text;
+ return <View style={{flex:1,backgroundColor:st.bg,paddingTop:insets.top}}>
+  <MobilePageHeader title={ar?'التنزيلات':'Downloads'}/>
+  <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} contentContainerStyle={{paddingHorizontal:tablet?32:16,paddingTop:tablet?28:12,paddingBottom:insets.bottom+SCROLL_BOTTOM_PAD,width:'100%',maxWidth:1024,alignSelf:'center'}}>
+   {tablet&&<View style={{marginBottom:32}}><Text style={{fontSize:24,color:st.text,fontFamily:fonts.sansBold}}>{ar?'تنزيلاتي':'My Downloads'}</Text><Text style={{fontSize:14,color:st.muted,marginTop:4}}>{records.length} {isFixtureMode()?(ar?'ملف تجريبي':'sample files'):(ar?'ملف محفوظ':'saved files')}</Text></View>}
+   <View style={{height:tablet?40:48,borderRadius:tablet?24:16,borderWidth:1,borderColor:st.border,backgroundColor:st.surface,paddingHorizontal:16,flexDirection:ar?'row-reverse':'row',alignItems:'center',gap:12}}><Search size={16} color={st.muted}/><TextInput accessibilityLabel={ar?'بحث التنزيلات':'Search downloads'} value={query} onChangeText={setQuery} placeholder={ar?'ابحث في التنزيلات...':'Search downloads...'} placeholderTextColor={st.muted} style={{flex:1,minWidth:0,fontSize:15,color:st.text,height:44,textAlign:ar?'right':'left'}}/>{!!query&&<Pressable accessibilityLabel={ar?'مسح البحث':'Clear search'} accessibilityRole="button" onPress={()=>setQuery('')} style={{padding:6}}><X size={14} color={st.muted}/></Pressable>}</View>
+   <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{gap:8,paddingTop:12,paddingBottom:4}}>{[{key:'ALL',en:'All',ar:'الكل'},...GROUPS.map(g=>({...g,en:g.key==='PDF'?'PDF':g.key==='LECTURE'?'Lectures':g.key==='OTHER'?'Other':g.en}))].map(t=><Pressable key={t.key} accessibilityRole="button" accessibilityState={{selected:tab===t.key}} onPress={()=>setTab(t.key)} style={{height:36,borderRadius:18,paddingHorizontal:16,justifyContent:'center',backgroundColor:tab===t.key?pillFill:st.surface,borderWidth:1,borderColor:st.border}}><Text style={{fontSize:11,fontFamily:fonts.sansBold,color:tab===t.key?pillText:st.muted}}>{ar?t.ar:t.en}</Text></Pressable>)}</ScrollView>
+   <Text style={{fontSize:11,color:st.muted,marginTop:12}}>{isFixtureMode()?(ar?'ملفات تجريبية للمعاينة، لم يتم تنزيل ملفات على الجهاز.':'Sample file previews. No files have been downloaded to this device.'):(ar?'الملفات دي محفوظة على الجهاز للحساب ده، من غير تعديل على بيانات الموقع.':'Offline copies on this device for this account. Website data is not changed.')}</Text>
+   {!isFixtureMode()&&!!offline.error&&<Pressable accessibilityRole="button" onPress={()=>offline.refetch()}><Text style={{color:'#ef4444',paddingVertical:18}}>Offline files could not load. Tap to retry.</Text></Pressable>}
+   {!isFixtureMode()&&offline.isLoading?<Text style={{color:st.muted,padding:24}}>Loading offline files...</Text>:filtered.length===0?<View style={{marginTop:32,paddingHorizontal:24,paddingVertical:56,borderRadius:16,backgroundColor:st.surface,borderWidth:1,borderColor:st.border,alignItems:'center'}}><View style={{width:56,height:56,borderRadius:28,backgroundColor:st.bg,alignItems:'center',justifyContent:'center',marginBottom:20}}><Download size={24} color={st.muted}/></View><Text style={{fontSize:12,letterSpacing:2,color:st.text,fontFamily:fonts.sansBold}}>{ar?'مفيش تنزيلات لسه':'NO DOWNLOADS YET'}</Text><Text style={{fontSize:13,lineHeight:20,color:st.muted,textAlign:'center',marginTop:8,maxWidth:280}}>{ar?'الملفات اللي بتنزلها من المحاضرات والمصادر هتظهر هنا':'Files you download from lectures and resources will appear here'}</Text><Pressable accessibilityRole="button" onPress={()=>router.push('/modules')} style={{height:44,marginTop:24,paddingHorizontal:20,borderRadius:22,backgroundColor:pillFill,flexDirection:'row',gap:8,alignItems:'center'}}><BookOpen size={16} color={pillText}/><Text style={{color:pillText,fontSize:16}}>{ar?'تصفح الموديولات':'Browse Modules'}</Text></Pressable></View>:<View style={{marginTop:16,gap:24}}>
+    {GROUPS.map(g=>{const items=filtered.filter(d=>d.group===g.key);if(!items.length)return null;return <View key={g.key}><View style={{flexDirection:'row',justifyContent:'space-between',paddingHorizontal:4,marginBottom:8}}><Text style={{fontSize:11,fontFamily:fonts.sansBold,letterSpacing:2,color:st.muted}}>{ar?g.ar:g.en.toUpperCase()}</Text><Text style={{fontSize:11,color:st.muted}}>{items.length}</Text></View>{items.map((d,i)=><View key={d.id} style={{minHeight:68,flexDirection:ar?'row-reverse':'row',gap:14,alignItems:'center',paddingHorizontal:16,paddingVertical:12,backgroundColor:st.surface,marginBottom:2,borderTopLeftRadius:i===0?16:4,borderTopRightRadius:i===0?16:4,borderBottomLeftRadius:i===items.length-1?16:4,borderBottomRightRadius:i===items.length-1?16:4}}><View style={{width:36,height:36,borderRadius:12,backgroundColor:st.bg,justifyContent:'center',alignItems:'center'}}><g.icon size={18} color={st.text}/></View><View style={{flex:1,minWidth:0}}><Text numberOfLines={2} style={{fontSize:16,color:st.text,fontFamily:fonts.sansMedium,lineHeight:21}}>{d.name}</Text><View style={{flexDirection:'row',gap:5,alignItems:'center',marginTop:4}}><Text style={{fontSize:11,color:st.muted}}>{d.size} ·</Text><Clock size={12} color={st.muted}/><Text style={{fontSize:11,color:st.muted}}>{'storageId'in d?new Date(d.date).toLocaleDateString():d.date}</Text></View></View><View style={{flexDirection:'row'}}><Pressable accessibilityRole="button" accessibilityLabel={`Preview ${d.name}`} onPress={()=>open(d)} style={{width:44,height:44,alignItems:'center',justifyContent:'center'}}><Download size={18} color={st.muted}/></Pressable><Pressable accessibilityRole="button" accessibilityLabel={`Remove ${d.name}`} onPress={()=>removeFile(d)} style={{width:44,height:44,alignItems:'center',justifyContent:'center'}}><Trash2 size={18} color="#ef4444"/></Pressable></View></View>)}</View>})}
+    <Pressable accessibilityRole="button" onPress={clearAll} style={{minHeight:58,paddingHorizontal:16,borderRadius:16,backgroundColor:st.surface,flexDirection:'row',alignItems:'center',gap:14}}><Trash2 size={22} color="#ef4444"/><Text style={{fontSize:17,color:'#ef4444'}}>{ar?'مسح الكل':'Clear All'}</Text></Pressable>
+   </View>}
+  </ScrollView>
+  {!tablet&&<FadeEdges top={false} bottom/>}
+  <Modal visible={!!preview} transparent animationType="slide" onRequestClose={()=>setPreview(null)}><View style={{flex:1,backgroundColor:'rgba(0,0,0,.6)',justifyContent:'flex-end'}}><Pressable style={{flex:1}} accessibilityRole="button" accessibilityLabel="Close preview" onPress={()=>setPreview(null)}/><View style={{backgroundColor:st.surface,borderTopLeftRadius:28,borderTopRightRadius:28,padding:24,paddingBottom:insets.bottom+32}}><Text style={{fontSize:18,fontFamily:fonts.sansBold,color:st.text}}>{ar?'معاينة تجريبية':'Sample preview'}</Text><Text style={{fontSize:16,color:st.text,marginTop:16}}>{preview?.name}</Text><Text style={{fontSize:14,color:st.muted,lineHeight:22,marginTop:12}}>{ar?'دي تجربة واجهة فقط. مفيش ملف حقيقي بيتحمّل ومفيش اتصال بالسيرفر.':'This is a local interface demo. No real file is downloaded and no server is contacted.'}</Text><Pressable accessibilityRole="button" onPress={()=>setPreview(null)} style={{backgroundColor:pillFill,borderRadius:22,height:44,alignItems:'center',justifyContent:'center',marginTop:24}}><Text style={{color:pillText,fontSize:15}}>{ar?'إغلاق':'Close'}</Text></Pressable></View></View></Modal>
+ </View>;
 }
-
-const styles = StyleSheet.create({
-  backBtn: { width: 38, height: 38, borderRadius: 19, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  countChip: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    borderRadius: 13, borderWidth: 1, paddingHorizontal: 11, paddingVertical: 6,
-  },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: 14, paddingVertical: 12 },
-  fileIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-});

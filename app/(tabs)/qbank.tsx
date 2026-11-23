@@ -1,6 +1,8 @@
+import{useStudentDimensions as useWindowDimensions}from'@/lib/student-viewport';
+import { ResourceState } from '@/components/ResourceState';
 import { MobilePageHeader } from '@/components/MobilePageHeader';
 import React, { useMemo, useState } from 'react';
-import { View, Text, TextInput, Pressable, ScrollView, RefreshControl, StyleSheet, useWindowDimensions } from 'react-native';
+import { View, Text, TextInput, Pressable, ScrollView, RefreshControl, StyleSheet, } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Search, X, FileText } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
@@ -19,8 +21,8 @@ export default function QBankScreen() {
   const { st, colors, fonts } = useTheme();
   const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
-  const isTablet = width >= TABLET_BREAKPOINT;
+  const {viewportWidth, width } = useWindowDimensions();
+  const isTablet = viewportWidth >= TABLET_BREAKPOINT;
   const router = useRouter();
   const papers = usePastPapers();
 
@@ -51,11 +53,13 @@ export default function QBankScreen() {
     }
   }, [filter, query, cards]);
 
+  if(!data) return <ResourceState error={papers.error} onRetry={()=>papers.refetch()} title="QBank"/>;
+
   const paperItems = filtered.filter((p) => p.kind !== 'lecture');
   const lectureItems = filtered.filter((p) => p.kind === 'lecture');
 
   const onStart = (p: QuizPaperCard) => {
-    const href = `/quiz/${p.id}`;
+    const href = p.kind==='lecture'?`/quiz/lecture/${p.id}`:`/quiz/${p.id}`;
     router.push(href as never);
   };
 
@@ -81,7 +85,7 @@ export default function QBankScreen() {
           style={[styles.searchInput, { color: st.text, fontFamily: fonts.sans }]}
         />
         {query.length > 0 && (
-          <Pressable onPress={() => setQuery('')} accessibilityLabel="Clear search">
+          <Pressable accessibilityRole="button" onPress={() => setQuery('')} accessibilityLabel="Clear search">
             <X size={16} color={st.muted} />
           </Pressable>
         )}

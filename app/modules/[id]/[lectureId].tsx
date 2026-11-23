@@ -1,0 +1,1 @@
+import React from'react';import{Redirect,useLocalSearchParams}from'expo-router';export default function LegacyLectureAlias(){const{id,lectureId}=useLocalSearchParams<{id:string;lectureId:string}>();return <Redirect href={{pathname:'/modules/[id]/lectures/[lectureId]',params:{id:id||'',lectureId:lectureId||''}}}/> }

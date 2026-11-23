@@ -1,7 +1,9 @@
+import{useStudentDimensions as useWindowDimensions}from'@/lib/student-viewport';
+import { ResourceState } from '@/components/ResourceState';
 import React, { useMemo, useState } from 'react';
 import {
   View, Text, Pressable, ScrollView, StyleSheet,
-  useWindowDimensions, RefreshControl,
+  RefreshControl,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -56,14 +58,14 @@ export default function SubjectLecturesScreen() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { width } = useWindowDimensions();
-  const isTablet = width >= TABLET_BREAKPOINT;
+  const {viewportWidth, width } = useWindowDimensions();
+  const isTablet = viewportWidth >= TABLET_BREAKPOINT;
   const bundle = useModuleBundle(moduleId ?? '');
   const [activeTab, setActiveTab] = useState<'lectures' | 'practical'>('lectures');
 
   // Pages phase: fixtures stand in for live data until wiring (Ahmed, 22 Nov).
   const failed = bundle.error instanceof ApiError;
-  const mod = (bundle.data ?? (failed ? FIXTURE_MODULE_BUNDLE : undefined))?.module;
+  const mod = bundle.data?.module;
   const subject = mod?.subjects.find((s) => s.id === subjectId);
 
   const { lectures, practicalLectures } = useMemo(() => {
@@ -84,9 +86,11 @@ export default function SubjectLecturesScreen() {
   const current = activeTab === 'practical' ? practicalLectures : lectures;
   const practical = activeTab === 'practical';
 
+  if(!subject)return <ResourceState error={bundle.error} notFound={Boolean(mod)} onRetry={()=>bundle.refetch()} title="Lectures"/>;
+
   const header = (
     <View style={styles.titleRow}>
-      <Pressable
+      <Pressable accessibilityRole="button"
         onPress={() => (router.canGoBack() ? router.back() : router.replace(`/modules/${moduleId}` as never))}
         hitSlop={12}
         style={[styles.backBtn, { backgroundColor: st.surface, borderColor: st.border }]}
@@ -118,11 +122,11 @@ export default function SubjectLecturesScreen() {
         {/* Desktop header card */}
         <View style={[styles.deskHeader, { backgroundColor: st.surface, borderColor: st.border }]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 14 }}>
-            <Pressable onPress={() => router.push('/(tabs)/modules' as never)}>
+            <Pressable accessibilityRole="button" onPress={() => router.push('/(tabs)/modules' as never)}>
               <Text style={{ color: st.muted, fontSize: 9, fontWeight: '800', letterSpacing: 1.5, textTransform: 'uppercase' }}>Hub</Text>
             </Pressable>
             <ChevronRight size={8} color={st.muted} />
-            <Pressable onPress={() => router.push(`/modules/${moduleId}` as never)}>
+            <Pressable accessibilityRole="button" onPress={() => router.push(`/modules/${moduleId}` as never)}>
               <Text numberOfLines={1} style={{ color: st.muted, fontSize: 9, fontWeight: '800', letterSpacing: 1.5, textTransform: 'uppercase', maxWidth: 140 }}>
                 {mod?.name}
               </Text>
@@ -158,7 +162,7 @@ export default function SubjectLecturesScreen() {
 
         {/* Tab pills */}
         <View style={[styles.deskTabs, { backgroundColor: st.surface, borderColor: st.border }]}>
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => setActiveTab('lectures')}
             style={[styles.deskTab, activeTab === 'lectures' && { backgroundColor: colors.primary }]}
           >
@@ -168,7 +172,7 @@ export default function SubjectLecturesScreen() {
             </Text>
           </Pressable>
           {hasPractical && (
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={() => setActiveTab('practical')}
               style={[styles.deskTab, activeTab === 'practical' && { backgroundColor: '#4F46E5' }]}
             >
@@ -212,7 +216,7 @@ export default function SubjectLecturesScreen() {
         ) : (
           <View style={styles.deskGrid}>
             {current.map((lecture, idx) => (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 key={lecture.id}
                 onPress={() => router.push(`/modules/${moduleId}/lectures/${lecture.id}` as never)}
                 style={({ pressed }) => [
@@ -246,7 +250,7 @@ export default function SubjectLecturesScreen() {
         {/* Capsule switcher */}
         {hasPractical && (
           <View style={[styles.switcher, { backgroundColor: st.surfacePressed }]}>
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={() => setActiveTab('lectures')}
               style={[styles.switcherBtn, activeTab === 'lectures' && { backgroundColor: st.surface }]}
             >
@@ -258,7 +262,7 @@ export default function SubjectLecturesScreen() {
                 {lectures.length}
               </Text>
             </Pressable>
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={() => setActiveTab('practical')}
               style={[styles.switcherBtn, activeTab === 'practical' && { backgroundColor: st.surface }]}
             >
@@ -296,7 +300,7 @@ export default function SubjectLecturesScreen() {
             {current.map((lecture, idx) => {
               const LectureIcon = practical ? Microscope : PlayCircle;
               return (
-                <Pressable
+                <Pressable accessibilityRole="button"
                   key={lecture.id}
                   onPress={() => router.push(`/modules/${moduleId}/lectures/${lecture.id}` as never)}
                   style={({ pressed }) => [

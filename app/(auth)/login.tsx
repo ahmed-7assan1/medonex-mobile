@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, ActivityIndicator, StyleSheet } from 'react-native';
-import { Redirect, useRouter } from 'expo-router';
+import { Redirect, useRouter, useLocalSearchParams } from 'expo-router';
+import {lectureSignInReturn} from '@/lib/lecture-sign-in';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme/ThemeContext';
@@ -15,12 +16,15 @@ export default function LoginScreen() {
   const { colors, fonts } = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const params=useLocalSearchParams<{upgrade?:string;next?:string}>();
+  const returnPath=lectureSignInReturn(params.next)??'/(tabs)';
   const { token, bootstrapped, isGuest, signIn, signInAsGuest } = useAuth();
   const google = useGoogleSignIn();
   const [error, setError] = useState<string | null>(null);
 
-  if (bootstrapped && (token || isGuest)) {
-    return <Redirect href="/(tabs)" />;
+  const upgradingGuest=isGuest&&params.upgrade==='1';
+  if (bootstrapped && (token || (isGuest&&!upgradingGuest))) {
+    return <Redirect href={(token?returnPath:'/(tabs)') as never} />;
   }
 
   const onGoogle = async () => {
@@ -28,7 +32,7 @@ export default function LoginScreen() {
     try {
       const { token: tkn, user } = await google.signIn();
       await signIn(tkn, user);
-      router.replace('/(tabs)');
+      router.replace(returnPath as never);
     } catch (e) {
       if (e instanceof ExchangeError && e.code === 'config-missing') {
         setError(t('auth.configMissing'));
@@ -89,6 +93,7 @@ export default function LoginScreen() {
           accessibilityRole="button"
           disabled={google.busy}
           onPress={async () => {
+            if(upgradingGuest){router.canGoBack()?router.back():router.replace(returnPath as never);return;}
             await signInAsGuest();
             router.replace('/(tabs)');
           }}

@@ -2,7 +2,7 @@
   "expo": {
     "name": "MedOneX",
     "slug": "medonex-mobile",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "medonex",
@@ -41,7 +41,8 @@
       "expo-font",
       "expo-secure-store",
       "expo-updates",
-      "expo-localization"
+      "expo-localization",
+      "expo-asset"
     ],
     "extra": {
       "apiBase": "https://www.medonex.me",

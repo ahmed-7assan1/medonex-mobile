@@ -1,6 +1,11 @@
-import { useQuery } from '@tanstack/react-query';
-import { apiV1, ApiError } from './api';
-import { FIXTURE_CATALOG, FIXTURE_MODULE_BUNDLE, isFixtureMode } from './fixtures';
+import { useLiveEnabled } from "./query-mode";
+import { useQuery } from "@tanstack/react-query";
+import { apiV1, ApiError } from "./api";
+import {
+  FIXTURE_CATALOG,
+  FIXTURE_MODULE_BUNDLE,
+  isFixtureMode,
+} from "./fixtures";
 
 /** /api/v1/modules/catalog response (MedQs0 catalog-types.ts). */
 export interface ModuleWithStats {
@@ -17,7 +22,12 @@ export interface CatalogView {
   hasAnyModules: boolean;
   inProgressStats: ModuleWithStats[];
   completedStats: ModuleWithStats[];
-  semesterGroups: { semesterId: string; name: string; yearNumber: number; modules: ModuleWithStats[] }[];
+  semesterGroups: {
+    semesterId: string;
+    name: string;
+    yearNumber: number;
+    modules: ModuleWithStats[];
+  }[];
   totalModules: number;
   totalLectures: number;
   totalQuestions: number;
@@ -33,15 +43,18 @@ export interface ModulesCatalogResponse {
   continueHref: string | null;
 }
 
-export function useModulesCatalog() {
+export function useModulesCatalog(enabled = true) {
   const q = useQuery({
-    queryKey: ['modules-catalog'],
-    queryFn: () => isFixtureMode() ? Promise.resolve(FIXTURE_CATALOG) : apiV1.get<ModulesCatalogResponse>('/modules/catalog'),
+    queryKey: ["modules-catalog"],
+    queryFn: () =>
+      isFixtureMode()
+        ? Promise.resolve(FIXTURE_CATALOG)
+        : apiV1.get<ModulesCatalogResponse>("/modules/catalog"),
     staleTime: 5 * 60 * 1000,
-    enabled: !isFixtureMode(),
+    enabled: useLiveEnabled() && enabled,
   });
-  // Pages phase: show fixture content when the backend is unreachable.
-  return { ...q, data: isFixtureMode() ? FIXTURE_CATALOG : q.data ?? (q.isError ? FIXTURE_CATALOG : q.data) };
+  // Only guest mode uses samples. Account errors remain explicit.
+  return { ...q, data: isFixtureMode() ? FIXTURE_CATALOG : q.data };
 }
 
 /** GET /api/v1/modules/[moduleId]/bundle response (MedQs0 bundle route). */
@@ -78,11 +91,21 @@ export interface ModuleBundle {
 
 export function useModuleBundle(moduleId: string) {
   const q = useQuery({
-    queryKey: ['module-bundle', moduleId],
-    queryFn: () => isFixtureMode() ? Promise.resolve(FIXTURE_MODULE_BUNDLE) : apiV1.get<ModuleBundle>(`/modules/${encodeURIComponent(moduleId)}/bundle`),
-    enabled: !isFixtureMode(),
+    queryKey: ["module-bundle", moduleId],
+    queryFn: () =>
+      isFixtureMode()
+        ? Promise.resolve(FIXTURE_MODULE_BUNDLE)
+        : apiV1.get<ModuleBundle>(
+            `/modules/${encodeURIComponent(moduleId)}/bundle`
+          ),
+    enabled: useLiveEnabled(),
     staleTime: 5 * 60 * 1000,
-    retry: (count, err) => !(err instanceof Error && 'status' in err && (err as { status: number }).status === 401) && count < 2,
+    retry: (count, err) =>
+      !(
+        err instanceof Error &&
+        "status" in err &&
+        (err as { status: number }).status === 401
+      ) && count < 2,
   });
   return { ...q, data: isFixtureMode() ? FIXTURE_MODULE_BUNDLE : q.data };
 }

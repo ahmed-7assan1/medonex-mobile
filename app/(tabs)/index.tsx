@@ -1,5 +1,7 @@
+import{useStudentDimensions as useWindowDimensions}from'@/lib/student-viewport';
+import { ResourceState } from '@/components/ResourceState';
 import React, { useMemo, useState } from 'react';
-import { View, Text, ScrollView, RefreshControl, StyleSheet, useWindowDimensions } from 'react-native';
+import { View, Text, ScrollView, RefreshControl, StyleSheet, } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -21,8 +23,8 @@ export default function HomeScreen() {
   const { st } = useTheme();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
-  const isTablet = width >= TABLET_BREAKPOINT;
+  const {viewportWidth, width } = useWindowDimensions();
+  const isTablet = viewportWidth >= TABLET_BREAKPOINT;
   const router = useRouter();
   const home = useHome();
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -49,6 +51,8 @@ export default function HomeScreen() {
     const target = data?.dailyTarget ?? 50;
     return { done, target, pct: target > 0 ? (done / target) * 100 : 0 };
   }, [data]);
+
+  if(!data) return <ResourceState error={home.error} onRetry={()=>home.refetch()} title="Home"/>;
 
   if (isTablet) {
     return <TabletHome />;

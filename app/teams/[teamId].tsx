@@ -1,18 +1,23 @@
+import{useStudentDimensions as useWindowDimensions}from'@/lib/student-viewport';
 import React, { useState } from 'react';
 import {
-  View, Text, Pressable, ScrollView, StyleSheet, useWindowDimensions,
+  View, Text, Pressable, ScrollView, StyleSheet, Image,Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   ArrowLeft, Users, ShieldCheck, CheckCircle2, MoreHorizontal, Activity,
-  BookOpen, Plus, UserMinus,
+  BookOpen, Plus, UserMinus,MessageSquare,
 } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme/ThemeContext';
 import { TABLET_BREAKPOINT, SCROLL_BOTTOM_PAD } from '@/theme/tokens';
 import { FIXTURE_TEAMS, FIXTURE_TEAM_MEMBERS, FIXTURE_TEAM_POSTS } from '@/lib/fixtures';
+import {useTeam} from '@/lib/teams';
+import {ResourceState} from '@/components/ResourceState';
+import {FadeEdges} from '@/components/FadeEdges';
+import {isFixtureMode} from '@/lib/fixtures';
 import { PostCard } from '@/components/social/PostCard';
 
 type TabId = 'feed' | 'tasks' | 'flashcards' | 'leaderboard' | 'members';
@@ -28,13 +33,18 @@ export default function TeamProfileScreen() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { width } = useWindowDimensions();
-  const isTablet = width >= TABLET_BREAKPOINT;
+  const {viewportWidth, width } = useWindowDimensions();
+  const isTablet = viewportWidth >= TABLET_BREAKPOINT;
 
-  const team = FIXTURE_TEAMS.find((tm) => tm.id === teamId) ?? FIXTURE_TEAMS[0];
+  const resource=useTeam(teamId??'');
+  const team = resource.data?.team;
   const [tab, setTab] = useState<TabId>('feed');
   const [following, setFollowing] = useState(false);
-  const [members, setMembers] = useState(FIXTURE_TEAM_MEMBERS);
+  const members=resource.data?.members??[];
+  const readOnly=()=>Alert.alert('Read-only preview','No changes have been saved. Manage team membership on the website.');
+  if(!team)return <ResourceState error={resource.error} notFound={resource.notFound} onRetry={()=>resource.refetch()} title={t('teams.title')}/>;
+  const displayedFollowing=isFixtureMode()?following:Boolean(team.isFollowing);
+  const canManage=isFixtureMode()||team.myRole==='ADMIN'||team.myRole==='LEADER';
 
   const initials = (name: string) =>
     name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase();
@@ -51,7 +61,7 @@ export default function TeamProfileScreen() {
     <View style={[styles.root, { backgroundColor: st.bg }]}>
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + SCROLL_BOTTOM_PAD }}>
         {/* Cover */}
-        <View style={[styles.cover, { backgroundColor: colors.muted + '66' }]}>
+        <View style={[styles.cover, { backgroundColor: colors.muted + '66' }]}>{!!team.coverUrl&&<Image source={{uri:team.coverUrl}} style={StyleSheet.absoluteFill}/>}
           <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.primary + '14' }]} />
           <LinearGradient
             pointerEvents="none"
@@ -73,7 +83,7 @@ export default function TeamProfileScreen() {
           {!isTablet && (
             <View style={[styles.statsRowMobile, { borderBottomColor: st.border }]}>
               {[
-                { label: t('teams.followers'), value: team.followersCount + (following ? 1 : 0) },
+                { label: t('teams.followers'), value: team.followersCount + (isFixtureMode()&&following ? 1 : 0) },
                 { label: t('teams.lectures'), value: team.lectures },
                 { label: t('teams.posts'), value: team.posts },
               ].map((s, i) => (
@@ -91,7 +101,7 @@ export default function TeamProfileScreen() {
           {/* Profile header */}
           <View style={[styles.profileHead, isTablet ? styles.profileHeadTablet : styles.profileHeadMobile]}>
             <View style={[styles.avatar, { backgroundColor: colors.primary + '1A', borderColor: st.bg }]}>
-              <Text style={{ color: colors.primary, fontSize: 44, fontFamily: fonts.display }}>{initials(team.name)}</Text>
+              <Text style={{ color: colors.primary, fontSize: 44, fontFamily: fonts.display }}>{initials(team.name)}</Text>{!!team.imageUrl&&<Image source={{uri:team.imageUrl}} style={StyleSheet.absoluteFill}/>}
             </View>
             <View style={{ flex: 1, gap: 12 }}>
               <View>
@@ -107,17 +117,17 @@ export default function TeamProfileScreen() {
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityState={{ selected: following }}
-                  onPress={() => setFollowing((f) => !f)}
+                  accessibilityState={{ selected: displayedFollowing }}
+                  onPress={()=>isFixtureMode()?setFollowing(f=>!f):readOnly()}
                   style={[
                     styles.followBtn,
-                    following
+                    displayedFollowing
                       ? { backgroundColor: st.surface, borderColor: st.border, borderWidth: 1 }
                       : { backgroundColor: colors.primary },
                   ]}
                 >
-                  <Text style={{ color: following ? st.text : colors.primaryForeground, fontSize: 12, fontFamily: fonts.sansBold, letterSpacing: 1.4, textTransform: 'uppercase' }}>
-                    {following ? t('teams.following') : t('teams.followTeam')}
+                  <Text style={{ color: displayedFollowing ? st.text : colors.primaryForeground, fontSize: 12, fontFamily: fonts.sansBold, letterSpacing: 1.4, textTransform: 'uppercase' }}>
+                    {displayedFollowing ? t('teams.following') : t('teams.followTeam')}
                   </Text>
                 </Pressable>
                 <Pressable accessibilityRole="button" accessibilityLabel="More" style={[styles.moreBtn, { backgroundColor: st.surface, borderColor: st.border }]}>
@@ -160,9 +170,7 @@ export default function TeamProfileScreen() {
           {/* Panes */}
           {tab === 'feed' && (
             <View style={{ gap: 16, marginTop: 24 }}>
-              {FIXTURE_TEAM_POSTS.map((p) => (
-                <PostCard key={p.id} post={p as never} />
-              ))}
+              <View style={[styles.paneEmpty,{backgroundColor:st.surface,borderColor:st.border}]}><MessageSquare size={64} color={st.muted+'33'} style={{marginBottom:24}}/><Text style={{color:st.muted,fontSize:14,fontFamily:fonts.sansBold,letterSpacing:2,textAlign:'center'}}>NO FEED ACTIVITY FOUND YET</Text></View>
             </View>
           )}
 
@@ -195,14 +203,14 @@ export default function TeamProfileScreen() {
                 </Text>
               </View>
               <View style={{ gap: 12 }}>
-                {members.map((m, idx) => (
+                {members.filter(m=>isFixtureMode()||typeof m.points==='number').sort((a,b)=>(b.points??0)-(a.points??0)).map((m, idx) => (
                   <View key={m.userId} style={[styles.rankRow, { backgroundColor: colors.muted + '4D' }]}>
                     <Text style={{ color: colors.primary, fontSize: 14, fontFamily: fonts.sansBold, width: 24 }}>#{idx + 1}</Text>
                     <View style={[styles.rankAvatar, { backgroundColor: colors.primary + '1A' }]}>
                       <Text style={{ color: colors.primary, fontSize: 12, fontFamily: fonts.sansBold }}>{initials(m.name)}</Text>
                     </View>
                     <Text style={{ color: st.text, fontSize: 14, fontFamily: fonts.sansMedium, flex: 1 }}>{m.name}</Text>
-                    <Text style={{ color: st.muted, fontSize: 12, fontFamily: fonts.sansBold }}>{(members.length - idx) * 120} {t('teams.pts')}</Text>
+                    <Text style={{ color: st.muted, fontSize: 12, fontFamily: fonts.sansBold }}>{m.points??100+((idx*137)%400)} {t('teams.pts')}</Text>
                   </View>
                 ))}
               </View>
@@ -211,10 +219,10 @@ export default function TeamProfileScreen() {
 
           {tab === 'members' && (
             <View style={{ gap: 12, marginTop: 24 }}>
-              <Pressable accessibilityRole="button" style={[styles.addMember, { borderColor: st.border }]}>
+              {canManage&&<Pressable accessibilityRole="button" onPress={readOnly} style={[styles.addMember, { borderColor: st.border }]}>
                 <Plus size={16} color={st.muted} />
                 <Text style={{ color: st.muted, fontSize: 14, fontFamily: fonts.sansBold }}>{t('teams.addMember')}</Text>
-              </Pressable>
+              </Pressable>}
               {members.map((m) => (
                 <View key={m.userId} style={[styles.memberRow, { backgroundColor: st.surface, borderColor: st.border }]}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
@@ -228,11 +236,11 @@ export default function TeamProfileScreen() {
                       </View>
                     </View>
                   </View>
-                  {m.role !== 'LEADER' && (
+                  {canManage&&m.role !== 'LEADER' && (
                     <Pressable
                       accessibilityRole="button"
                       accessibilityLabel="Remove member"
-                      onPress={() => setMembers((ms) => ms.filter((x) => x.userId !== m.userId))}
+                      onPress={readOnly}
                       style={[styles.removeBtn, { backgroundColor: 'rgba(239,68,68,0.10)' }]}
                     >
                       <UserMinus size={16} color="#EF4444" />
@@ -244,6 +252,7 @@ export default function TeamProfileScreen() {
           )}
         </View>
       </ScrollView>
+      {!isTablet&&<FadeEdges bottom/>}
     </View>
   );
 }

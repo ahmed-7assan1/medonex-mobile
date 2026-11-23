@@ -1,3 +1,4 @@
+import { useLiveEnabled } from './query-mode';
 import { useQuery } from '@tanstack/react-query';
 import { api } from './api';
 import { FIXTURE_HOME, isFixtureMode } from './fixtures';
@@ -60,10 +61,10 @@ export function useHome() {
     queryKey: ['home'],
     queryFn: () => isFixtureMode() ? Promise.resolve(FIXTURE_HOME) : api.get<HomeData>('/home'),
     staleTime: 5 * 60 * 1000,
-    enabled: !isFixtureMode(),
+    enabled: useLiveEnabled(),
   });
   // Pages phase: show fixture content when the backend is unreachable.
-  return { ...q, data: isFixtureMode() ? FIXTURE_HOME : q.data ?? (q.isError ? FIXTURE_HOME : q.data) };
+  return { ...q, data: isFixtureMode() ? FIXTURE_HOME : q.data };
 }
 
 export function firstNameOf(name: string | null | undefined, email?: string): string {
