@@ -1,8 +1,8 @@
 {
   "latestVersion": "1.0.8",
   "minSupportedVersion": "1.0.8",
-  "apkUrl": "",
-  "sizeBytes": 0,
+  "apkUrl": "https://expo.dev/artifacts/eas/gxfzlXx53gQOs0JH3UA6fGUMAZ_jMMEMAL-RNeesfrg.apk",
+  "sizeBytes": 124566592,
   "changelog": {
     "en": [
       "Fixes a crash when opening lecture flashcards",
