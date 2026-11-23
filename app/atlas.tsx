@@ -1,8 +1,9 @@
 import{useStudentDimensions as useWindowDimensions}from'@/lib/student-viewport';
 import React, { useMemo, useState } from 'react';
 import {
-  View, Text, Pressable, ScrollView, TextInput, StyleSheet, Image,Alert,Linking,Modal,ActivityIndicator,
+  View, Text, Pressable, ScrollView, TextInput, StyleSheet, Image,Alert,Linking,ActivityIndicator,
 } from 'react-native';
+import { Sheet } from '@/components/Sheet';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -59,7 +60,7 @@ export default function AtlasScreen() {
 
   const resource=useAtlas();const systems=resource.data?.systems??[];const structures=resource.data?.structures??[];
   const readOnly=()=>Alert.alert('Read-only account feature','No changes were saved. Open the website to edit your Atlas notes and bookmarks.',[{text:'Cancel',style:'cancel'},{text:'Open website',onPress:()=>Linking.openURL('https://www.medonex.me/atlas')}]);
-  const actionModal=<Modal visible={!!action} transparent animationType="slide" onRequestClose={()=>setAction(null)}><View style={{flex:1,backgroundColor:'rgba(0,0,0,.65)',justifyContent:'flex-end'}}><Pressable accessibilityRole="button" style={{flex:1}} onPress={()=>setAction(null)} accessibilityLabel="Close Atlas action"/><View style={{backgroundColor:CARD,padding:24,paddingBottom:insets.bottom+32,borderTopLeftRadius:28,borderTopRightRadius:28,gap:18}}><Text style={{color:'#fff',fontSize:20,fontFamily:fonts.sansBold}}>{action}</Text><Text style={{color:'rgba(255,255,255,.65)',fontSize:14,lineHeight:22}}>This feature uses an AI provider on the website. This version does not send AI requests or use credits. No quiz questions or medical answers are fabricated.</Text><Pressable accessibilityRole="button" onPress={()=>Linking.openURL('https://www.medonex.me/atlas')} style={{backgroundColor:CYAN,padding:16,borderRadius:22,alignItems:'center'}}><Text style={{color:'#000'}}>Open website</Text></Pressable><Pressable accessibilityRole="button" onPress={()=>setAction(null)}><Text style={{color:'#fff',textAlign:'center'}}>Close</Text></Pressable></View></View></Modal>;
+  const actionModal=<Sheet visible={!!action} autoHeight onClose={()=>setAction(null)}><View style={{backgroundColor:CARD,padding:24,paddingBottom:insets.bottom+32,gap:18}}><Text style={{color:'#fff',fontSize:20,fontFamily:fonts.sansBold}}>{action}</Text><Text style={{color:'rgba(255,255,255,.65)',fontSize:14,lineHeight:22}}>This feature uses an AI provider on the website. This version does not send AI requests or use credits. No quiz questions or medical answers are fabricated.</Text><Pressable accessibilityRole="button" onPress={()=>Linking.openURL('https://www.medonex.me/atlas')} style={{backgroundColor:CYAN,padding:16,borderRadius:22,alignItems:'center'}}><Text style={{color:'#000'}}>Open website</Text></Pressable><Pressable accessibilityRole="button" onPress={()=>setAction(null)}><Text style={{color:'#fff',textAlign:'center'}}>Close</Text></Pressable></View></Sheet>;
   const activeSystemData = systems.find((s) => s.systemId === activeSystem) ?? null;
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();

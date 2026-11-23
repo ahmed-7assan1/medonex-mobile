@@ -22,21 +22,33 @@ export function Sheet({
   visible,
   onClose,
   heightFraction = 0.7,
+  autoHeight = false,
+  maxHeightFraction = 0.86,
   center = false,
   testID,
+  floating,
   children,
 }: {
   visible: boolean;
   onClose: () => void;
   /** Mobile bottom-sheet height as a fraction of the window. */
   heightFraction?: number;
+  /** Size the sheet to its content instead of a fixed fraction. */
+  autoHeight?: boolean;
+  /** Cap for autoHeight sheets, as a fraction of the window. */
+  maxHeightFraction?: number;
   /** Desktop presentation: centered dialog (opacity+scale) instead of a sheet. */
   center?: boolean;
   testID?: string;
+  /** Rendered above the backdrop and sheet (e.g. floating action buttons). */
+  floating?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const { height: windowHeight, width } = useWindowDimensions();
-  const sheetHeight = Math.round(windowHeight * heightFraction);
+  const [measured, setMeasured] = useState(0);
+  const sheetHeight = autoHeight
+    ? Math.max(measured, 1)
+    : Math.round(windowHeight * heightFraction);
   const [rendered, setRendered] = useState(visible);
   const backdrop = useRef(new Animated.Value(visible ? 1 : 0)).current;
   // 0 = open, 1 = fully off-screen (fraction of the sheet height).
@@ -144,6 +156,11 @@ export function Sheet({
         </Pressable>
         <Animated.View
           testID={testID}
+          onLayout={(e) => {
+            if (!autoHeight) return;
+            const h = e.nativeEvent.layout.height;
+            if (h > 0 && h !== measured) setMeasured(h);
+          }}
           style={
             center
               ? {
@@ -158,14 +175,16 @@ export function Sheet({
               : {
                   width: "100%",
                   maxWidth: width >= 768 ? 640 : "100%",
-                  height: sheetHeight,
+                  ...(autoHeight
+                    ? { maxHeight: Math.round(windowHeight * maxHeightFraction) }
+                    : { height: sheetHeight }),
                   borderTopLeftRadius: 28,
                   borderTopRightRadius: 28,
                   transform: [{ translateY }],
                 }
           }
         >
-          <View style={{ flex: 1, overflow: "hidden", borderRadius: center ? 28 : 0, borderTopLeftRadius: 28, borderTopRightRadius: 28 }}>
+          <View style={{ flex: autoHeight ? undefined : 1, overflow: "hidden", borderRadius: center ? 28 : 0, borderTopLeftRadius: 28, borderTopRightRadius: 28 }}>
             {children}
           </View>
           {!center && (
@@ -175,6 +194,7 @@ export function Sheet({
             />
           )}
         </Animated.View>
+        {floating}
       </View>
     </Modal>
   );

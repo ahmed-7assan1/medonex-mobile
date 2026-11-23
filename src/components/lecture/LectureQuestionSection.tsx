@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
   Animated,
-  Modal,
+
   PanResponder,
   Platform,
   Pressable,
@@ -33,6 +33,7 @@ import { lectureTitleCase } from "@/lib/lecture-format";
 import { SCROLL_BOTTOM_PAD } from "@/theme/tokens";
 import { ResourceState } from "@/components/ResourceState";
 import { FadeEdges } from "@/components/FadeEdges";
+import { Sheet } from "@/components/Sheet";
 import { FloatingStudentHeader } from "@/components/FloatingStudentHeader";
 import { QuizQuestionContent } from "@/components/quiz/WebsiteQuestionContent";
 const shareIcon = require("../../../assets/lecture-share-icon.json")
@@ -728,41 +729,32 @@ export function LectureQuestionPractice({
         }}
       >
         {buttons}
-        {navigatorOpen && (
-          <Modal
-            visible
-            transparent
-            animationType="none"
-            onRequestClose={() => setNavigatorOpen(false)}
+        <Sheet
+          visible={navigatorOpen}
+          autoHeight
+          maxHeightFraction={0.85}
+          onClose={() => setNavigatorOpen(false)}
+          floating={
+            navigatorOpen ? (
+              <View
+                pointerEvents="box-none"
+                style={{ position: "absolute", left: 0, right: 0, bottom: 0 }}
+              >
+                <FadeEdges top={false} />
+                {buttons}
+              </View>
+            ) : undefined
+          }
+        >
+          <View
+            accessibilityViewIsModal
+            accessibilityRole="summary"
+            accessibilityLabel="Jump to question"
+            style={{
+              backgroundColor: st.surface,
+              paddingBottom: 64 + insets.bottom,
+            }}
           >
-            <View
-              pointerEvents="box-none"
-              style={{ flex: 1, justifyContent: "flex-end" }}
-            >
-              {navigatorOpen && (
-                <>
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel="Close question navigator backdrop"
-                    onPress={() => setNavigatorOpen(false)}
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      backgroundColor: isDark ? "#00000099" : "#00000066",
-                    }}
-                  />
-                  <View
-                    accessibilityViewIsModal
-                    accessibilityRole="summary"
-                    accessibilityLabel="Jump to question"
-                    style={{
-                      maxHeight: "85%",
-                      borderTopLeftRadius: 24,
-                      borderTopRightRadius: 24,
-                      backgroundColor: st.surface,
-                      paddingBottom: 64 + insets.bottom,
-                    }}
-                  >
                     <View
                       style={{
                         width: 40,
@@ -805,18 +797,8 @@ export function LectureQuestionPractice({
                     >
                       {cells(true)}
                     </ScrollView>
-                  </View>
-                </>
-              )}
-              <View
-                style={{ position: "absolute", left: 0, right: 0, bottom: 0 }}
-              >
-                <FadeEdges top={false} />
-                {buttons}
-              </View>
-            </View>
-          </Modal>
-        )}
+          </View>
+        </Sheet>
       </View>
     ) : null,
     header

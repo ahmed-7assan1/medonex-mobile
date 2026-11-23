@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal, View, Text, Pressable, ScrollView, StyleSheet, useWindowDimensions,Alert } from 'react-native';
+import { View, Text, Pressable, ScrollView, StyleSheet, useWindowDimensions,Alert } from 'react-native';
 import { Bell, CheckCheck, Inbox, Settings2, X, Megaphone, MessageSquare, Clock, Sparkles } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,6 +8,7 @@ import {useNotifications} from '@/lib/notifications';
 import {isFixtureMode} from '@/lib/fixtures';
 import {timeAgo} from '@/components/social/format';
 import { useTheme } from '@/theme/ThemeContext';
+import { Sheet } from './Sheet';
 
 type Filter = 'all' | 'unread' | 'BROADCAST' | 'FORUM';
 const SAMPLE = [
@@ -40,10 +41,9 @@ export function NotificationsSheet({ open, onClose }: { open: boolean; onClose: 
   ];
   const label = { color: st.text, fontFamily: fonts.sansSemiBold };
   const openSettings = () => { close(); router.push('/settings'); };
-  return <Modal visible={open} transparent animationType="slide" onRequestClose={close} statusBarTranslucent>
-    <View style={[styles.backdrop, { justifyContent: width >= 768 ? 'center' : 'flex-end', padding: width >= 768 ? 24 : 0 }]}>
-      <Pressable accessibilityRole="button" style={StyleSheet.absoluteFill} accessibilityLabel={text('Close notifications','إغلاق الإشعارات')} onPress={close} />
-      <View accessibilityViewIsModal style={[styles.sheet,{backgroundColor:colors.card,borderColor:st.border,maxHeight:height*0.86,paddingBottom:insets.bottom,borderRadius:width>=768?24:undefined}]}>
+  const desktop = width >= 768;
+  return <Sheet visible={open} autoHeight center={desktop} onClose={close}>
+      <View accessibilityViewIsModal style={[styles.sheet,{backgroundColor:colors.card,borderColor:st.border,maxHeight:height*0.86,paddingBottom:desktop?0:insets.bottom,borderRadius:desktop?24:undefined}]}>
         <Pressable accessibilityRole="button" accessibilityLabel={text('Close notifications','إغلاق الإشعارات')} onPress={close} style={styles.handleArea}><View style={[styles.handle,{backgroundColor:st.muted+'55'}]}/></Pressable>
         <View style={{paddingHorizontal:20,paddingBottom:12,gap:16}}>
           <View style={styles.row}>
@@ -65,8 +65,7 @@ export function NotificationsSheet({ open, onClose }: { open: boolean; onClose: 
         </ScrollView>
         <View style={[styles.row,{padding:14,borderTopWidth:1,borderColor:st.border,justifyContent:'space-between'}]}><Pressable accessibilityRole="button" onPress={openSettings}><Text style={{fontSize:11,color:st.muted}}>{text('Notification settings','إعدادات الإشعارات')}</Text></Pressable><Text style={{fontSize:11,color:st.muted}}>{filtered.length} / {items.length}</Text></View>
       </View>
-    </View>
-  </Modal>;
+  </Sheet>;
 }
 const styles=StyleSheet.create({
   backdrop:{flex:1,backgroundColor:'rgba(0,0,0,0.6)',alignItems:'center'},
