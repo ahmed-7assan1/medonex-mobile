@@ -719,13 +719,15 @@ export function LectureVideoSection({
                 <LectureSticky enabled={embedded&&!studio&&!wide} top={(desktop?8:0)+(embedded&&!desktop?12:32)}>
                 <View
                   testID="video-theater"
-                  onLayout={(e) =>
+                  // Read the layout synchronously: Fabric resets synthetic
+                  // events after dispatch, so a deferred read inside the
+                  // setState updater can crash on a null nativeEvent.
+                  onLayout={(e) => {
+                    const nextWidth = e.nativeEvent.layout.width;
                     setPlayerWidth((old) =>
-                      old === e.nativeEvent.layout.width
-                        ? old
-                        : e.nativeEvent.layout.width
-                    )
-                  }
+                      old === nextWidth ? old : nextWidth
+                    );
+                  }}
                   style={{
                     marginHorizontal: studio
                       ? desktop

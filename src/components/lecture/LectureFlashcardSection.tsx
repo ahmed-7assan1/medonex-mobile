@@ -642,11 +642,14 @@ export function LectureFlashcardPractice({
   return renderPage(
     <View
       testID="flashcard-practice"
-      onLayout={(e) =>
-        setArea((old) =>
-          old === e.nativeEvent.layout.width ? old : e.nativeEvent.layout.width
-        )
-      }
+      // Read the layout synchronously: Fabric resets synthetic events after
+      // dispatch, so touching e.nativeEvent inside the deferred setState
+      // updater crashes with "Cannot read property 'layout' of null" when
+      // React runs the updater during a later render.
+      onLayout={(e) => {
+        const nextWidth = e.nativeEvent.layout.width;
+        setArea((old) => (old === nextWidth ? old : nextWidth));
+      }}
       style={{ width: "100%", gap: 24 }}
     >
       <View style={{ gap: 12 }}>

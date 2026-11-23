@@ -779,21 +779,19 @@ export function LectureRecordSection() {
                                         { name: "increment", label: "Louder" },
                                         { name: "decrement", label: "Quieter" },
                                       ]}
-                                      onAccessibilityAction={(event) =>
+                                      onAccessibilityAction={(event) => {
+                                        // Read the event synchronously: the
+                                        // setState updater may run after the
+                                        // synthetic event has been reset.
+                                        const bump =
+                                          event.nativeEvent.actionName ===
+                                          "increment"
+                                            ? 0.1
+                                            : -0.1;
                                         setVolume((value) =>
-                                          Math.max(
-                                            0,
-                                            Math.min(
-                                              1,
-                                              value +
-                                                (event.nativeEvent
-                                                  .actionName === "increment"
-                                                  ? 0.1
-                                                  : -0.1)
-                                            )
-                                          )
-                                        )
-                                      }
+                                          Math.max(0, Math.min(1, value + bump))
+                                        );
+                                      }}
                                       onPress={(event) =>
                                         setVolume(
                                           Math.max(
