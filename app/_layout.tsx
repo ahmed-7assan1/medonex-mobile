@@ -1,3 +1,4 @@
+import { CrashGate, installCrashGuard } from '@/lib/crash-guard';
 import {LectureSpotifyProvider} from '@/components/lecture/LectureSpotifyProvider';
 import { LectureAudioProvider } from '@/components/lecture/LectureAudioProvider';
 import { StudentOverlayProvider } from '@/components/StudentOverlay';
@@ -26,7 +27,21 @@ const queryClient = new QueryClient({
 
 void SplashScreen.preventAutoHideAsync().catch(() => {});
 
+// Install global crash capture before any other module-scope work runs.
+installCrashGuard();
+
 export default function RootLayout() {
+  // The gate must sit above every hook and provider: a release-build throw in
+  // useFonts, a provider or the first screen render would otherwise kill the
+  // process with only the OS "keeps stopping" dialog and no stack.
+  return (
+    <CrashGate>
+      <RootLayoutInner/>
+    </CrashGate>
+  );
+}
+
+function RootLayoutInner() {
   const [fontsLoaded, fontError] = useFonts({
     Inter_400Regular,
     Inter_500Medium,
